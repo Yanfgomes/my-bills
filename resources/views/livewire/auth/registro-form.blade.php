@@ -125,10 +125,8 @@
         </form>
 
         <div class="mt-4">
-            {{-- rota nomeada 'login' e criada pelo RF-002 (proximo RF da ordem de execucao);
-                 ate la, link aponta para o path fixo para nao quebrar esta tela. --}}
             <a
-                href="/login"
+                href="{{ route('login') }}"
                 data-cy="registro-ir-login"
                 class="focus-ring text-[13px] underline"
                 style="color:var(--color-primary)"

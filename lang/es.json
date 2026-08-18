@@ -15,5 +15,10 @@
     "Informe um email valido.": "Ingrese un correo valido.",
     "A senha deve ter no minimo 8 caracteres.": "La contrasena debe tener al menos 8 caracteres.",
     "As senhas nao coincidem.": "Las contrasenas no coinciden.",
-    "Muitas tentativas. Tente novamente em :segundos segundos.": "Demasiados intentos. Intenta de nuevo en :segundos segundos."
+    "Muitas tentativas. Tente novamente em :segundos segundos.": "Demasiados intentos. Intenta de nuevo en :segundos segundos.",
+    "Entrar": "Iniciar sesion",
+    "Nao tem conta? Cadastre-se": "No tienes cuenta? Registrate",
+    "Informe sua senha.": "Ingresa tu contrasena.",
+    "Email ou senha invalidos.": "Correo o contrasena invalidos.",
+    "Sair": "Cerrar sesion"
 }

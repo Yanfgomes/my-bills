@@ -15,5 +15,10 @@
     "Informe um email valido.": "Enter a valid email.",
     "A senha deve ter no minimo 8 caracteres.": "Password must be at least 8 characters.",
     "As senhas nao coincidem.": "Passwords do not match.",
-    "Muitas tentativas. Tente novamente em :segundos segundos.": "Too many attempts. Try again in :segundos seconds."
+    "Muitas tentativas. Tente novamente em :segundos segundos.": "Too many attempts. Try again in :segundos seconds.",
+    "Entrar": "Sign in",
+    "Nao tem conta? Cadastre-se": "Don't have an account? Sign up",
+    "Informe sua senha.": "Enter your password.",
+    "Email ou senha invalidos.": "Invalid email or password.",
+    "Sair": "Sign out"
 }
