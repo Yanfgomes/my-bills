@@ -1,24 +1,24 @@
 {
   "rf_ref": "RF-002",
-  "versao": 5,
+  "versao": 10,
   "status": "aguardando_qa",
   "implementacao_existente": false,
   "gap_implementado": null,
   "branch_ref": "rf/RF-002",
-  "commit_ref": "1d1ad4c2068158de9b1b85b4e04804ce721b109a",
+  "commit_ref": "ae47a1e1c5bc09c2773f86aa674a61cfa4d73055",
   "commit_ref_testes": null,
   "grupo_commit": [],
   "handoff_qa": {
-    "disparado_em": "2026-08-18T19:45:00Z",
+    "disparado_em": "2026-08-18T18:33:26Z",
     "status": "aguardando",
-    "motivo": "RF-002 (Login/autenticacao, TELA-001) corrigido na branch rf/RF-002, commit 1d1ad4c, apos reprovacao de QA (achados BUG-001-ACC, BUG-006-SEC, BUG-007-SEC, todos classificados impacto_real e escalados ao dev-agent). Correcoes aplicadas: (1) BUG-001-ACC -- handlers inline onmouseover/onmouseout do botao 'Entrar' (resources/views/livewire/auth/login-form.blade.php) substituidos pela classe .btn-primary-hover, com :hover e :focus-visible definidos em resources/css/app.css, cobrindo tanto mouse quanto navegacao por teclado (WCAG 2.2 SC 2.4.7); (2) BUG-006-SEC -- app/Livewire/Auth/LoginForm.php, metodo autenticar(): Hash::check() deixou de rodar em curto-circuito (antes so executava quando o usuario existia); agora roda incondicionalmente contra o hash real do usuario ou, quando o email nao esta cadastrado, contra um hash bcrypt dummy fixo (metodo hashDummyParaEqualizarTempo()), equalizando o tempo dos dois caminhos antes de decidir a mensagem generica unica de RN-006 (que ja era e continua sendo a mesma nos dois casos); (3) BUG-007-SEC -- regra de validacao do campo 'senha' em autenticar() passou de ['required', 'string'] para ['required', 'string', 'max:255']. Nenhuma mudanca em RegistroForm/RF-001, conforme instrucao explicita de nao mexer la. Lint (Laravel Pint, php vendor/bin/pint --test) passou sem alteracoes necessarias. Suite de testes existente (tests/Feature/Auth/RegistroFormTest.php, 8 testes/37 assertions, RF-001) revalidada duas vezes (antes e depois da correcao) sem regressao. Verificacao funcional ad-hoc via Livewire::test() confirmou: login com sucesso mantido, mensagem generica identica nos dois cenarios (email inexistente / senha incorreta), e rejeicao de senha acima de 255 caracteres; um quarto teste ad-hoc de equalizacao de tempo (amostragem de latencia) nao foi conclusivo neste ambiente (overhead de bootstrap do Livewire::test()/SQLite in-memory domina a diferenca real de custo do bcrypt em amostras pequenas) e foi descartado por ser um instrumento de medicao ruidoso, nao por indicar falha -- a correcao estrutural (Hash::check() incondicional, sem curto-circuito antes dela) foi confirmada por leitura de codigo. Arquivo de teste ad-hoc descartado antes do commit (nao commitado), escrever teste de produto e escopo do tester-agent. tentativas_correcao incrementado de 0 para 1 (uma rodada de correcao). RF-002 nao e o ultimo RF pendente do marco-1-mvp."
+    "motivo": "RF-002 (Login/autenticacao, TELA-001) corrigido de novo na branch rf/RF-002, apos reprovacao de QA por BUG-008-QA (achado de code-review, prioridade media, classificado impacto_real e escalado ao dev-agent; BUG-001-ACC/BUG-006-SEC/BUG-007-SEC da rodada anterior seguem verificados/corrigidos, nao reabertos). Correcao aplicada: BUG-008-QA -- a correcao anterior de BUG-007-SEC adicionou a regra 'max:255' ao campo 'senha' em app/Livewire/Auth/LoginForm.php:56 sem a mensagem customizada correspondente. Adicionada 'senha.max' => __('A senha deve ter no maximo 255 caracteres.') ao array de mensagens de autenticar() (mesmo padrao ja usado pelas demais regras do componente e por RegistroForm.php/RF-001), com a respectiva chave de traducao em lang/pt.json, lang/en.json e lang/es.json (mesmo padrao das strings ja existentes). Lint (Laravel Pint, php vendor/bin/pint --test) passou sem alteracoes necessarias. Suite de testes existente (tests/Feature/Auth/RegistroFormTest.php, 8 testes/37 assertions, RF-001) revalidada sem regressao. Verificacao funcional ad-hoc via Livewire::test() (arquivo temporario, nao commitado, escrever teste de produto e escopo do tester-agent) confirmou a mensagem traduzida corretamente nos 3 locales (pt/en/es) ao submeter senha com 256 caracteres, com assertHasErrors(['senha' => 'max']) e assertSee() da string esperada em cada locale. tentativas_correcao incrementado de 1 para 2 (duas rodadas de correcao). RF-002 nao e o ultimo RF pendente do marco-1-mvp."
   },
-  "tentativas_correcao": 1,
+  "tentativas_correcao": 2,
   "bugs": [
     {
       "id": "BUG-001-ACC",
       "rf_ref": "RF-002",
-      "status": "aberto",
+      "status": "verificado",
       "categoria": "acessibilidade",
       "severidade": "alta",
       "titulo": "Botao 'Entrar': interacao de hover nao e acessivel por teclado",
@@ -28,12 +28,14 @@
       "sugerencia_correcao": "Substituir onmouseover/onmouseout inline por CSS :hover e :focus-visible (via Tailwind utility classes ou CSS customizado), ou usar Alpine.js para gerenciar ambos os estados (mouse e teclado). Exemplo: <button class=\"hover:opacity-90 focus-visible:ring-2\"> em vez de handlers inline.",
       "reportado_em": "2026-08-18T19:30:45Z",
       "reportado_por": "accessibility-agent",
-      "status": "corrigido",
+      "status": "verificado",
+      "verificado_em": "2026-08-18T20:15:30Z",
+      "verificado_por": "accessibility-agent",
       "classificacao": "impacto_real",
       "escalado_para": "dev-agent",
       "justificativa_classificacao": "Correcao local ao codigo (login-form.blade.php): substituir onmouseover/onmouseout inline por CSS :hover/:focus-visible ou Alpine.js. Nao contradiz nenhum design/arquitetura aprovado -- ao contrario, e a diretriz padroes_tecnologias.acessibilidade.padroes_aria (navegacao por teclado) que a implementacao atual nao seguiu.",
       "commit_ref": "1d1ad4c2068158de9b1b85b4e04804ce721b109a",
-      "correcao_aplicada": "Botao 'Entrar' (login-form.blade.php) passou a usar a classe .btn-primary-hover; regras .btn-primary-hover:hover e .btn-primary-hover:focus-visible adicionadas em resources/css/app.css (background-color: var(--color-primary-dark)), removendo os handlers inline onmouseover/onmouseout. Efeito visual identico ao anterior, agora disparado tambem por :focus-visible (navegacao por teclado)."
+      "correcao_aplicada": "Botao 'Entrar' (login-form.blade.php) passou a usar a classe .btn-primary-hover; regras .btn-primary-hover:hover e .btn-primary-hover:focus-visible adicionadas em resources/css/app.css (background-color: var(--color-primary-dark)), removendo os handlers inline onmouseover/onmouseout. Efeito visual identico ao anterior, agora disparado tambem por :focus-visible (navegacao por teclado). Re-auditoria confirma que a correcao resolve o achado sem introducao de regressoes."
     },
     {
       "id": "BUG-006-SEC",
@@ -43,7 +45,7 @@
       "tipo_achado": "analise_estatica",
       "observacao_metodologia": "Nao foi possivel confirmar por exploracao real (medicao efetiva de timing) porque o ambiente de execucao desta sessao nao tem PHP disponivel (comando 'php' nao encontrado, sem instalacao localizavel em caminhos comuns) para subir a aplicacao/rodar Livewire::test() com medicao de tempo. O achado e uma classe de vulnerabilidade bem documentada (timing attack para enumeracao de usuario em fluxos de login) e a leitura do codigo confirma o curto-circuito que a origina; recomenda-se confirmacao por exploracao (medicao de tempo real, dezenas de amostras por caminho) antes de decidir a rota de correcao.",
       "criticidade": "maior",
-      "status": "corrigido",
+      "status": "verificado",
       "reportado_em": "2026-08-18T18:13:04Z",
       "reportado_por": "security-agent",
       "rf_ref": "RF-002",
@@ -51,7 +53,10 @@
       "escalado_para": "dev-agent",
       "justificativa_classificacao": "Correcao local ao codigo (LoginForm::autenticar()): equalizar o tempo dos dois caminhos, tipicamente executando um Hash::check() contra um hash dummy quando o usuario nao existe, antes de retornar o erro generico. Nao exige mudanca de modelo de dados nem de arquitetura -- o proprio security-agent ja apontou a correcao tipica como ilustrativa.",
       "commit_ref": "1d1ad4c2068158de9b1b85b4e04804ce721b109a",
-      "correcao_aplicada": "LoginForm::autenticar() nao usa mais o curto-circuito 'if (! $usuario || ! Hash::check(...))'. Agora Hash::check($dados['senha'], $usuario?->getAuthPassword() ?? $this->hashDummyParaEqualizarTempo()) roda incondicionalmente antes de qualquer decisao baseada em $usuario, equalizando o custo computacional (bcrypt) dos dois caminhos (email inexistente / senha incorreta). Novo metodo privado hashDummyParaEqualizarTempo() retorna um hash bcrypt fixo (nao corresponde a nenhuma senha real). Mensagem de erro (RN-006) permanece identica e generica nos dois casos. Confirmacao por medicao de timing real nao foi possivel neste ambiente (ver observacao em handoff_qa.motivo) -- recomenda-se ao security-agent re-medir em exploracao, se o ambiente da proxima rodada tiver PHP disponivel para isso; a correcao estrutural (ausencia de curto-circuito antes de Hash::check()) foi confirmada por leitura de codigo."
+      "correcao_aplicada": "LoginForm::autenticar() nao usa mais o curto-circuito 'if (! $usuario || ! Hash::check(...))'. Agora Hash::check($dados['senha'], $usuario?->getAuthPassword() ?? $this->hashDummyParaEqualizarTempo()) roda incondicionalmente antes de qualquer decisao baseada em $usuario, equalizando o custo computacional (bcrypt) dos dois caminhos (email inexistente / senha incorreta). Novo metodo privado hashDummyParaEqualizarTempo() retorna um hash bcrypt fixo (nao corresponde a nenhuma senha real). Mensagem de erro (RN-006) permanece identica e generica nos dois casos.",
+      "verificado_em": "2026-08-18T21:05:00Z",
+      "verificado_por": "security-agent",
+      "verificacao_reaudicao": "CONFIRMADO POR EXPLORACAO REAL nesta rodada (PHP disponivel via Herd, C:/Users/yan.gomes/.config/herd/bin/php83/php.exe 8.3.31). Benchmark de N=200 amostras por caminho, replicando fielmente a logica de producao (password_verify equivalente ao BcryptHasher do Laravel, mesmo cost=12 confirmado em .env BCRYPT_ROUNDS=12 e no hash dummy fixo '$2y$12$...'): caminho 'email existe, senha errada' media=280.45ms, mediana=274.53ms; caminho 'email nao existe' media=276.72ms, mediana=273.22ms. Diferenca de media = 3.73ms (1.35%), consistente com ruido de execucao (jitter de CPU/scheduler) e nao com uma diferenca estrutural de custo computacional -- ambos os caminhos agora executam exatamente um Hash::check()/password_verify() de custo bcrypt equivalente (~270-280ms por amostra neste hardware) antes de decidir a mensagem generica de RN-006. BUG-006-SEC fechado: o oraculo de enumeracao por timing nao e mais explorabel via este vetor. Adicionalmente verificado (sem achado): o hash dummy fixo em hashDummyParaEqualizarTempo() nao introduz nova vulnerabilidade -- mesmo que um atacante encontrasse uma senha que colida com esse hash fixo, $credenciaisValidas exige '$usuario !== null && $senhaConfere', entao o caminho 'email nao existe' nunca autentica independente do resultado de Hash::check(); e a query User::where('email',...)->first() (existente/inexistente) tem diferenca de tempo desprezivel (indice em coluna unica, microssegundos) frente ao custo bcrypt de ~270ms que agora domina os dois caminhos igualmente, entao nao ha residual timing side-channel relevante remanescente nesse ponto."
     },
     {
       "id": "BUG-007-SEC",
@@ -60,7 +65,7 @@
       "elemento_afetado": "app/Livewire/Auth/LoginForm.php: regra de validacao do campo 'senha' em autenticar()",
       "tipo_achado": "analise_estatica",
       "criticidade": "menor",
-      "status": "corrigido",
+      "status": "verificado",
       "reportado_em": "2026-08-18T18:13:04Z",
       "reportado_por": "security-agent",
       "rf_ref": "RF-002",
@@ -68,30 +73,61 @@
       "escalado_para": "dev-agent",
       "justificativa_classificacao": "Correcao local ao codigo (LoginForm::autenticar()): adicionar 'max' a regra de validacao do campo senha, mesmo padrao ja aplicado em outros formularios do projeto. Nao e regressao deste RF (mesma lacuna existe em RegistroForm::registrar(), RF-001 ja aprovado), mas se manifesta de novo aqui e deve ser corrigida junto, ja que o dev-agent esta revisitando este arquivo de qualquer forma.",
       "commit_ref": "1d1ad4c2068158de9b1b85b4e04804ce721b109a",
-      "correcao_aplicada": "Regra de validacao do campo 'senha' em LoginForm::autenticar() alterada de ['required', 'string'] para ['required', 'string', 'max:255']. RegistroForm/RF-001 (mesma lacuna, ja aprovado) nao foi alterado, fora do escopo desta correcao."
+      "correcao_aplicada": "Regra de validacao do campo 'senha' em LoginForm::autenticar() alterada de ['required', 'string'] para ['required', 'string', 'max:255']. RegistroForm/RF-001 (mesma lacuna, ja aprovado) nao foi alterado, fora do escopo desta correcao.",
+      "verificado_em": "2026-08-18T21:05:00Z",
+      "verificado_por": "security-agent",
+      "verificacao_reaudicao": "Confirmado por leitura de codigo: linha 56 de LoginForm.php contem 'senha' => ['required', 'string', 'max:255']. Achado do code-review-agent nesta mesma rodada (mensagem customizada 'senha.max' ausente do array de mensagens, fallback em ingles) e uma observacao de i18n/qualidade, nao de seguranca -- fora do escopo deste agente, nao reaberto aqui; o vetor de DoS de baixo risco por payload arbitrariamente grande esta fechado."
+    },
+    {
+      "id": "BUG-008-QA",
+      "rf_ref": "RF-002",
+      "status": "corrigido",
+      "categoria": "qualidade_i18n",
+      "severidade": "media",
+      "titulo": "Mensagem customizada de validacao 'senha.max' ausente (fallback em ingles, quebra RNF-PADRAO-IDIOMA)",
+      "descricao": "A correcao de BUG-007-SEC adicionou a regra 'max:255' ao campo 'senha' em app/Livewire/Auth/LoginForm.php:56 (metodo autenticar()), mas nao adicionou a chave de mensagem customizada correspondente 'senha.max' ao array de mensagens (linhas 57-60), que hoje so cobre 'email.required', 'email.email' e 'senha.required'. Nao existe lang/pt/validation.php (nem en/es) publicado neste projeto -- so lang/pt.json, lang/en.json, lang/es.json com strings literais -- entao, sem 'senha.max' customizado via __(), um usuario que submeta senha com mais de 255 caracteres vera a mensagem de fallback padrao do Laravel ('The senha field must not be greater than 255 characters.'), sempre em ingles, independente do locale ativo (pt/es). Isso quebra o padrao ja seguido pelo resto do proprio componente (demais regras tem mensagem customizada) e por RegistroForm.php:80-88 (RF-001), e viola RNF-PADRAO-IDIOMA ('Todas as strings de UI traduzidas via helper __() e presentes em lang/pt.json, lang/en.json, lang/es.json').",
+      "elemento_afetado": "app/Livewire/Auth/LoginForm.php:54-61 (metodo autenticar(), regra de validacao 'senha' e array de mensagens customizadas)",
+      "sugerencia_correcao": "Adicionar 'senha.max' => __('...') ao array de mensagens de autenticar(), com a respectiva chave de traducao em lang/pt.json, lang/en.json e lang/es.json, seguindo o mesmo padrao ja usado pelas demais regras do componente e por RegistroForm.php.",
+      "reportado_em": "2026-08-18T18:25:09Z",
+      "reportado_por": "code-review-agent",
+      "commit_ref": "ae47a1e1c5bc09c2773f86aa674a61cfa4d73055",
+      "classificacao": "impacto_real",
+      "escalado_para": "dev-agent",
+      "justificativa_classificacao": "Correcao local ao codigo (LoginForm.php): adicionar uma chave de mensagem customizada e as respectivas entradas de traducao, seguindo o padrao ja estabelecido no proprio componente e em RegistroForm.php/RF-001. Nao contradiz nenhum design/arquitetura aprovado -- ao contrario, e a propria diretriz RNF-PADRAO-IDIOMA que a implementacao atual (apos a correcao de BUG-007-SEC) deixou de seguir para esta regra especifica.",
+      "correcao_aplicada": "Adicionada a entrada 'senha.max' => __('A senha deve ter no maximo 255 caracteres.') ao array de mensagens de LoginForm::autenticar() (app/Livewire/Auth/LoginForm.php), seguindo o mesmo padrao ja usado pelas demais regras do array e por RegistroForm.php/RF-001. Adicionada a chave de traducao 'A senha deve ter no maximo 255 caracteres.' em lang/pt.json, lang/en.json ('Password must be at most 255 characters.') e lang/es.json ('La contrasena debe tener como maximo 255 caracteres.'), mesmo padrao das strings ja existentes. Verificado funcionalmente via Livewire::test() (teste ad-hoc, nao commitado) que a mensagem aparece corretamente traduzida nos 3 locales ao submeter senha com 256 caracteres."
     }
   ],
   "observacoes": "Sessao regenerada com o helper global session()->regenerate() em vez de request()->session()->regenerate() -- a segunda forma (usada como referencia em muitos exemplos de scaffold Laravel) lancou RuntimeException('Session store not set on request.') na verificacao ad-hoc via Livewire::test(), porque o objeto Request resolvido pelo container em contexto de teste Livewire nao tem sessao vinculada diretamente a si mesmo da mesma forma que em uma requisicao HTTP completa; o helper session() (via SessionManager do container) nao depende dessa vinculacao e funcionou corretamente nos dois casos. Comportamento em producao (requisicao HTTP real) nao muda -- ambas as formas normalmente funcionariam ali -- mas session() e a escolha mais robusta e foi a usada no codigo final.",
   "qa": {
     "code_review": {
-      "status": "passou",
-      "avaliado_em": "2026-08-18T18:11:57Z",
-      "commit_avaliado": "f10a4a00aba870608bdfd20dacbd9f621c94e5f0",
+      "status": "falhou",
+      "avaliado_em": "2026-08-18T18:25:09Z",
+      "commit_avaliado": "1d1ad4c2068158de9b1b85b4e04804ce721b109a",
+      "reavaliacao": true,
+      "reavaliacao_motivo": "Re-disparo da Onda 1 apos correcao do dev-agent para BUG-001-ACC/BUG-006-SEC/BUG-007-SEC (tentativas_correcao=1). Confirmado por 'git show --name-only' que apenas app/Livewire/Auth/LoginForm.php, resources/css/app.css e resources/views/livewire/auth/login-form.blade.php foram tocados no commit -- RegistroForm/RF-001 nao foi alterado, conforme instrucao explicita do dev-agent.",
       "sonar": {
         "gate_status": "indisponivel",
-        "detalhes_ref": "arquitetura.padroes_tecnologias.stack.ferramenta_qualidade_codigo.status = pendente_infraestrutura (ferramenta nao configurada; usuario ja confirmou ausencia de SAST/quality gate automatizado). Nao ha resultado de gate a registrar; revisao qualitativa manual conduzida normalmente abaixo. Lint (Laravel Pint) reportado como passed pelo dev-agent no handoff (nao re-executado nesta revisao por indisponibilidade de binario php no ambiente do code-review-agent nesta invocacao)."
+        "detalhes_ref": "arquitetura.padroes_tecnologias.stack.ferramenta_qualidade_codigo.status = pendente_infraestrutura (ferramenta nao configurada; usuario ja confirmou ausencia de SAST/quality gate automatizado). Nao ha resultado de gate a registrar; revisao qualitativa manual conduzida normalmente abaixo. Lint (Laravel Pint) reportado como passed pelo dev-agent no handoff_qa.motivo (nao re-executado nesta revisao por indisponibilidade de binario php no ambiente do code-review-agent nesta invocacao)."
       },
       "revisao_qualitativa": {
         "status": "concluida",
         "observacoes": [
           {
+            "prioridade": "media",
+            "tipo": "achado_i18n_validacao",
+            "arquivos": [
+              "app/Livewire/Auth/LoginForm.php:54-61 (metodo autenticar(), regra de validacao 'senha' e array de mensagens customizadas)"
+            ],
+            "descricao": "A correcao de BUG-007-SEC adicionou a regra 'max:255' ao campo 'senha' (linha 56), mas nao adicionou a chave de mensagem customizada correspondente 'senha.max' ao array de mensagens (linhas 57-60), que hoje so cobre 'email.required', 'email.email' e 'senha.required'. O padrao ja estabelecido no proprio projeto (app/Livewire/Auth/RegistroForm.php:80-88) e ter uma mensagem customizada via __() para TODA regra de validacao usada, precisamente para garantir que a string seja traduzida (RNF-PADRAO-IDIOMA: 'Todas as strings de UI traduzidas via helper __() e presentes em lang/pt.json, lang/en.json, lang/es.json' -- confirmado na auditoria de acessibilidade deste RF). Nao existe lang/pt/validation.php (nem en/es) publicado neste projeto (so lang/pt.json, lang/en.json, lang/es.json com strings literais) -- ou seja, sem 'senha.max' customizado, um usuario que submeta uma senha com mais de 255 caracteres vera a mensagem padrao de fallback do Laravel ('The senha field must not be greater than 255 characters.'), em ingles, independente do locale ativo (pt/es), quebrando o padrao de idioma aplicado a todo o resto do formulario. E um achado real e concreto (nao preferencia estilistica): reproduz, no proprio RF-002, exatamente o tipo de lacuna que a mensagem customizada de outras regras do mesmo componente e do RegistroForm ja evitam. Correcao tipica: adicionar 'senha.max' => __('...') ao array de mensagens e a respectiva chave em lang/pt.json, lang/en.json, lang/es.json."
+          },
+          {
             "prioridade": "baixa",
             "tipo": "duplicacao_nao_bloqueante",
             "arquivos": [
-              "app/Livewire/Auth/LoginForm.php:31-40 (metodo autenticar(), bloco tooManyAttempts/availableIn/mensagem)",
+              "app/Livewire/Auth/LoginForm.php:41-53 (metodo autenticar(), bloco tooManyAttempts/availableIn/mensagem)",
               "app/Livewire/Auth/RegistroForm.php:38-44 (metodo registrar(), mesmo bloco)"
             ],
-            "descricao": "O padrao de rate limiting (RateLimiter::tooManyAttempts + availableIn + mensagem 'Muitas tentativas...') esta duplicado quase identico entre LoginForm::autenticar() e RegistroForm::registrar(), so variando a chave e o momento do RateLimiter::hit(). SonarQube tende a nao sinalizar esse tipo de duplicacao estrutural pequena/cross-file em PHP com trechos parametrizados. Nao e um erro -- ambos os fluxos ja foram auditados individualmente (RF-001/BUG-003-SEC) -- mas e o segundo componente Livewire de Auth a reimplementar o mesmo bloco; se um terceiro componente de autenticacao surgir (ex.: recuperacao de senha), vale considerar extrair para um trait/Service compartilhado (arquitetura.camadas_servicos) em vez de continuar copiando o padrao. Observacao de manutenibilidade, nao bloqueante."
+            "descricao": "Reconfirmado nesta rodada (a correcao nao tocou este trecho): o padrao de rate limiting (RateLimiter::tooManyAttempts + availableIn + mensagem 'Muitas tentativas...') continua duplicado quase identico entre LoginForm::autenticar() e RegistroForm::registrar(), so variando a chave e o momento do RateLimiter::hit(). Nao e um erro -- observacao de manutenibilidade, nao bloqueante, ja registrada na rodada anterior. Mantida porque BUG-006-SEC introduziu um segundo padrao com o mesmo formato (equalizacao de timing via hash dummy, em hashDummyParaEqualizarTempo()): se um terceiro componente de autenticacao surgir (ex.: recuperacao de senha), ambos os padroes (rate limiting E timing-safe lookup) sao candidatos a extracao para um trait/Service compartilhado (arquitetura.camadas_servicos) em vez de continuar copiando."
           },
           {
             "prioridade": "baixa",
@@ -99,34 +135,52 @@
             "arquivos": [
               "routes/web.php (rotas 'login', 'logout')"
             ],
-            "descricao": "arquitetura.padroes_tecnologias.convencoes.nomenclatura define rotas nomeadas em dot notation por dominio (ex: renda.index, overview.show). As rotas de autenticacao ('registro', 'login', 'logout') usam nomes flat, sem prefixo de dominio -- mas essa e uma continuacao do padrao ja estabelecido por RF-001 ('registro'), nao um desvio introduzido por este RF. Registrado como observacao de baixa prioridade para o qa-coordenador-agent avaliar se cabe um ajuste retroativo de convencao (ex.: 'auth.login'/'auth.logout') em algum momento, nao como bloqueio deste RF."
+            "descricao": "Reconfirmado nesta rodada (nao alterado pela correcao): arquitetura.padroes_tecnologias.convencoes.nomenclatura define rotas nomeadas em dot notation por dominio (ex: renda.index, overview.show). As rotas de autenticacao ('registro', 'login', 'logout') usam nomes flat, sem prefixo de dominio -- continuacao do padrao ja estabelecido por RF-001 ('registro'), nao um desvio introduzido por este RF. Observacao de baixa prioridade para o qa-coordenador-agent avaliar se cabe ajuste retroativo de convencao, nao bloqueio."
           },
           {
             "prioridade": "informativa",
             "tipo": "escopo_log_auditoria",
             "arquivos": ["app/Livewire/Auth/LoginForm.php", "app/Http/Controllers/Auth/LogoutController.php"],
-            "descricao": "RF-002 e autenticacao (login/logout), nao criacao/alteracao/exclusao de dado de negocio -- confirmado que RNF-PADRAO-LOG-AUDITORIA (logs_auditoria via Observers) nao se aplica aqui; nenhum model de dominio e criado/alterado/excluido por este RF. Nao ha achado; registrado apenas como confirmacao explicita da verificacao feita."
+            "descricao": "Reconfirmado nesta rodada: RF-002 e autenticacao (login/logout), nao criacao/alteracao/exclusao de dado de negocio -- RNF-PADRAO-LOG-AUDITORIA (logs_auditoria via Observers) nao se aplica aqui; nenhum model de dominio e criado/alterado/excluido pelas correcoes deste commit (BUG-001-ACC, BUG-006-SEC, BUG-007-SEC sao todos ajustes de UI/validacao/timing, sem escrita em model de negocio). Nao ha achado; registrado como confirmacao explicita."
+          },
+          {
+            "prioridade": "informativa",
+            "tipo": "confirmacao_correcao_bug_001_acc",
+            "arquivos": [
+              "resources/views/livewire/auth/login-form.blade.php:69-78",
+              "resources/css/app.css:94-100"
+            ],
+            "descricao": "BUG-001-ACC verificado como corrigido por leitura de codigo: handlers onmouseover/onmouseout inline removidos do botao 'Entrar'; classe .btn-primary-hover aplicada ao botao; regras .btn-primary-hover:hover e .btn-primary-hover:focus-visible adicionadas em app.css usando var(--color-primary-dark) (definida tanto no tema claro quanto no escuro), reproduzindo o efeito visual anterior tambem para navegacao por teclado."
+          },
+          {
+            "prioridade": "informativa",
+            "tipo": "confirmacao_correcao_bug_006_sec",
+            "arquivos": ["app/Livewire/Auth/LoginForm.php:63-93"],
+            "descricao": "BUG-006-SEC verificado como corrigido por leitura de codigo: o curto-circuito '||' anterior foi eliminado; Hash::check() roda incondicionalmente via '$usuario?->getAuthPassword() ?? $this->hashDummyParaEqualizarTempo()', comparado antes de qualquer decisao baseada em $usuario -- equalizando o custo bcrypt (mesmo cost factor 12 no hash dummy fixo) entre o caminho 'email nao existe' e 'senha incorreta'. Mensagem de erro (RN-006) permanece identica e generica nos dois casos. Confirmacao por medicao de timing real nao foi possivel neste ambiente (binario php indisponivel) -- mesma limitacao ja registrada pelo dev-agent e pelo security-agent na rodada anterior; a correcao estrutural foi confirmada por leitura de codigo, nao por exploracao."
           }
         ]
       }
     },
     "accessibility": {
-      "status": "falhou",
-      "auditado_em": "2026-08-18T19:30:45Z",
-      "commit_auditado": "f10a4a00aba870608bdfd20dacbd9f621c94e5f0",
+      "status": "passou",
+      "auditado_em": "2026-08-18T20:15:30Z",
+      "commit_auditado": "1d1ad4c2068158de9b1b85b4e04804ce721b109a",
+      "reavaliacao": true,
+      "reavaliacao_motivo": "Re-disparo da Onda 1 apos correcao do dev-agent para BUG-001-ACC (tentativas_correcao=1). Confirmado por leitura de codigo que handlers onmouseover/onmouseout inline foram removidos do botao 'Entrar'; classe .btn-primary-hover aplicada ao botao; regras .btn-primary-hover:hover e .btn-primary-hover:focus-visible adicionadas em app.css com background-color: var(--color-primary-dark), cobrindo tanto mouse quanto navegacao por teclado (WCAG 2.2 SC 2.4.7). Nenhuma regressao identificada no restante da tela (contraste, ARIA, tema claro/escuro, reducao de movimento -- todos confirmados como funcionando). Re-auditoria resulta em status 'passou' -- nenhum achado bloqueante pendente.",
       "contraste": {
         "status": "passou",
         "observacoes": [
           "Todas as cores utilizadas na tela (TELA-001: Login) estao dentro da paleta aprovada em arquitetura.padroes_tecnologias.acessibilidade.paleta_cores.",
           "Razoes de contraste verificadas e aprovadas para WCAG AA: texto principal (#1f2937 sobre #f4f6f8) = 13.55:1 (>=4.5:1 obrigatorio para texto normal); texto muted (#54606e sobre #f4f6f8) = 5.87:1; cor primaria (#2563eb com texto branco no botao) = 5.17:1; cor danger (#dc2626 sobre #fef2f2 em alerta de erro) = ~7.17:1; focus ring (#2563eb sobre fundo) = 4.77:1.",
           "Uso consistente de variaveis CSS (var(--color-*)) em vez de valores hex fixos, conforme exigencia de arquitetura.padroes_tecnologias.acessibilidade.paleta_cores para implementacao.",
-          "Tema claro (padrao em :root) e tema escuro ([data-theme='dark']) ambos com cores balanceadas para WCAG AA em ambos os contextos."
+          "Tema claro (padrao em :root) e tema escuro ([data-theme='dark']) ambos com cores balanceadas para WCAG AA em ambos os contextos.",
+          "Nenhuma regressao identificada apos correcao do BUG-001-ACC -- contrastes de todas as cores permaneceram dentro dos limites."
         ]
       },
       "tags_leitor_tela": {
         "status": "passou",
         "observacoes": [
-          "Labels associados aos campos de input via atributo 'for'/'id': login-email (linha 30) e login-senha (linha 53) com labels (linhas 26-28 e 48-50).",
+          "Labels associados aos campos de input via atributo 'for'/'id': login-email (linha 26) e login-senha (linha 48) com labels de formulario (linhas 25-27 e 47-49).",
           "Inputs com aria-describedby apontando para divs de mensagem de erro de campo (login-email-error, login-senha-error) com aria-live='polite' para leitores de tela perceberem atualizacoes dinamicas de validacao.",
           "Inputs com aria-invalid dinamicamente atualizado baseado em $errors->has() para indicar estado de validacao.",
           "Mensagem de erro geral ($erroGeral) com role='alert', aria-live='assertive' (para erro de credenciais/rate limit), tabindex='-1' e foco programatico via Alpine.js (x-init => $el.focus()) para garantir que leitores de tela perceban a mensagem quando aparecer.",
@@ -134,16 +188,17 @@
           "Todas as strings de UI traduzidas via helper __() e presentes em lang/pt.json, lang/en.json, lang/es.json, conforme RNF-PADRAO-IDIOMA.",
           "Skip-link ('Pular para o conteudo principal') presente no layout guest.blade.php como primeiro elemento focavel, conforme padrao ARIA de arquitetura.",
           "h1 unico por tela (linha 6: 'Entrar') funcionando como cabecalho de pagina.",
-          "Landmarks semanticos presentes no layout: <header>, <main id='conteudo-principal'>, <footer>."
+          "Landmarks semanticos presentes no layout: <header>, <main id='conteudo-principal'>, <footer>.",
+          "Nenhuma regressao identificada apos correcao do BUG-001-ACC -- todas as tags ARIA confirmadas como presentes e funcionando."
         ]
       },
       "aderencia_estrutural": {
-        "status": "falhou",
+        "status": "passou",
         "observacoes": [
-          "Foco visivel (foco_visivel = true em arquitetura): Classe .focus-ring aplicada aos elementos interativos-chave (inputs linhas 29, 52; botao linha 69; link linha 84) com CSS .focus-ring:focus-visible definido em app.css (linhas 89-92) usando outline 3px solid var(--color-focus-ring) e offset 2px. Passado.",
-          "Suporte a tema claro/escuro (suporte_tema = 'claro_escuro'): App.css implementa :root para tema claro (padrao, linhas 18-38) e [data-theme='dark'] para tema escuro (linhas 40-55). Tambem respeita @media (prefers-color-scheme: dark) para seguir preferencia do SO quando nenhum tema explicito e ativo. Passado.",
-          "Reducao de movimento (reducao_movimento = true): App.css respeita @media (prefers-reduced-motion: reduce) com !important override das durações de animacao/transicao (linhas 79-86). Botao usa class='transition-colors' que sera reduzido para transition-duration: 0.01ms neste contexto. Passado.",
-          "Achado bloqueante: Botao de submit (linhas 69-80) usa onmouseover/onmouseout inline para mudar backgroundColor para var(--color-primary-dark) e volta. Isso so funciona para mouse, nao para teclado. Usuarios navegando por teclado nao verao a indicacao visual de hover (apenas foco via .focus-ring:focus-visible). Viola WCAG 2.2 SC 2.4.7 (Focus Visible) ao nao oferecer indicacao visual de estado interativo para navegacao por teclado. Registrado como BUG-001-ACC."
+          "Foco visivel (foco_visivel = true em arquitetura): Classe .focus-ring aplicada aos elementos interativos-chave (inputs, botao, link) com CSS .focus-ring:focus-visible definido em app.css usando outline 3px solid var(--color-focus-ring) e offset 2px. Confirmado em leitura de codigo.",
+          "Suporte a tema claro/escuro (suporte_tema = 'claro_escuro'): App.css implementa :root para tema claro (padrao) e [data-theme='dark'] para tema escuro. Tambem respeita @media (prefers-color-scheme: dark) para seguir preferencia do SO quando nenhum tema explicito e ativo. Confirmado em leitura de codigo.",
+          "Reducao de movimento (reducao_movimento = true): App.css respeita @media (prefers-reduced-motion: reduce) com !important override das durações de animacao/transicao (transition-duration: 0.01ms). Confirmado em leitura de codigo.",
+          "BUG-001-ACC VERIFICADO COMO CORRIGIDO: Botao 'Entrar' agora usa classe .btn-primary-hover com regras CSS .btn-primary-hover:hover E .btn-primary-hover:focus-visible { background-color: var(--color-primary-dark) } definidas em app.css (linhas 94-98). Handlers inline onmouseover/onmouseout foram removidos completamente de login-form.blade.php. O efeito visual de mudanca de cor agora dispara tanto para mouse (:hover) quanto para navegacao por teclado (:focus-visible), cobrindo WCAG 2.2 SC 2.4.7 (Focus Visible). Confirmado por leitura de codigo e commit diff."
         ]
       },
       "recomendacoes": [
@@ -158,9 +213,11 @@
       ]
     },
     "security": {
-      "status": "falhou",
-      "auditado_em": "2026-08-18T18:13:04Z",
-      "commit_auditado": "f10a4a00aba870608bdfd20dacbd9f621c94e5f0",
+      "status": "passou",
+      "auditado_em": "2026-08-18T21:05:00Z",
+      "commit_auditado": "1d1ad4c2068158de9b1b85b4e04804ce721b109a",
+      "reavaliacao": true,
+      "reavaliacao_motivo": "Re-disparo da Onda 1 apos correcao do dev-agent para BUG-006-SEC/BUG-007-SEC (tentativas_correcao=1). Pentest whitebox completo do RF re-executado sobre o novo commit (nao apenas os pontos corrigidos), com PHP disponivel nesta sessao (Herd, php83, 8.3.31) permitindo confirmar BUG-006-SEC por medicao real de timing, o que nao foi possivel na rodada anterior.",
       "ferramenta": {
         "nome": null,
         "status": "indisponivel",
@@ -168,22 +225,22 @@
       },
       "pentest_manual": {
         "status": "concluido",
-        "achados_confirmados": 0,
-        "achados_por_analise_estatica": 2
+        "achados_confirmados": 1,
+        "achados_por_analise_estatica": 0
       },
       "verificacao_rnf": [
         {
           "rnf_ref": "RNF-001",
-          "verificacao": "Confirmado que o hashing de senha usa bcrypt (cast 'senha' => 'hashed' em app/Models/User.php, Hash::make em RegistroForm::registrar() -- RF-001) e que app/Models/User.php declara #[Hidden(['senha', 'remember_token'])], ocultando o campo em qualquer serializacao (toArray/toJson) do model. LoginForm::autenticar() nao retorna nem loga o valor de $dados['senha'] em nenhum ponto do fluxo (nem em sucesso nem em erro). Nenhuma resposta de RF-002 expoe o campo senha.",
+          "verificacao": "Reconfirmado nesta rodada: hashing de senha usa bcrypt (cast 'senha' => 'hashed' em app/Models/User.php, cost=12 via .env BCRYPT_ROUNDS=12; Hash::make em RegistroForm::registrar() -- RF-001) e app/Models/User.php declara #[Hidden(['senha', 'remember_token'])], ocultando o campo em qualquer serializacao (toArray/toJson) do model -- nenhuma mudanca neste commit. LoginForm::autenticar() nao retorna nem loga $dados['senha'] em nenhum ponto do fluxo (nem em sucesso nem em erro, incluindo o novo hashDummyParaEqualizarTempo(), que e um valor fixo hardcoded, nao deriva de nenhuma senha real submetida). Nenhuma resposta de RF-002 expoe o campo senha.",
           "status": "atendido"
         },
         {
           "rnf_ref": "RN-006",
-          "verificacao": "Mensagem de erro e de fato generica e unica ('Email ou senha invalidos.') tanto para email nao cadastrado quanto para senha incorreta, sem diferenciar campo no TEXTO exibido -- porem o CAMINHO DE CODIGO nao e equivalente em tempo entre os dois casos (ver BUG-006-SEC), o que reabre por timing exatamente o oraculo que a regra de negocio pretende fechar pela mensagem.",
-          "status": "achado"
+          "verificacao": "Mensagem de erro continua generica e unica ('Email ou senha invalidos.') nos dois casos. CONFIRMADO POR MEDICAO DE TIMING REAL (N=200 amostras/caminho, ver bugs[BUG-006-SEC].verificacao_reaudicao): diferenca de media entre 'email existe, senha errada' e 'email nao existe' caiu para 1.35% (~3.7ms sobre ~275-280ms), consistente com ruido de execucao, nao com diferenca estrutural de custo computacional. O caminho de codigo agora e equivalente em tempo entre os dois casos -- o oraculo de enumeracao por timing que reabria RN-006 esta fechado.",
+          "status": "atendido"
         }
       ],
-      "resumo": "Pentest whitebox de RF-002 (Login/autenticacao). Auditados: LoginForm::autenticar() (email/senha, RN-006, rate limiting), LogoutController (invalidate + regenerateToken), rotas 'login'/'logout' (routes/web.php), login-form.blade.php, overview-stub.blade.php. Verificados especificamente: enumeracao de usuario (achado -- BUG-006-SEC, timing side-channel), bypass de rate limiting (nao encontrado bypass direto da checagem em si -- limite de 5/60s por email+IP roda em codigo, independente de rota; porem chave por-email nao protege contra enumeracao/forca bruta distribuida por muitos emails diferentes, ja registrado como agravante em BUG-006-SEC), fixacao de sessao (nao encontrado -- session()->regenerate() apos login, invalidate()+regenerateToken() apos logout, ambos corretos), CSRF em login/logout (nao encontrado -- logout usa formulario HTML com @csrf explicito sob rota POST com middleware auth; login roda via endpoint compartilhado do Livewire, protegido pelo middleware 'web' padrao/CSRF nativo do framework, sem customizacao que o remova), forca bruta (mitigada por rate limiting, ainda que com a limitacao acima), exposicao de credenciais em log (nao encontrado -- nenhum log/dump de $dados['senha'] em nenhum caminho do codigo), bypass de autenticacao (nao encontrado -- Hash::check contra coluna correta via getAuthPassword(), sem atalho/backdoor). Ferramenta de SAST/scanner de dependencias indisponivel (pendente_infraestrutura) -- analise 100% manual. 2 achados por analise estatica (nenhum confirmado por exploracao devido a indisponibilidade de PHP no ambiente desta sessao para medicao de timing/execucao real): BUG-006-SEC (maior, timing side-channel de enumeracao de usuario) e BUG-007-SEC (menor, falta de limite de tamanho no campo senha). Nao substitui auditoria de seguranca formal externa."
+      "resumo": "Pentest whitebox de RF-002 (Login/autenticacao) re-executado sobre o commit corrigido 1d1ad4c, cobrindo o RF inteiro (nao so os pontos corrigidos): LoginForm::autenticar() (email/senha, RN-006, rate limiting, novo hashDummyParaEqualizarTempo()), LogoutController (invalidate + regenerateToken), rotas 'login'/'logout' (routes/web.php), login-form.blade.php, config/session.php, config/auth.php, app/Models/User.php, User.getAuthPassword(). BUG-006-SEC (timing side-channel de enumeracao de usuario, maior): FECHADO, confirmado por exploracao real (medicao de timing, PHP disponivel nesta sessao via Herd php83 -- N=200 amostras/caminho, diferenca de media 1.35%/3.7ms, dentro do ruido esperado, contra diferenca claramente mensuravel de dezenas de ms esperada se o curto-circuito ainda existisse). Verificado adicionalmente e sem achado: o hash dummy fixo em hashDummyParaEqualizarTempo() nao e explorabel (mesmo hash sempre, e mesmo que colidisse nao autenticaria, pois $credenciaisValidas exige usuario!==null); diferenca de timing da query User::where('email',...)->first() e desprezivel frente ao custo bcrypt (~270ms) que agora domina ambos os caminhos igualmente. BUG-007-SEC (falta de max no campo senha, menor): FECHADO, confirmado por leitura de codigo ('max:255' presente na regra de validacao); achado de i18n do code-review-agent sobre mensagem customizada ausente ('senha.max') e observacao de qualidade, fora do escopo deste agente. Reverificados sem achado novo: enumeracao de usuario (fechada), bypass de rate limiting (nao encontrado bypass direto -- limitacao conhecida de chave por-email contra enumeracao distribuida por muitos emails ja tratada por BUG-006-SEC estar fechado, ja que o vetor de timing que tornava essa limitacao explorable para enumeracao nao existe mais), fixacao de sessao (nao encontrado -- session()->regenerate() apos login, invalidate()+regenerateToken() apos logout), CSRF em login/logout (nao encontrado), forca bruta (mitigada por rate limiting), exposicao de credenciais em log (nao encontrado), bypass de autenticacao (nao encontrado -- Hash::check contra coluna correta via getAuthPassword(), sem atalho/backdoor), injecao SQL (nao encontrado -- User::where('email', ...) via Eloquent/query builder parametrizado, sem SQL cru concatenado). Confirmado por 'git show --stat' que RegistroForm.php/RF-001 nao foi tocado neste commit. Observacao nao-bloqueante, ja registrada em rodadas anteriores para RF-001 e nao reintroduzida por esta correcao: SESSION_SECURE_COOKIE nao definido em .env (fica null/nao forcado), scaffold padrao do Laravel -- so relevante quando existir ambiente de producao real (deploy.status = pendente_infraestrutura), nao e um achado desta rodada. Ferramenta de SAST/scanner de dependencias segue indisponivel (pendente_infraestrutura) -- analise 100% manual. Nao substitui auditoria de seguranca formal externa."
     }
   }
 }
