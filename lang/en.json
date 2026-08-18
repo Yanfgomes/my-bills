@@ -1,0 +1,18 @@
+{
+    "Criar conta": "Create account",
+    "Nome": "Name",
+    "Email": "Email",
+    "Senha": "Password",
+    "Confirmar senha": "Confirm password",
+    "Seu nome": "Your name",
+    "voce@exemplo.com": "you@example.com",
+    "minimo 8 caracteres": "minimum 8 characters",
+    "repita a senha": "repeat the password",
+    "Ja tem conta? Entrar": "Already have an account? Sign in",
+    "e-mail ja cadastrado": "email already registered",
+    "Pular para o conteudo principal": "Skip to main content",
+    "Campo obrigatorio.": "Required field.",
+    "Informe um email valido.": "Enter a valid email.",
+    "A senha deve ter no minimo 8 caracteres.": "Password must be at least 8 characters.",
+    "As senhas nao coincidem.": "Passwords do not match."
+}

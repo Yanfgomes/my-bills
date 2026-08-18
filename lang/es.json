@@ -1,0 +1,18 @@
+{
+    "Criar conta": "Crear cuenta",
+    "Nome": "Nombre",
+    "Email": "Correo electronico",
+    "Senha": "Contrasena",
+    "Confirmar senha": "Confirmar contrasena",
+    "Seu nome": "Tu nombre",
+    "voce@exemplo.com": "tu@ejemplo.com",
+    "minimo 8 caracteres": "minimo 8 caracteres",
+    "repita a senha": "repite la contrasena",
+    "Ja tem conta? Entrar": "Ya tienes cuenta? Entrar",
+    "e-mail ja cadastrado": "correo ya registrado",
+    "Pular para o conteudo principal": "Saltar al contenido principal",
+    "Campo obrigatorio.": "Campo obligatorio.",
+    "Informe um email valido.": "Ingrese un correo valido.",
+    "A senha deve ter no minimo 8 caracteres.": "La contrasena debe tener al menos 8 caracteres.",
+    "As senhas nao coincidem.": "Las contrasenas no coinciden."
+}
