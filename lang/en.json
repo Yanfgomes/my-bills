@@ -14,5 +14,6 @@
     "Campo obrigatorio.": "Required field.",
     "Informe um email valido.": "Enter a valid email.",
     "A senha deve ter no minimo 8 caracteres.": "Password must be at least 8 characters.",
-    "As senhas nao coincidem.": "Passwords do not match."
+    "As senhas nao coincidem.": "Passwords do not match.",
+    "Muitas tentativas. Tente novamente em :segundos segundos.": "Too many attempts. Try again in :segundos seconds."
 }

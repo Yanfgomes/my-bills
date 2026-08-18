@@ -5,6 +5,7 @@ namespace App\Livewire\Auth;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -29,9 +30,31 @@ class RegistroForm extends Component
      */
     public string $erroGeral = '';
 
+    /**
+     * BUG-003-SEC: a rota GET '/registro' so serve o formulario; a submissao real (wire:submit)
+     * bate no endpoint compartilhado POST /livewire/update do proprio pacote Livewire, que nao
+     * tem throttle por padrao neste projeto (config/livewire.php nao publicado/customizado — ver
+     * vendor/livewire/livewire/config/livewire.php). Aplicar 'throttle' na rota nomeada 'registro'
+     * nao cobriria esse caminho. Em vez de publicar a config e aplicar throttle global a cada
+     * requisicao Livewire da aplicacao (afetaria wire:model/outros componentes futuros), o limite e
+     * aplicado aqui, por acao, chaveado por IP — mesmo padrao usado por Laravel Fortify para login.
+     * Limita tentativas de registro (inclui tentativas com email ja cadastrado, RN-004) a 5 por
+     * minuto por IP, mitigando criacao em massa de contas e enumeracao de e-mails em escala.
+     */
     public function registrar(): void
     {
         $this->erroGeral = '';
+
+        $chaveLimite = 'registro:'.request()->ip();
+
+        if (RateLimiter::tooManyAttempts($chaveLimite, 5)) {
+            $segundos = RateLimiter::availableIn($chaveLimite);
+            $this->erroGeral = __('Muitas tentativas. Tente novamente em :segundos segundos.', ['segundos' => $segundos]);
+
+            return;
+        }
+
+        RateLimiter::hit($chaveLimite, 60);
 
         $dados = $this->validate([
             'nome' => ['required', 'string', 'max:120'],

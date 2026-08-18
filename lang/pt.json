@@ -14,5 +14,6 @@
     "Campo obrigatorio.": "Campo obrigatorio.",
     "Informe um email valido.": "Informe um email valido.",
     "A senha deve ter no minimo 8 caracteres.": "A senha deve ter no minimo 8 caracteres.",
-    "As senhas nao coincidem.": "As senhas nao coincidem."
+    "As senhas nao coincidem.": "As senhas nao coincidem.",
+    "Muitas tentativas. Tente novamente em :segundos segundos.": "Muitas tentativas. Tente novamente em :segundos segundos."
 }
