@@ -71,10 +71,8 @@
                 data-cy="login-submit"
                 wire:loading.attr="aria-busy"
                 wire:target="autenticar"
-                class="focus-ring w-full mt-2 px-4 py-2.5 rounded-lg text-white text-[13px] font-semibold transition-colors"
+                class="focus-ring btn-primary-hover w-full mt-2 px-4 py-2.5 rounded-lg text-white text-[13px] font-semibold transition-colors"
                 style="background-color:var(--color-primary)"
-                onmouseover="this.style.backgroundColor='var(--color-primary-dark)'"
-                onmouseout="this.style.backgroundColor='var(--color-primary)'"
             >
                 {{ __('Entrar') }}
             </button>

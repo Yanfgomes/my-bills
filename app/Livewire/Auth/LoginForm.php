@@ -53,7 +53,7 @@ class LoginForm extends Component
 
         $dados = $this->validate([
             'email' => ['required', 'email'],
-            'senha' => ['required', 'string'],
+            'senha' => ['required', 'string', 'max:255'],
         ], [
             'email.required' => __('Informe um email valido.'),
             'email.email' => __('Informe um email valido.'),
@@ -62,12 +62,21 @@ class LoginForm extends Component
 
         $usuario = User::where('email', $dados['email'])->first();
 
-        // RN-006: mensagem generica unica (erroGeral, nao ligada a um campo especifico), sem
-        // indicar qual dos dois esta incorreto — nem se o email existe (evita oraculo de
-        // enumeracao). Conta como tentativa mesmo quando so o formato de email/senha vazia falhou
-        // a validacao acima? Nao: RateLimiter::hit so roda aqui, apos validacao de formato passar,
-        // porque uma tentativa de credenciais so existe quando ha de fato email+senha a comparar.
-        if (! $usuario || ! Hash::check($dados['senha'], $usuario->getAuthPassword())) {
+        // BUG-006-SEC: quando $usuario e null, Hash::check() nunca rodaria por causa do
+        // curto-circuito do '||' — isso cria um timing side-channel (bcrypt e computacionalmente
+        // caro; o caminho "email nao existe" retornaria quase instantaneo, o caminho "email existe,
+        // senha errada" seria mensuravelmente mais lento), permitindo enumerar emails cadastrados
+        // por medicao de tempo de resposta mesmo com a mensagem de erro sendo generica. Para
+        // equalizar o tempo dos dois caminhos, sempre executamos Hash::check() — contra o hash real
+        // do usuario quando ele existe, ou contra um hash dummy fixo (mesmo custo bcrypt) quando
+        // nao existe — antes de decidir a mensagem generica unica (RN-006).
+        // Nota: Hash::check() precisa ser a PRIMEIRA operacao do '&&'/avaliada incondicionalmente —
+        // se a checagem de $usuario viesse antes por curto-circuito, o bug se repetiria de outra
+        // forma. $senhaConfere e sempre calculado antes de qualquer decisao baseada em $usuario.
+        $senhaConfere = Hash::check($dados['senha'], $usuario?->getAuthPassword() ?? $this->hashDummyParaEqualizarTempo());
+        $credenciaisValidas = $usuario !== null && $senhaConfere;
+
+        if (! $credenciaisValidas) {
             RateLimiter::hit($chaveLimite, 60);
 
             $this->erroGeral = __('Email ou senha invalidos.');
@@ -86,6 +95,17 @@ class LoginForm extends Component
     private function chaveLimiteTentativas(): string
     {
         return 'login:'.Str::lower($this->email).'|'.request()->ip();
+    }
+
+    /**
+     * BUG-006-SEC: hash bcrypt fixo (nao corresponde a nenhuma senha real) usado como alvo de
+     * Hash::check() quando o email informado nao esta cadastrado, apenas para consumir o mesmo
+     * custo computacional do caminho "email existe" e equalizar o tempo de resposta dos dois
+     * casos, fechando o timing side-channel de enumeracao de usuarios.
+     */
+    private function hashDummyParaEqualizarTempo(): string
+    {
+        return '$2y$12$eImiTXuWVxfM37uY4JANjQZ4nO3aWQrO7Fb4kL9d1oPjKm4o8f/2G';
     }
 
     public function render()
