@@ -1,6 +1,6 @@
 {
   "rf_ref": "RF-002",
-  "versao": 12,
+  "versao": 13,
   "status": "aprovado",
   "implementacao_existente": false,
   "gap_implementado": null,
@@ -287,18 +287,44 @@
     "validado_em": "2026-08-18T18:48:42Z",
     "observacoes": "Aplicacao subida pelo orquestrador via 'php84.bat artisan serve --port=8765' (PHP 8.3 via Herd incompativel -- composer.lock exige >=8.4.1; PHP 8.4.22 via Herd usado). Usuario aprovou a entrega apos revisar o roteiro de teste manual (formulario de login, RN-006, login bem-sucedido, mensagem traduzida de senha.max, rate limiting, logout). Processo local encerrado apos a aprovacao."
   },
+  "historico_revisoes": [
+    {
+      "decisao_pendente": {
+        "agente": "qa-coordenador-agent",
+        "gate": "validacao_local",
+        "rf_ref": "RF-002",
+        "pergunta": "RF-002 (Login/autenticacao) passou pela QA automatizada (code review, pentest, acessibilidade e testes automatizados, todos aprovados). Suba a aplicacao (composer run dev, ou minimamente 'php artisan serve') e teste manualmente o fluxo de login: (1) o formulario exige email valido e senha preenchida; (2) login com email nao cadastrado ou senha incorreta e rejeitado com a mensagem generica 'Email ou senha invalidos.', sem indicar qual campo esta errado; (3) login com credenciais validas autentica e redireciona para a tela principal; (4) submeter uma senha com mais de 255 caracteres mostra a mensagem de validacao traduzida corretamente (nao em ingles); (5) 6 tentativas seguidas com a mesma credencial incorreta bloqueiam temporariamente o login; (6) logout encerra a sessao corretamente. A entrega esta aprovada para merge?",
+        "opcoes": [
+          { "label": "Aprovado", "descricao": "O fluxo de login funciona conforme testado. RF-002 sera mergeado (e, como bpx.aplicavel=false, deployado em seguida)." },
+          { "label": "Reprovado", "descricao": "Algo no fluxo de login nao funcionou como esperado. Descreva o problema encontrado -- ele sera registrado como bug e devolvido ao dev-agent para correcao, reiniciando o ciclo de QA." }
+        ],
+        "contexto": "RF-002 e o ultimo gate humano antes do merge. Onda 1 (code-review-agent, security-agent, accessibility-agent) e Onda 2 (tester-agent, 19 testes/58 assertions, cobertura 100%) ja passaram. Este e o unico ponto de validacao manual antes do codigo ir para a branch principal.",
+        "aberto_em": "2026-08-18T18:46:55Z",
+        "resposta": "Aprovado",
+        "respondido_em": "2026-08-18T18:48:42Z"
+      }
+    }
+  ],
   "decisao_pendente": {
-    "agente": "qa-coordenador-agent",
-    "gate": "validacao_local",
+    "agente": "deploy-agent",
+    "gate": "merge_pr_confirmacao_humana",
     "rf_ref": "RF-002",
-    "pergunta": "RF-002 (Login/autenticacao) passou pela QA automatizada (code review, pentest, acessibilidade e testes automatizados, todos aprovados). Suba a aplicacao (composer run dev, ou minimamente 'php artisan serve') e teste manualmente o fluxo de login: (1) o formulario exige email valido e senha preenchida; (2) login com email nao cadastrado ou senha incorreta e rejeitado com a mensagem generica 'Email ou senha invalidos.', sem indicar qual campo esta errado; (3) login com credenciais validas autentica e redireciona para a tela principal; (4) submeter uma senha com mais de 255 caracteres mostra a mensagem de validacao traduzida corretamente (nao em ingles); (5) 6 tentativas seguidas com a mesma credencial incorreta bloqueiam temporariamente o login; (6) logout encerra a sessao corretamente. A entrega esta aprovada para merge?",
+    "pergunta": "PR #3 (rf/RF-002 -> main, https://github.com/Yanfgomes/my-bills/pull/3) foi aberto com sucesso via 'gh pr create', mas o comando 'gh pr merge 3 --squash' foi bloqueado pelo classificador de auto mode do proprio Claude Code (nao e um problema de conflito de codigo, nem de branch protection do GitHub -- e uma permissao do harness que exige confirmacao humana explicita para acoes de merge). Autoriza o merge deste PR (squash, conforme controle_versao.estrategia_merge)?",
     "opcoes": [
-      { "label": "Aprovado", "descricao": "O fluxo de login funciona conforme testado. RF-002 sera mergeado (e, como bpx.aplicavel=false, deployado em seguida)." },
-      { "label": "Reprovado", "descricao": "Algo no fluxo de login nao funcionou como esperado. Descreva o problema encontrado -- ele sera registrado como bug e devolvido ao dev-agent para correcao, reiniciando o ciclo de QA." }
+      { "label": "Autorizar merge", "descricao": "Um humano roda 'gh pr merge 3 --squash' (ou aprova a permissao no harness para o deploy-agent rodar) e o deploy-agent e reinvocado para prosseguir com a Fase 2 (deploy, pendente_infraestrutura -- ja documentado que nao ha pipeline configurado)." },
+      { "label": "Nao autorizar / revisar antes", "descricao": "PR permanece aberto (#3) sem merge ate nova instrucao. Nenhuma acao adicional do deploy-agent." }
     ],
-    "contexto": "RF-002 e o ultimo gate humano antes do merge. Onda 1 (code-review-agent, security-agent, accessibility-agent) e Onda 2 (tester-agent, 19 testes/58 assertions, cobertura 100%) ja passaram. Este e o unico ponto de validacao manual antes do codigo ir para a branch principal.",
-    "aberto_em": "2026-08-18T18:46:55Z",
-    "resposta": "Aprovado",
-    "respondido_em": "2026-08-18T18:48:42Z"
+    "contexto": "RF-002 ja tem validacao_local aprovada (ver historico_revisoes) e todos os gates de QA automatizada passaram. O unico bloqueio remanescente e tecnico/de permissao do ambiente de execucao, nao de qualidade do codigo.",
+    "aberto_em": "2026-08-18T18:52:31Z",
+    "resposta": "",
+    "respondido_em": ""
+  },
+  "deploy": {
+    "status": "aguardando_merge_pr",
+    "pr_ref": "https://github.com/Yanfgomes/my-bills/pull/3",
+    "merged_em": null,
+    "pipelines": [],
+    "deployado_em": null,
+    "decisao_humana": ""
   }
 }
