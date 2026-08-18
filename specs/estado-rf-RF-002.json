@@ -10,7 +10,7 @@
   "grupo_commit": [],
   "handoff_qa": {
     "disparado_em": "2026-08-18T18:33:26Z",
-    "status": "em_qa",
+    "status": "aprovado",
     "motivo": "RF-002 (Login/autenticacao, TELA-001) corrigido de novo na branch rf/RF-002, apos reprovacao de QA por BUG-008-QA (achado de code-review, prioridade media, classificado impacto_real e escalado ao dev-agent; BUG-001-ACC/BUG-006-SEC/BUG-007-SEC da rodada anterior seguem verificados/corrigidos, nao reabertos). Correcao aplicada: BUG-008-QA -- a correcao anterior de BUG-007-SEC adicionou a regra 'max:255' ao campo 'senha' em app/Livewire/Auth/LoginForm.php:56 sem a mensagem customizada correspondente. Adicionada 'senha.max' => __('A senha deve ter no maximo 255 caracteres.') ao array de mensagens de autenticar() (mesmo padrao ja usado pelas demais regras do componente e por RegistroForm.php/RF-001), com a respectiva chave de traducao em lang/pt.json, lang/en.json e lang/es.json (mesmo padrao das strings ja existentes). Lint (Laravel Pint, php vendor/bin/pint --test) passou sem alteracoes necessarias. Suite de testes existente (tests/Feature/Auth/RegistroFormTest.php, 8 testes/37 assertions, RF-001) revalidada sem regressao. Verificacao funcional ad-hoc via Livewire::test() (arquivo temporario, nao commitado, escrever teste de produto e escopo do tester-agent) confirmou a mensagem traduzida corretamente nos 3 locales (pt/en/es) ao submeter senha com 256 caracteres, com assertHasErrors(['senha' => 'max']) e assertSee() da string esperada em cada locale. tentativas_correcao incrementado de 1 para 2 (duas rodadas de correcao). RF-002 nao e o ultimo RF pendente do marco-1-mvp."
   },
   "tentativas_correcao": 2,
@@ -316,15 +316,16 @@
     ],
     "contexto": "RF-002 ja tem validacao_local aprovada (ver historico_revisoes) e todos os gates de QA automatizada passaram. O unico bloqueio remanescente e tecnico/de permissao do ambiente de execucao, nao de qualidade do codigo.",
     "aberto_em": "2026-08-18T18:52:31Z",
-    "resposta": "",
-    "respondido_em": ""
+    "resposta": "Autorizar merge",
+    "respondido_em": "2026-08-18T18:58:12Z"
   },
   "deploy": {
-    "status": "aguardando_merge_pr",
+    "status": "merged_pendente_infraestrutura",
     "pr_ref": "https://github.com/Yanfgomes/my-bills/pull/3",
-    "merged_em": null,
+    "merge_commit": "7bc64cb56f7b12bc943c17b787d4d20055b7b74e",
+    "merged_em": "2026-08-18T19:05:23Z",
     "pipelines": [],
     "deployado_em": null,
-    "decisao_humana": ""
+    "decisao_humana": "Usuario autorizou o merge do PR #3 (resposta 'Sim, mergear'). Ao tentar 'gh pr merge 3 --squash', o GitHub reportou merge conflict real (mergeStateStatus=DIRTY, mergeable=CONFLICTING): origin/main recebeu anteriormente uma PR #2 redundante de RF-001 (055b36c, 'Rf/rf 001 (#2)') que reescreveu blobs de arquivos ja existentes em PR #1 via squash-merge, divergindo o historico de rf/RF-002 (criada a partir do commit local nao-squashed 8d30789). Investigacao arquivo por arquivo (git diff <merge-base> vs origin/main vs rf/RF-002 para routes/web.php, lang/{pt,en,es}.json, resources/css/app.css, resources/views/livewire/auth/registro-form.blade.php, resources/views/overview-stub.blade.php) confirmou que o conteudo de origin/main era estrito subconjunto do conteudo de rf/RF-002 nesses 7 arquivos (RF-002 apenas adiciona sobre o que RF-001 ja tinha, sem overlap real). A tentativa de delegar a resolucao ao deploy-agent foi bloqueada pelo classificador de auto mode do harness (acao de merge em repositorio compartilhado); usuario autorizou explicitamente que o orquestrador resolvesse e mergeasse diretamente. Resolucao: 'git merge --no-edit -X ours origin/main' na branch rf/RF-002 (commit dac7253), lint (Pint) e suite completa de tests/Feature/Auth (27 testes/95 assertions, RF-001+RF-002) revalidados sem regressao pos-merge, push da branch, 'gh pr merge 3 --squash' concluido com sucesso (merge_commit 7bc64cb, mergedAt 2026-08-18T19:05:23Z). Deploy automatizado nao acionado: arquitetura.padroes_tecnologias.stack.deploy.status = pendente_infraestrutura (mesmo gap ja documentado para RF-001), nao e falha de pipeline. Nota para revisao futura: PR #2 de RF-001 (055b36c) parece ter sido um merge redundante/duplicado de historico ja mergeado por PR #1 -- fora do escopo desta correcao, nao alterado retroativamente."
   }
 }
