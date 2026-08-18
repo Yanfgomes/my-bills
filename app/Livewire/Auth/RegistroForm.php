@@ -61,11 +61,22 @@ class RegistroForm extends Component
         // mensagem duplicada e aria-invalid falso-positivo no campo 'Confirmar senha' (ver
         // registro-form.blade.php). Em vez disso, valida a confirmacao com 'same:senha' aplicada
         // diretamente ao campo 'senha_confirmation', que anexa a falha a sua propria chave.
+        //
+        // BUG-005-SEC: 'same' NAO e uma regra implicita do Illuminate\Validation\Validator --
+        // Validator::presentOrRuleIsImplicit() so executa uma regra nao-implicita quando o valor
+        // do PROPRIO atributo a que ela esta anexada nao e uma string vazia. Sem 'required'
+        // explicito em 'senha_confirmation', submeter esse campo vazio (form usa 'novalidate' e o
+        // input nao tem 'required' HTML, entao isso e alcancavel via submissao normal) fazia
+        // 'same:senha' ser inteiramente PULADA (nao apenas 'passar'), permitindo cadastro com
+        // confirmacao de senha nunca checada. Adicionar 'required' forca o gate de presenca a
+        // rodar a propria regra 'required' (essa sim implicita) mesmo com valor vazio, falhando
+        // corretamente nesse caso -- mantendo a chave de erro isolada em 'senha_confirmation'
+        // (sem reabrir BUG-004-ACC).
         $dados = $this->validate([
             'nome' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'senha' => ['required', 'string', 'min:8'],
-            'senha_confirmation' => ['same:senha'],
+            'senha_confirmation' => ['required', 'same:senha'],
         ], [
             'nome.required' => __('Campo obrigatorio.'),
             'email.required' => __('Informe um email valido.'),
@@ -73,6 +84,7 @@ class RegistroForm extends Component
             'email.unique' => __('e-mail ja cadastrado'),
             'senha.required' => __('A senha deve ter no minimo 8 caracteres.'),
             'senha.min' => __('A senha deve ter no minimo 8 caracteres.'),
+            'senha_confirmation.required' => __('As senhas nao coincidem.'),
             'senha_confirmation.same' => __('As senhas nao coincidem.'),
         ]);
 
