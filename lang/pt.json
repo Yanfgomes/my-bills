@@ -1,0 +1,19 @@
+{
+    "Criar conta": "Criar conta",
+    "Nome": "Nome",
+    "Email": "Email",
+    "Senha": "Senha",
+    "Confirmar senha": "Confirmar senha",
+    "Seu nome": "Seu nome",
+    "voce@exemplo.com": "voce@exemplo.com",
+    "minimo 8 caracteres": "minimo 8 caracteres",
+    "repita a senha": "repita a senha",
+    "Ja tem conta? Entrar": "Ja tem conta? Entrar",
+    "e-mail ja cadastrado": "e-mail ja cadastrado",
+    "Pular para o conteudo principal": "Pular para o conteudo principal",
+    "Campo obrigatorio.": "Campo obrigatorio.",
+    "Informe um email valido.": "Informe um email valido.",
+    "A senha deve ter no minimo 8 caracteres.": "A senha deve ter no minimo 8 caracteres.",
+    "As senhas nao coincidem.": "As senhas nao coincidem.",
+    "Muitas tentativas. Tente novamente em :segundos segundos.": "Muitas tentativas. Tente novamente em :segundos segundos."
+}

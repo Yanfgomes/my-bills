@@ -1,0 +1,107 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+/*
+ * Tokens de tema — arquitetura.padroes_tecnologias.acessibilidade.paleta_cores (design-agent).
+ * Tema claro (padrao) em :root; tema escuro sobrepondo via [data-theme="dark"] (suporte_tema =
+ * claro_escuro). Nunca usar hex fora destas variaveis nas telas (reference/layout-guidelines.md).
+ */
+:root {
+    --color-bg: #f4f6f8;
+    --color-card: #ffffff;
+    --color-border: #e1e5ea;
+    --color-text: #1f2937;
+    --color-text-muted: #54606e;
+    --color-primary: #2563eb;
+    --color-primary-dark: #1d4ed8;
+    --color-danger: #dc2626;
+    --color-danger-bg: #fef2f2;
+    --color-danger-border: #fecaca;
+    --color-success: #157347;
+    --color-warn: #92400e;
+    --color-warn-decorative: #d97706;
+    /* BUG-001-ACC: #93c5fd tinha ~1.66:1 contra --color-bg (#f4f6f8), abaixo do minimo
+       3:1 de WCAG 2.4.7. Corrigido para o proprio tom de --color-primary (#2563eb) —
+       ja designado em arquitetura.padroes_tecnologias.acessibilidade.paleta_cores.tema_claro.primary.uso
+       como "acao primaria (botoes, links, foco)" — que atinge ~4.77:1 contra o fundo. */
+    --color-focus-ring: #2563eb;
+    --radius-surface: 10px;
+}
+
+[data-theme='dark'] {
+    --color-bg: #0f172a;
+    --color-card: #1e293b;
+    --color-border: #334155;
+    --color-text: #f1f5f9;
+    --color-text-muted: #94a3b8;
+    --color-primary: #3b82f6;
+    --color-primary-dark: #2563eb;
+    --color-danger: #f87171;
+    --color-danger-bg: #450a0a;
+    --color-danger-border: #7f1d1d;
+    --color-success: #4ade80;
+    --color-warn: #fbbf24;
+    --color-warn-decorative: #fbbf24;
+    --color-focus-ring: #60a5fa;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']):not([data-theme='dark']) {
+        --color-bg: #0f172a;
+        --color-card: #1e293b;
+        --color-border: #334155;
+        --color-text: #f1f5f9;
+        --color-text-muted: #94a3b8;
+        --color-primary: #3b82f6;
+        --color-primary-dark: #2563eb;
+        --color-danger: #f87171;
+        --color-danger-bg: #450a0a;
+        --color-danger-border: #7f1d1d;
+        --color-success: #4ade80;
+        --color-warn: #fbbf24;
+        --color-warn-decorative: #fbbf24;
+        --color-focus-ring: #60a5fa;
+    }
+}
+
+/* Reducao de movimento (RNF-PADRAO-ACESSIBILIDADE-CONFIG): respeita a preferencia do SO como
+   valor inicial; o controle explicito na tela de configuracoes (RF futuro) sobrepoe isto via
+   classe utilitaria dedicada quando essa tela existir. */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Foco visivel (foco_visivel = true): nunca remover sem substituto equivalente. */
+.focus-ring:focus-visible {
+    outline: 3px solid var(--color-focus-ring);
+    outline-offset: 2px;
+}
+
+.skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 100;
+    background: var(--color-primary);
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 0 0 8px 0;
+}
+
+.skip-link:focus {
+    left: 0;
+}
