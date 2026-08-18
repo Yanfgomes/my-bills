@@ -91,6 +91,14 @@
     outline-offset: 2px;
 }
 
+/* BUG-001-ACC: estado hover do botao de acao primaria era feito via onmouseover/onmouseout
+   inline (so dispara com mouse). CSS puro cobre mouse (:hover) e teclado (:focus-visible) com o
+   mesmo efeito visual, sem duplicar logica em JS. */
+.btn-primary-hover:hover,
+.btn-primary-hover:focus-visible {
+    background-color: var(--color-primary-dark);
+}
+
 .skip-link {
     position: absolute;
     left: -9999px;
