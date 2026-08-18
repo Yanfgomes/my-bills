@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>my-bills — Protótipo (mockado)</title>
+<style>
+  :root{
+    --bg:#f4f6f8; --card:#ffffff; --border:#e1e5ea; --text:#1f2937; --muted:#6b7280;
+    --primary:#2563eb; --primary-dark:#1d4ed8; --danger:#dc2626; --success:#16a34a; --warn:#d97706;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text);}
+  header.app-header{background:var(--card);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  header.app-header h1{font-size:18px;margin:0;}
+  nav.demo-switch{display:flex;gap:6px;flex-wrap:wrap;}
+  nav.demo-switch button{border:1px solid var(--border);background:var(--card);padding:8px 12px;border-radius:8px;cursor:pointer;font-size:13px;}
+  nav.demo-switch button.active{background:var(--primary);color:#fff;border-color:var(--primary);}
+  main{max-width:960px;margin:20px auto;padding:0 16px;}
+  .screen{display:none;}
+  .screen.active{display:block;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;}
+  .card h2{margin-top:0;font-size:16px;}
+  .muted{color:var(--muted);font-size:13px;}
+  label{display:block;font-size:13px;margin:10px 0 4px;font-weight:600;}
+  input,select{width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:14px;}
+  input:disabled{background:#f3f4f6;color:var(--muted);}
+  input:focus,select:focus,button:focus,a:focus{outline:3px solid #93c5fd;outline-offset:1px;}
+  .field-error{color:var(--danger);font-size:12px;margin-top:4px;display:none;}
+  .field-error.show{display:block;}
+  .readonly-note{font-size:12px;color:var(--warn);margin-top:4px;}
+  button.primary{background:var(--primary);color:#fff;border:none;padding:10px 16px;border-radius:8px;cursor:pointer;font-size:14px;margin-top:14px;}
+  button.primary:hover{background:var(--primary-dark);}
+  button.secondary{background:#fff;color:var(--text);border:1px solid var(--border);padding:8px 12px;border-radius:8px;cursor:pointer;font-size:13px;}
+  button.link{background:none;border:none;color:var(--primary);cursor:pointer;font-size:13px;padding:0;text-decoration:underline;}
+  .alert{padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:12px;display:none;}
+  .alert.show{display:block;}
+  .alert.error{background:#fef2f2;color:var(--danger);border:1px solid #fecaca;}
+  .alert.warn{background:#fffbeb;color:var(--warn);border:1px solid #fde68a;}
+  .alert.empty{background:#f9fafb;color:var(--muted);border:1px dashed var(--border);text-align:center;}
+  table{width:100%;border-collapse:collapse;margin-top:8px;}
+  th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--border);font-size:13px;}
+  th{color:var(--muted);font-weight:600;}
+  .row-actions button{margin-right:6px;}
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;}
+  .kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;}
+  .kpi .value{font-size:22px;font-weight:700;margin:4px 0;}
+  .kpi.saldo-pos .value{color:var(--success);}
+  .kpi.saldo-neg .value{color:var(--danger);}
+  .kpi.kpi-alerta{border-color:var(--warn);background:#fffbeb;}
+  .kpi.kpi-alerta .value{color:var(--warn);font-size:15px;}
+  .progress-track{background:#e5e7eb;border-radius:999px;height:10px;overflow:hidden;margin-top:6px;}
+  .progress-fill{height:100%;background:var(--primary);}
+  .progress-fill.warn{background:var(--warn);}
+  .progress-fill.danger{background:var(--danger);}
+  .skeleton{height:14px;background:linear-gradient(90deg,#eee,#f5f5f5,#eee);border-radius:4px;margin:6px 0;}
+  .toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;}
+  .note{font-size:12px;color:var(--muted);margin-top:16px;padding-top:12px;border-top:1px dashed var(--border);}
+  .hint{font-size:12px;color:var(--muted);margin-top:8px;}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <h1>my-bills <span class="muted" style="font-weight:400;font-size:12px;">— protótipo mockado, sem backend real</span></h1>
+  <nav class="demo-switch" aria-label="Alternar entre telas (apenas para navegação deste protótipo)">
+    <button data-cy="nav-login" onclick="showScreen('login')">Login</button>
+    <button data-cy="nav-registro" onclick="showScreen('registro')">Registro</button>
+    <button data-cy="nav-overview" onclick="showScreen('overview')">Overview</button>
+    <button data-cy="nav-renda" onclick="showScreen('renda')">Renda</button>
+    <button data-cy="nav-despesas" onclick="showScreen('despesas')">Despesas</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- TELA-001: Login -->
+<section id="screen-login" class="screen">
+  <div class="card" style="max-width:380px;margin:0 auto;">
+    <h2>Entrar</h2>
+    <div id="login-error" class="alert error">Email ou senha invalidos.</div>
+    <label for="login-email">Email</label>
+    <input id="login-email" data-cy="login-email" type="email" placeholder="voce@exemplo.com">
+    <div class="field-error" id="login-email-error">Informe um email valido.</div>
+
+    <label for="login-senha">Senha</label>
+    <input id="login-senha" data-cy="login-senha" type="password" placeholder="********">
+    <div class="field-error" id="login-senha-error">Informe sua senha.</div>
+
+    <button class="primary" data-cy="login-submit" onclick="mockLogin()">Entrar</button>
+    <div style="margin-top:12px;">
+      <button class="link" data-cy="login-ir-registro" onclick="showScreen('registro')">Nao tem conta? Cadastre-se</button>
+    </div>
+    <div style="margin-top:8px;">
+      <button class="secondary" data-cy="login-simular-erro" onclick="simulateLoginError()">Simular erro de credenciais (demo)</button>
+    </div>
+    <p class="hint">RN-006 (demo): use email "naocadastrado@exemplo.com" ou senha "errada" para simular credenciais invalidas — a mensagem nao indica qual dos dois campos esta incorreto.</p>
+  </div>
+</section>
+
+<!-- TELA-002: Registro -->
+<section id="screen-registro" class="screen">
+  <div class="card" style="max-width:420px;margin:0 auto;">
+    <h2>Criar conta</h2>
+    <div id="registro-error" class="alert error">Este email ja esta cadastrado.</div>
+    <label for="reg-nome">Nome</label>
+    <input id="reg-nome" data-cy="registro-nome" type="text" placeholder="Seu nome">
+    <div class="field-error" id="reg-nome-error">Campo obrigatorio.</div>
+
+    <label for="reg-email">Email</label>
+    <input id="reg-email" data-cy="registro-email" type="email" placeholder="voce@exemplo.com">
+    <div class="field-error" id="reg-email-error">Informe um email valido.</div>
+
+    <label for="reg-senha">Senha</label>
+    <input id="reg-senha" data-cy="registro-senha" type="password" placeholder="minimo 8 caracteres">
+    <div class="field-error" id="reg-senha-error">A senha deve ter no minimo 8 caracteres.</div>
+
+    <label for="reg-senha-confirma">Confirmar senha</label>
+    <input id="reg-senha-confirma" data-cy="registro-senha-confirma" type="password" placeholder="repita a senha">
+    <div class="field-error" id="reg-senha-confirma-error">As senhas nao coincidem.</div>
+
+    <button class="primary" data-cy="registro-submit" onclick="mockRegistro()">Criar conta</button>
+    <div style="margin-top:12px;">
+      <button class="link" data-cy="registro-ir-login" onclick="showScreen('login')">Ja tem conta? Entrar</button>
+    </div>
+    <p class="hint">RN-004 (demo): use o email "ja@cadastrado.com" para simular email ja cadastrado.</p>
+  </div>
+</section>
+
+<!-- TELA-003: Overview Financeiro -->
+<section id="screen-overview" class="screen">
+  <div class="card">
+    <div class="toolbar">
+      <h2>Overview financeiro</h2>
+      <button class="secondary" data-cy="overview-simular-carregando" onclick="toggleOverviewLoading()">Simular carregamento (demo)</button>
+    </div>
+
+    <div class="toolbar" style="margin-top:8px;">
+      <div class="mes-nav" style="display:flex;align-items:center;gap:10px;">
+        <button class="secondary" data-cy="overview-mes-anterior" onclick="mudarMes(-1)" aria-label="Mes anterior">&laquo; Mes anterior</button>
+        <strong data-cy="overview-mes-atual" id="overview-mes-atual">Agosto/2026</strong>
+        <button class="secondary" data-cy="overview-mes-proximo" onclick="mudarMes(1)" aria-label="Proximo mes">Proximo mes &raquo;</button>
+      </div>
+      <span class="muted">Navegue entre meses para ver o historico (PARAM-OVW-001: mes_selecionado)</span>
+    </div>
+
+    <div id="overview-loading">
+      <div class="skeleton" style="width:60%"></div>
+      <div class="skeleton" style="width:40%"></div>
+      <div class="skeleton" style="width:80%"></div>
+    </div>
+
+    <div id="overview-vazio" class="alert empty">
+      Nenhuma renda ou despesa cadastrada para este mes. Cadastre sua renda e suas despesas (com o mes/periodo de referencia correspondente) para ver o overview deste periodo.
+    </div>
+
+    <div id="overview-conteudo">
+      <div id="overview-alerta-percentual" class="alert warn" data-cy="overview-alerta-percentual">
+        Atencao: as despesas superam a renda neste periodo (percentual acima de 100%). (RN-007)
+      </div>
+      <div class="kpi-grid">
+        <div class="kpi"><div class="muted">Renda total (mes)</div><div class="value" data-cy="overview-renda-total">R$ 6.500,00</div></div>
+        <div class="kpi"><div class="muted">Despesas totais (mes)</div><div class="value" data-cy="overview-despesas-total">R$ 4.150,00</div></div>
+        <div class="kpi saldo-pos"><div class="muted">Saldo disponivel (mes)</div><div class="value" data-cy="overview-saldo">R$ 2.350,00</div></div>
+        <div class="kpi"><div class="muted">% da renda comprometido (mes)</div><div class="value" data-cy="overview-percentual">63,8%</div>
+          <div class="progress-track"><div class="progress-fill warn" style="width:63.8%" data-cy="overview-progress-fill"></div></div>
+        </div>
+      </div>
+      <p class="muted" style="margin-top:14px;">
+        Indicadores calculados a partir da soma das fontes de renda e das despesas cadastradas (DOM-002 e DOM-003) cujo mes/periodo de referencia (mes_referencia) seja igual ao mes selecionado acima. Overview nao possui dado proprio, apenas agrega os outros dominios filtrados por periodo. Quando a renda do periodo e zero mas ha despesas cadastradas, o percentual comprometido nao e calculado (RN-001) — o indicador acima mostra um aviso alternativo no lugar do numero.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- TELA-004: Renda -->
+<section id="screen-renda" class="screen">
+  <div class="card">
+    <div class="toolbar">
+      <h2>Minhas fontes de renda</h2>
+      <button class="secondary" data-cy="renda-toggle-vazio" onclick="toggleRendaVazio()">Simular lista vazia (demo)</button>
+    </div>
+
+    <div id="renda-vazio" class="alert empty">Nenhuma renda cadastrada ainda. Adicione sua primeira fonte de renda abaixo.</div>
+
+    <table id="renda-tabela">
+      <thead>
+        <tr><th>Descricao</th><th>Valor liquido</th><th>Mes/periodo</th><th>Acoes</th></tr>
+      </thead>
+      <tbody id="renda-tbody" data-cy="renda-lista">
+        <tr data-id="1">
+          <td>Salario CLT</td>
+          <td>R$ 5.000,00</td>
+          <td>2026-08</td>
+          <td class="row-actions">
+            <button class="secondary" data-cy="renda-editar-1" onclick="editarRenda(this)">Editar</button>
+            <button class="secondary" data-cy="renda-excluir-1" onclick="excluirRenda(this)">Excluir</button>
+          </td>
+        </tr>
+        <tr data-id="2">
+          <td>Freelance</td>
+          <td>R$ 1.500,00</td>
+          <td>2026-08</td>
+          <td class="row-actions">
+            <button class="secondary" data-cy="renda-editar-2" onclick="editarRenda(this)">Editar</button>
+            <button class="secondary" data-cy="renda-excluir-2" onclick="excluirRenda(this)">Excluir</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card" style="max-width:420px;">
+    <h2 id="renda-form-titulo">Nova fonte de renda</h2>
+    <input type="hidden" id="renda-editando-id" value="">
+
+    <label for="renda-descricao">Descricao</label>
+    <input id="renda-descricao" data-cy="renda-descricao" type="text" placeholder="Ex: Salario, Freelance">
+    <div class="field-error" id="renda-descricao-error">Informe a descricao.</div>
+
+    <label for="renda-valor">Valor liquido recebido (R$)</label>
+    <input id="renda-valor" data-cy="renda-valor" type="number" min="0.01" step="0.01" placeholder="0,00">
+    <div class="field-error" id="renda-form-error">Informe um valor liquido maior que zero.</div>
+
+    <label for="renda-mes">Mes/periodo de referencia</label>
+    <input id="renda-mes" data-cy="renda-mes" type="month" value="2026-08">
+    <div class="field-error" id="renda-mes-error">Informe o mes/periodo de referencia (formato AAAA-MM valido — CAMPO-REN-007).</div>
+    <div class="readonly-note" id="renda-mes-nota" style="display:none;">Mes/periodo nao pode ser alterado apos a criacao (RN-008). Para mudar de mes, exclua e recrie o lancamento.</div>
+
+    <button class="primary" id="renda-submit-btn" data-cy="renda-submit" onclick="mockSaveRenda()">Adicionar renda</button>
+    <button class="secondary" id="renda-cancelar-btn" data-cy="renda-cancelar" onclick="cancelarEdicaoRenda()" style="display:none;margin-top:14px;">Cancelar edicao</button>
+  </div>
+</section>
+
+<!-- TELA-005: Despesas -->
+<section id="screen-despesas" class="screen">
+  <div class="card">
+    <div class="toolbar">
+      <h2>Minhas despesas</h2>
+      <button class="secondary" data-cy="despesas-toggle-vazio" onclick="toggleDespesasVazio()">Simular lista vazia (demo)</button>
+    </div>
+
+    <div id="despesas-vazio" class="alert empty">Nenhuma despesa cadastrada ainda. Adicione sua primeira despesa abaixo.</div>
+
+    <table id="despesas-tabela">
+      <thead>
+        <tr><th>Descricao</th><th>Valor</th><th>Categoria</th><th>Mes/periodo</th><th>Acoes</th></tr>
+      </thead>
+      <tbody id="despesas-tbody" data-cy="despesas-lista">
+        <tr data-id="1">
+          <td>Aluguel</td>
+          <td>R$ 1.800,00</td>
+          <td>Moradia</td>
+          <td>2026-08</td>
+          <td class="row-actions">
+            <button class="secondary" data-cy="despesa-editar-1" onclick="editarDespesa(this)">Editar</button>
+            <button class="secondary" data-cy="despesa-excluir-1" onclick="excluirDespesa(this)">Excluir</button>
+          </td>
+        </tr>
+        <tr data-id="2">
+          <td>Supermercado</td>
+          <td>R$ 950,00</td>
+          <td>Alimentacao</td>
+          <td>2026-08</td>
+          <td class="row-actions">
+            <button class="secondary" data-cy="despesa-editar-2" onclick="editarDespesa(this)">Editar</button>
+            <button class="secondary" data-cy="despesa-excluir-2" onclick="excluirDespesa(this)">Excluir</button>
+          </td>
+        </tr>
+        <tr data-id="3">
+          <td>Internet</td>
+          <td>R$ 120,00</td>
+          <td>Moradia</td>
+          <td>2026-08</td>
+          <td class="row-actions">
+            <button class="secondary" data-cy="despesa-editar-3" onclick="editarDespesa(this)">Editar</button>
+            <button class="secondary" data-cy="despesa-excluir-3" onclick="excluirDespesa(this)">Excluir</button>
+          </td>
+        </tr>
+        <tr data-id="4">
+          <td>Transporte</td>
+          <td>R$ 280,00</td>
+          <td>Transporte</td>
+          <td>2026-08</td>
+          <td class="row-actions">
+            <button class="secondary" data-cy="despesa-editar-4" onclick="editarDespesa(this)">Editar</button>
+            <button class="secondary" data-cy="despesa-excluir-4" onclick="excluirDespesa(this)">Excluir</button>
+          </td>
+        </tr>
+        <tr data-id="5">
+          <td>Assinaturas</td>
+          <td>R$ 1.000,00</td>
+          <td>Lazer</td>
+          <td>2026-08</td>
+          <td class="row-actions">
+            <button class="secondary" data-cy="despesa-editar-5" onclick="editarDespesa(this)">Editar</button>
+            <button class="secondary" data-cy="despesa-excluir-5" onclick="excluirDespesa(this)">Excluir</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card" style="max-width:420px;">
+    <h2 id="despesa-form-titulo">Nova despesa</h2>
+    <input type="hidden" id="despesa-editando-id" value="">
+
+    <label for="despesa-descricao">Descricao</label>
+    <input id="despesa-descricao" data-cy="despesa-descricao" type="text" placeholder="Ex: Aluguel, Supermercado">
+    <div class="field-error" id="despesa-descricao-error">Informe a descricao.</div>
+
+    <label for="despesa-valor">Valor (R$)</label>
+    <input id="despesa-valor" data-cy="despesa-valor" type="number" min="0.01" step="0.01" placeholder="0,00">
+    <div class="field-error" id="despesa-form-error">Informe um valor maior que zero.</div>
+
+    <label for="despesa-categoria">Categoria (opcional)</label>
+    <select id="despesa-categoria" data-cy="despesa-categoria">
+      <option value="">Sem categoria</option>
+      <option>Moradia</option>
+      <option>Alimentacao</option>
+      <option>Transporte</option>
+      <option>Lazer</option>
+      <option>Saude</option>
+      <option>Outros</option>
+    </select>
+
+    <label for="despesa-mes">Mes/periodo de referencia</label>
+    <input id="despesa-mes" data-cy="despesa-mes" type="month" value="2026-08">
+    <div class="field-error" id="despesa-mes-error">Informe o mes/periodo de referencia (formato AAAA-MM valido — CAMPO-DESP-008).</div>
+    <div class="readonly-note" id="despesa-mes-nota" style="display:none;">Mes/periodo nao pode ser alterado apos a criacao (RN-008). Para mudar de mes, exclua e recrie o lancamento.</div>
+
+    <button class="primary" id="despesa-submit-btn" data-cy="despesa-submit" onclick="mockSaveDespesa()">Adicionar despesa</button>
+    <button class="secondary" id="despesa-cancelar-btn" data-cy="despesa-cancelar" onclick="cancelarEdicaoDespesa()" style="display:none;margin-top:14px;">Cancelar edicao</button>
+  </div>
+</section>
+
+<p class="note">
+  Protótipo 100% mockado — dados fixos em JavaScript, sem chamadas de API/backend real. Reflete as regras de negocio aprovadas (RN-001 a RN-008): validacao de valor > 0, validacao de mes/periodo, overview sem renda no periodo, alerta de percentual acima de 100%, e mes/periodo somente leitura na edicao de lancamentos existentes. Nao é a implementação final nem define stack/arquitetura.
+</p>
+
+</main>
+
+<script>
+  function showScreen(name){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.demo-switch button').forEach(b => b.classList.remove('active'));
+    document.getElementById('screen-' + name).classList.add('active');
+    document.querySelector('[data-cy="nav-' + name + '"]').classList.add('active');
+  }
+
+  function simulateLoginError(){
+    document.getElementById('login-error').classList.add('show');
+  }
+
+  // RN-006: credenciais invalidas (email nao cadastrado ou senha incorreta) -> mensagem generica, sem indicar qual campo
+  function mockLogin(){
+    document.getElementById('login-error').classList.remove('show');
+    document.getElementById('login-email-error').classList.remove('show');
+    document.getElementById('login-senha-error').classList.remove('show');
+    const email = document.getElementById('login-email').value.trim();
+    const senha = document.getElementById('login-senha').value;
+    let valido = true;
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      document.getElementById('login-email-error').classList.add('show');
+      valido = false;
+    }
+    if (!senha) {
+      document.getElementById('login-senha-error').classList.add('show');
+      valido = false;
+    }
+    if (!valido) return;
+    if (senha === 'errada' || email === 'naocadastrado@exemplo.com') {
+      document.getElementById('login-error').classList.add('show');
+      return;
+    }
+    alert('[mock] login simulado — sem backend real neste prototipo.');
+  }
+
+  // RN-004: email ja cadastrado no registro (mockado)
+  function mockRegistro(){
+    ['registro-error','reg-nome-error','reg-email-error','reg-senha-error','reg-senha-confirma-error'].forEach(function(id){
+      document.getElementById(id).classList.remove('show');
+    });
+    const nome = document.getElementById('reg-nome').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const senha = document.getElementById('reg-senha').value;
+    const confirma = document.getElementById('reg-senha-confirma').value;
+    let valido = true;
+    if (!nome) { document.getElementById('reg-nome-error').classList.add('show'); valido = false; }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { document.getElementById('reg-email-error').classList.add('show'); valido = false; }
+    if (!senha || senha.length < 8) { document.getElementById('reg-senha-error').classList.add('show'); valido = false; }
+    if (senha !== confirma) { document.getElementById('reg-senha-confirma-error').classList.add('show'); valido = false; }
+    if (!valido) return;
+    if (email === 'ja@cadastrado.com') {
+      document.getElementById('registro-error').classList.add('show');
+      return;
+    }
+    alert('[mock] cadastro simulado — sem backend real neste prototipo.');
+  }
+
+  function toggleOverviewLoading(){
+    const loading = document.getElementById('overview-loading');
+    const conteudo = document.getElementById('overview-conteudo');
+    const vazio = document.getElementById('overview-vazio');
+    loading.style.display = loading.style.display === 'none' ? 'block' : 'none';
+    conteudo.style.display = loading.style.display === 'block' ? 'none' : 'block';
+    vazio.classList.remove('show');
+  }
+
+  // Mock de historico mensal — simula IND-OVW-001..004 filtrados por mes_referencia == mes_selecionado (PARAM-OVW-001).
+  // '2025-12' demonstra RN-001 (renda zero, despesas existentes); '2026-09' demonstra RN-007 (despesas > renda);
+  // '2026-10' demonstra o estado vazio (nada cadastrado no periodo).
+  const nomesMeses = ['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const overviewPorMes = {
+    '2025-12': { renda: 0, despesas: 850.00 },
+    '2026-06': { renda: 6500.00, despesas: 3800.00 },
+    '2026-07': { renda: 6500.00, despesas: 4400.00 },
+    '2026-08': { renda: 6500.00, despesas: 4150.00 },
+    '2026-09': { renda: 5200.00, despesas: 6100.00 },
+    '2026-10': { renda: 0, despesas: 0 }
+  };
+  let mesSelecionadoIdx = 3; // '2026-08', mes corrente do mock
+  const mesesDisponiveis = Object.keys(overviewPorMes);
+
+  function formatarMoeda(v){
+    return 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function parseValorBR(str){
+    const limpo = String(str).replace('R$', '').trim().replace(/\./g, '').replace(',', '.');
+    return parseFloat(limpo);
+  }
+
+  function renderOverviewMes(){
+    const mesChave = mesesDisponiveis[mesSelecionadoIdx];
+    const partes = mesChave.split('-');
+    document.getElementById('overview-mes-atual').textContent = nomesMeses[parseInt(partes[1], 10) - 1] + '/' + partes[0];
+
+    const dados = overviewPorMes[mesChave];
+    const conteudo = document.getElementById('overview-conteudo');
+    const vazio = document.getElementById('overview-vazio');
+    const alertaPercentual = document.getElementById('overview-alerta-percentual');
+    const percentualEl = document.querySelector('[data-cy="overview-percentual"]');
+    const fill = document.querySelector('[data-cy="overview-progress-fill"]');
+
+    alertaPercentual.classList.remove('show');
+
+    if (!dados || (dados.renda === 0 && dados.despesas === 0)) {
+      vazio.classList.add('show');
+      conteudo.style.display = 'none';
+      return;
+    }
+    vazio.classList.remove('show');
+    conteudo.style.display = 'block';
+
+    const rendaTotal = dados.renda;
+    const despesasTotal = dados.despesas;
+    const saldo = rendaTotal - despesasTotal;
+
+    document.querySelector('[data-cy="overview-renda-total"]').textContent = formatarMoeda(rendaTotal);
+    document.querySelector('[data-cy="overview-despesas-total"]').textContent = formatarMoeda(despesasTotal);
+
+    const saldoEl = document.querySelector('[data-cy="overview-saldo"]');
+    saldoEl.textContent = formatarMoeda(saldo);
+    saldoEl.closest('.kpi').classList.toggle('saldo-pos', saldo >= 0);
+    saldoEl.closest('.kpi').classList.toggle('saldo-neg', saldo < 0);
+
+    if (rendaTotal === 0) {
+      // RN-001: renda_total do periodo == 0 -> percentual nao e calculado; indicador alternativo no lugar do numero
+      percentualEl.textContent = 'Sem renda cadastrada no periodo';
+      percentualEl.closest('.kpi').classList.add('kpi-alerta');
+      fill.closest('.progress-track').style.display = 'none';
+    } else {
+      percentualEl.closest('.kpi').classList.remove('kpi-alerta');
+      fill.closest('.progress-track').style.display = 'block';
+      const percentual = (despesasTotal / rendaTotal) * 100;
+      percentualEl.textContent = percentual.toFixed(1).replace('.', ',') + '%';
+      fill.style.width = Math.min(percentual, 100) + '%';
+      fill.classList.remove('warn', 'danger');
+      if (percentual > 100) {
+        // RN-007: despesas superam a renda -> exibe percentual real (sem teto) e destaca visualmente
+        fill.classList.add('danger');
+        alertaPercentual.classList.add('show');
+      } else if (percentual >= 90) {
+        fill.classList.add('danger');
+      } else if (percentual >= 60) {
+        fill.classList.add('warn');
+      }
+    }
+  }
+
+  function mudarMes(delta){
+    const novoIdx = mesSelecionadoIdx + delta;
+    if (novoIdx < 0 || novoIdx >= mesesDisponiveis.length) return;
+    mesSelecionadoIdx = novoIdx;
+    renderOverviewMes();
+  }
+
+  function toggleRendaVazio(){
+    const vazio = document.getElementById('renda-vazio');
+    const tabela = document.getElementById('renda-tabela');
+    vazio.classList.toggle('show');
+    tabela.style.display = vazio.classList.contains('show') ? 'none' : 'table';
+  }
+
+  function toggleDespesasVazio(){
+    const vazio = document.getElementById('despesas-vazio');
+    const tabela = document.getElementById('despesas-tabela');
+    vazio.classList.toggle('show');
+    tabela.style.display = vazio.classList.contains('show') ? 'none' : 'table';
+  }
+
+  // ---- Renda: criar / editar / excluir (RN-002, RN-003, RN-008) ----
+  let rendaProximoId = 3;
+
+  function clearRendaErrors(){
+    ['renda-descricao-error', 'renda-form-error', 'renda-mes-error'].forEach(function(id){
+      document.getElementById(id).classList.remove('show');
+    });
+  }
+
+  function resetRendaForm(){
+    document.getElementById('renda-descricao').value = '';
+    document.getElementById('renda-valor').value = '';
+    document.getElementById('renda-mes').value = '';
+    document.getElementById('renda-mes').disabled = false;
+    document.getElementById('renda-mes-nota').style.display = 'none';
+    document.getElementById('renda-editando-id').value = '';
+    document.getElementById('renda-form-titulo').textContent = 'Nova fonte de renda';
+    document.getElementById('renda-submit-btn').textContent = 'Adicionar renda';
+    document.getElementById('renda-cancelar-btn').style.display = 'none';
+    clearRendaErrors();
+  }
+
+  function editarRenda(btn){
+    const tr = btn.closest('tr');
+    const cells = tr.children;
+    document.getElementById('renda-descricao').value = cells[0].textContent;
+    document.getElementById('renda-valor').value = parseValorBR(cells[1].textContent);
+    document.getElementById('renda-mes').value = cells[2].textContent;
+    // RN-008: mes/periodo imutavel apos a criacao — somente leitura durante a edicao
+    document.getElementById('renda-mes').disabled = true;
+    document.getElementById('renda-mes-nota').style.display = 'block';
+    document.getElementById('renda-editando-id').value = tr.dataset.id;
+    document.getElementById('renda-form-titulo').textContent = 'Editar fonte de renda';
+    document.getElementById('renda-submit-btn').textContent = 'Salvar alteracoes';
+    document.getElementById('renda-cancelar-btn').style.display = 'inline-block';
+    clearRendaErrors();
+    document.getElementById('renda-descricao').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function cancelarEdicaoRenda(){
+    resetRendaForm();
+  }
+
+  function excluirRenda(btn){
+    const tr = btn.closest('tr');
+    if (tr.dataset.id === document.getElementById('renda-editando-id').value) {
+      resetRendaForm();
+    }
+    tr.remove();
+    if (document.getElementById('renda-tbody').children.length === 0) {
+      document.getElementById('renda-vazio').classList.add('show');
+      document.getElementById('renda-tabela').style.display = 'none';
+    }
+  }
+
+  function mockSaveRenda(){
+    clearRendaErrors();
+    const desc = document.getElementById('renda-descricao').value.trim();
+    const valorStr = document.getElementById('renda-valor').value;
+    const valor = parseFloat(valorStr);
+    const mes = document.getElementById('renda-mes').value;
+    const editandoId = document.getElementById('renda-editando-id').value;
+    let valido = true;
+
+    if (!desc) {
+      document.getElementById('renda-descricao-error').classList.add('show');
+      valido = false;
+    }
+    // RN-002: valor <= 0 e rejeitado
+    if (!valorStr || isNaN(valor) || valor <= 0) {
+      document.getElementById('renda-form-error').classList.add('show');
+      valido = false;
+    }
+    // RN-003: mes_referencia ausente/formato invalido e rejeitado (so se aplica na criacao — na edicao o campo e somente leitura, RN-008)
+    if (!editandoId && (!mes || !/^\d{4}-(0[1-9]|1[0-2])$/.test(mes))) {
+      document.getElementById('renda-mes-error').classList.add('show');
+      valido = false;
+    }
+    if (!valido) return;
+
+    if (editandoId) {
+      const tr = document.querySelector('#renda-tbody tr[data-id="' + editandoId + '"]');
+      tr.children[0].textContent = desc;
+      tr.children[1].textContent = formatarMoeda(valor);
+      // mes_referencia (tr.children[2]) nao e alterado — RN-008
+    } else {
+      const novoId = rendaProximoId++;
+      const tbody = document.getElementById('renda-tbody');
+      const tr = document.createElement('tr');
+      tr.dataset.id = novoId;
+      tr.innerHTML = '<td>' + desc + '</td><td>' + formatarMoeda(valor) + '</td><td>' + mes + '</td>' +
+        '<td class="row-actions"><button class="secondary" onclick="editarRenda(this)">Editar</button>' +
+        '<button class="secondary" onclick="excluirRenda(this)">Excluir</button></td>';
+      tbody.appendChild(tr);
+      document.getElementById('renda-vazio').classList.remove('show');
+      document.getElementById('renda-tabela').style.display = 'table';
+    }
+    resetRendaForm();
+  }
+
+  // ---- Despesas: criar / editar / excluir (RN-002, RN-003, RN-008) ----
+  let despesaProximoId = 6;
+
+  function clearDespesaErrors(){
+    ['despesa-descricao-error', 'despesa-form-error', 'despesa-mes-error'].forEach(function(id){
+      document.getElementById(id).classList.remove('show');
+    });
+  }
+
+  function resetDespesaForm(){
+    document.getElementById('despesa-descricao').value = '';
+    document.getElementById('despesa-valor').value = '';
+    document.getElementById('despesa-categoria').value = '';
+    document.getElementById('despesa-mes').value = '';
+    document.getElementById('despesa-mes').disabled = false;
+    document.getElementById('despesa-mes-nota').style.display = 'none';
+    document.getElementById('despesa-editando-id').value = '';
+    document.getElementById('despesa-form-titulo').textContent = 'Nova despesa';
+    document.getElementById('despesa-submit-btn').textContent = 'Adicionar despesa';
+    document.getElementById('despesa-cancelar-btn').style.display = 'none';
+    clearDespesaErrors();
+  }
+
+  function editarDespesa(btn){
+    const tr = btn.closest('tr');
+    const cells = tr.children;
+    document.getElementById('despesa-descricao').value = cells[0].textContent;
+    document.getElementById('despesa-valor').value = parseValorBR(cells[1].textContent);
+    const catTexto = cells[2].textContent;
+    document.getElementById('despesa-categoria').value = catTexto === '-' ? '' : catTexto;
+    document.getElementById('despesa-mes').value = cells[3].textContent;
+    // RN-008: mes/periodo imutavel apos a criacao — somente leitura durante a edicao
+    document.getElementById('despesa-mes').disabled = true;
+    document.getElementById('despesa-mes-nota').style.display = 'block';
+    document.getElementById('despesa-editando-id').value = tr.dataset.id;
+    document.getElementById('despesa-form-titulo').textContent = 'Editar despesa';
+    document.getElementById('despesa-submit-btn').textContent = 'Salvar alteracoes';
+    document.getElementById('despesa-cancelar-btn').style.display = 'inline-block';
+    clearDespesaErrors();
+    document.getElementById('despesa-descricao').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function cancelarEdicaoDespesa(){
+    resetDespesaForm();
+  }
+
+  function excluirDespesa(btn){
+    const tr = btn.closest('tr');
+    if (tr.dataset.id === document.getElementById('despesa-editando-id').value) {
+      resetDespesaForm();
+    }
+    tr.remove();
+    if (document.getElementById('despesas-tbody').children.length === 0) {
+      document.getElementById('despesas-vazio').classList.add('show');
+      document.getElementById('despesas-tabela').style.display = 'none';
+    }
+  }
+
+  function mockSaveDespesa(){
+    clearDespesaErrors();
+    const desc = document.getElementById('despesa-descricao').value.trim();
+    const valorStr = document.getElementById('despesa-valor').value;
+    const valor = parseFloat(valorStr);
+    const cat = document.getElementById('despesa-categoria').value;
+    const mes = document.getElementById('despesa-mes').value;
+    const editandoId = document.getElementById('despesa-editando-id').value;
+    let valido = true;
+
+    if (!desc) {
+      document.getElementById('despesa-descricao-error').classList.add('show');
+      valido = false;
+    }
+    // RN-002: valor <= 0 e rejeitado
+    if (!valorStr || isNaN(valor) || valor <= 0) {
+      document.getElementById('despesa-form-error').classList.add('show');
+      valido = false;
+    }
+    // RN-003: mes_referencia ausente/formato invalido e rejeitado (so se aplica na criacao — na edicao o campo e somente leitura, RN-008)
+    if (!editandoId && (!mes || !/^\d{4}-(0[1-9]|1[0-2])$/.test(mes))) {
+      document.getElementById('despesa-mes-error').classList.add('show');
+      valido = false;
+    }
+    if (!valido) return;
+
+    if (editandoId) {
+      const tr = document.querySelector('#despesas-tbody tr[data-id="' + editandoId + '"]');
+      tr.children[0].textContent = desc;
+      tr.children[1].textContent = formatarMoeda(valor);
+      tr.children[2].textContent = cat || '-';
+      // mes_referencia (tr.children[3]) nao e alterado — RN-008
+    } else {
+      const novoId = despesaProximoId++;
+      const tbody = document.getElementById('despesas-tbody');
+      const tr = document.createElement('tr');
+      tr.dataset.id = novoId;
+      tr.innerHTML = '<td>' + desc + '</td><td>' + formatarMoeda(valor) + '</td><td>' + (cat || '-') + '</td><td>' + mes + '</td>' +
+        '<td class="row-actions"><button class="secondary" onclick="editarDespesa(this)">Editar</button>' +
+        '<button class="secondary" onclick="excluirDespesa(this)">Excluir</button></td>';
+      tbody.appendChild(tr);
+      document.getElementById('despesas-vazio').classList.remove('show');
+      document.getElementById('despesas-tabela').style.display = 'table';
+    }
+    resetDespesaForm();
+  }
+
+  // estado inicial
+  document.getElementById('overview-loading').style.display = 'none';
+  renderOverviewMes();
+  showScreen('overview');
+</script>
+
+</body>
+</html>
