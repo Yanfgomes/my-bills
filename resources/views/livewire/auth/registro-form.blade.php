@@ -99,12 +99,12 @@
                     data-cy="registro-senha-confirma"
                     placeholder="{{ __('repita a senha') }}"
                     aria-describedby="registro-senha-confirma-error"
-                    aria-invalid="{{ $errors->has('senha') ? 'true' : 'false' }}"
+                    aria-invalid="{{ $errors->has('senha_confirmation') ? 'true' : 'false' }}"
                     class="focus-ring w-full px-3 py-2.5 border rounded-lg text-[13px] outline-none"
                     style="border-color:var(--color-border);background-color:var(--color-card);color:var(--color-text)"
                 >
                 <div id="registro-senha-confirma-error" aria-live="polite">
-                    @error('senha')
+                    @error('senha_confirmation')
                         <p class="mt-1 text-[12px]" style="color:var(--color-danger)">{{ $message }}</p>
                     @enderror
                 </div>

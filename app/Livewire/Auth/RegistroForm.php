@@ -56,10 +56,16 @@ class RegistroForm extends Component
 
         RateLimiter::hit($chaveLimite, 60);
 
+        // BUG-004-ACC: nao usar a regra 'confirmed' em 'senha' -- ela anexa a falha de
+        // confirmacao ao bag de erro 'senha', a mesma chave das regras required/min, causando
+        // mensagem duplicada e aria-invalid falso-positivo no campo 'Confirmar senha' (ver
+        // registro-form.blade.php). Em vez disso, valida a confirmacao com 'same:senha' aplicada
+        // diretamente ao campo 'senha_confirmation', que anexa a falha a sua propria chave.
         $dados = $this->validate([
             'nome' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'senha' => ['required', 'string', 'min:8', 'confirmed'],
+            'senha' => ['required', 'string', 'min:8'],
+            'senha_confirmation' => ['same:senha'],
         ], [
             'nome.required' => __('Campo obrigatorio.'),
             'email.required' => __('Informe um email valido.'),
@@ -67,7 +73,7 @@ class RegistroForm extends Component
             'email.unique' => __('e-mail ja cadastrado'),
             'senha.required' => __('A senha deve ter no minimo 8 caracteres.'),
             'senha.min' => __('A senha deve ter no minimo 8 caracteres.'),
-            'senha.confirmed' => __('As senhas nao coincidem.'),
+            'senha_confirmation.same' => __('As senhas nao coincidem.'),
         ]);
 
         $usuario = User::create([
