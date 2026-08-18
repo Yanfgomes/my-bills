@@ -58,6 +58,7 @@ class LoginForm extends Component
             'email.required' => __('Informe um email valido.'),
             'email.email' => __('Informe um email valido.'),
             'senha.required' => __('Informe sua senha.'),
+            'senha.max' => __('A senha deve ter no maximo 255 caracteres.'),
         ]);
 
         $usuario = User::where('email', $dados['email'])->first();
