@@ -1,0 +1,1769 @@
+{
+  "projeto": {
+    "nome": "my-bills",
+    "descricao": "Sistema de gerenciamento de contas pessoais com registro aberto, login e senha. Cada usuário só visualiza suas próprias contas. Usuário cadastra o valor líquido recebido e suas despesas, e o sistema apresenta um overview da saúde financeira.",
+    "status_geral": "em_andamento",
+    "marco_atual": "marco-1-mvp"
+  },
+  "codebase_existente": {
+    "detectado": false,
+    "evidencias": {
+      "migrations": [],
+      "modelos": [],
+      "rotas_endpoints": []
+    },
+    "observacoes": "Diretorio do projeto contem apenas README.md, .gitignore e specs/spec.json (commit inicial). Nenhum arquivo de dependencia/config (package.json, composer.json, go.mod etc.), migration, model ou rota encontrado. Tratado como projeto novo (greenfield) — Fases 1-4 partem de perguntas em branco, sem draft de engenharia reversa."
+  },
+  "dominios": {
+    "status": "aprovado",
+    "itens": [
+      {
+        "id": "DOM-001",
+        "nome": "Usuarios",
+        "descricao": "Cadastro (registro aberto), autenticacao por login e senha, e isolamento de dados: cada usuario autenticado so acessa suas proprias informacoes financeiras (renda, despesas, overview).",
+        "origem": "usuario",
+        "status": "aprovado"
+      },
+      {
+        "id": "DOM-002",
+        "nome": "Renda",
+        "descricao": "Valor liquido recebido pelo usuario, usado como base de calculo para os indicadores de saude financeira.",
+        "origem": "usuario",
+        "status": "aprovado"
+      },
+      {
+        "id": "DOM-003",
+        "nome": "Despesas",
+        "descricao": "Despesas configuradas/cadastradas pelo usuario, usadas junto com a Renda para calcular o comprometimento financeiro.",
+        "origem": "usuario",
+        "status": "aprovado"
+      },
+      {
+        "id": "DOM-004",
+        "nome": "Overview Financeiro",
+        "descricao": "Painel/dashboard que consolida Renda e Despesas do usuario autenticado e apresenta indicadores de saude financeira (ex: saldo disponivel, percentual da renda comprometido). Nao possui dado proprio alem dos indicadores calculados a partir dos outros dominios.",
+        "origem": "usuario",
+        "status": "aprovado"
+      }
+    ],
+    "historico_revisoes": [
+      {
+        "gate": "aprovacao_dominios",
+        "resposta": "Confirmar os 4 dominios como propostos",
+        "respondido_em": "2026-08-17T16:45:00Z",
+        "resultado": "Usuario confirmou os 4 dominios exatamente como propostos (DOM-001 Usuarios, DOM-002 Renda, DOM-003 Despesas, DOM-004 Overview Financeiro), sem ajustes. dominios.status marcado aprovado."
+      }
+    ]
+  },
+  "campos": {
+    "status": "aprovado",
+    "dominios": {
+      "DOM-001": {
+        "nome": "Usuarios",
+        "itens": [
+          {
+            "id": "CAMPO-USU-001",
+            "nome": "id",
+            "tipo": "uuid",
+            "obrigatorio": true,
+            "descricao": "Identificador unico do usuario, gerado pelo sistema.",
+            "origem": "sistema",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-USU-002",
+            "nome": "nome",
+            "tipo": "string(120)",
+            "obrigatorio": true,
+            "descricao": "Nome de exibicao do usuario, informado no cadastro.",
+            "origem": "usuario",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-USU-003",
+            "nome": "email",
+            "tipo": "string",
+            "obrigatorio": true,
+            "descricao": "Email do usuario, unico no sistema, usado como login.",
+            "constraints": [
+              "unico",
+              "formato de email valido"
+            ],
+            "origem": "usuario",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-USU-004",
+            "nome": "senha",
+            "tipo": "string",
+            "obrigatorio": true,
+            "descricao": "Senha do usuario, armazenada como hash — nunca em texto puro, nunca retornada por API.",
+            "constraints": [
+              "minimo 8 caracteres"
+            ],
+            "origem": "usuario",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-USU-005",
+            "nome": "criado_em",
+            "tipo": "datetime",
+            "obrigatorio": true,
+            "descricao": "Data/hora de criacao do cadastro.",
+            "origem": "sistema",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-USU-006",
+            "nome": "atualizado_em",
+            "tipo": "datetime",
+            "obrigatorio": true,
+            "descricao": "Data/hora da ultima atualizacao do cadastro.",
+            "origem": "sistema",
+            "status": "aprovado"
+          }
+        ]
+      },
+      "DOM-002": {
+        "nome": "Renda",
+        "itens": [
+          {
+            "id": "CAMPO-REN-001",
+            "nome": "id",
+            "tipo": "uuid",
+            "obrigatorio": true,
+            "descricao": "Identificador unico da fonte de renda.",
+            "origem": "sistema",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-REN-002",
+            "nome": "usuario_id",
+            "tipo": "uuid (FK -> DOM-001)",
+            "obrigatorio": true,
+            "descricao": "Usuario dono da fonte de renda — garante isolamento de dados por usuario.",
+            "origem": "sistema",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-REN-003",
+            "nome": "descricao",
+            "tipo": "string(120)",
+            "obrigatorio": true,
+            "descricao": "Identificacao da fonte de renda (ex: Salario, Freelance). Usuario pode cadastrar mais de uma fonte de renda.",
+            "origem": "usuario",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-REN-004",
+            "nome": "valor_liquido",
+            "tipo": "decimal(12,2)",
+            "obrigatorio": true,
+            "descricao": "Valor liquido recebido dessa fonte de renda (ja descontados impostos/descontos) no mes/periodo de referencia informado.",
+            "constraints": [
+              "> 0"
+            ],
+            "origem": "usuario",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-REN-007",
+            "nome": "mes_referencia",
+            "tipo": "string(7) - formato YYYY-MM",
+            "obrigatorio": true,
+            "descricao": "Mes/periodo ao qual esta entrada de renda pertence (ex: 2026-08). Cada lancamento de renda e amarrado a um mes especifico, permitindo historico mes a mes e navegacao entre periodos no Overview. Substitui o modelo anterior sem recorte temporal (decisao registrada em campos.historico_revisoes).",
+            "constraints": [
+              "formato YYYY-MM valido"
+            ],
+            "origem": "usuario",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-REN-005",
+            "nome": "criado_em",
+            "tipo": "datetime",
+            "obrigatorio": true,
+            "descricao": "Data/hora de criacao do registro.",
+            "origem": "sistema",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-REN-006",
+            "nome": "atualizado_em",
+            "tipo": "datetime",
+            "obrigatorio": true,
+            "descricao": "Data/hora da ultima atualizacao do registro.",
+            "origem": "sistema",
+            "status": "aprovado"
+          }
+        ]
+      },
+      "DOM-003": {
+        "nome": "Despesas",
+        "itens": [
+          {
+            "id": "CAMPO-DESP-001",
+            "nome": "id",
+            "tipo": "uuid",
+            "obrigatorio": true,
+            "descricao": "Identificador unico da despesa.",
+            "origem": "sistema",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-DESP-002",
+            "nome": "usuario_id",
+            "tipo": "uuid (FK -> DOM-001)",
+            "obrigatorio": true,
+            "descricao": "Usuario dono da despesa — garante isolamento de dados por usuario.",
+            "origem": "sistema",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-DESP-003",
+            "nome": "descricao",
+            "tipo": "string(120)",
+            "obrigatorio": true,
+            "descricao": "Identificacao da despesa (ex: Aluguel, Supermercado). Usuario pode cadastrar mais de uma despesa.",
+            "origem": "usuario",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-DESP-004",
+            "nome": "valor",
+            "tipo": "decimal(12,2)",
+            "obrigatorio": true,
+            "descricao": "Valor da despesa.",
+            "constraints": [
+              "> 0"
+            ],
+            "origem": "usuario",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-DESP-005",
+            "nome": "categoria",
+            "tipo": "string(60)",
+            "obrigatorio": false,
+            "descricao": "Categoria livre da despesa (ex: Moradia, Alimentacao, Transporte, Lazer, Saude, Outros), usada para agrupar/filtrar no overview. Confirmada como opcional (ver campos.historico_revisoes).",
+            "origem": "usuario",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-DESP-008",
+            "nome": "mes_referencia",
+            "tipo": "string(7) - formato YYYY-MM",
+            "obrigatorio": true,
+            "descricao": "Mes/periodo ao qual esta despesa pertence (ex: 2026-08). Cada lancamento de despesa e amarrado a um mes especifico, permitindo historico mes a mes e navegacao entre periodos no Overview. Substitui o modelo anterior sem recorte temporal (decisao registrada em campos.historico_revisoes).",
+            "constraints": [
+              "formato YYYY-MM valido"
+            ],
+            "origem": "usuario",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-DESP-006",
+            "nome": "criado_em",
+            "tipo": "datetime",
+            "obrigatorio": true,
+            "descricao": "Data/hora de criacao do registro.",
+            "origem": "sistema",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-DESP-007",
+            "nome": "atualizado_em",
+            "tipo": "datetime",
+            "obrigatorio": true,
+            "descricao": "Data/hora da ultima atualizacao do registro.",
+            "origem": "sistema",
+            "status": "aprovado"
+          }
+        ]
+      },
+      "DOM-004": {
+        "nome": "Overview Financeiro",
+        "itens": [],
+        "observacao": "Dominio agregador, sem campos persistidos proprios — apenas indicadores calculados em tempo de consulta a partir de Renda (DOM-002) e Despesas (DOM-003) do usuario autenticado, filtrados pelo mes/periodo selecionado (CAMPO-REN-007 / CAMPO-DESP-008). Usuario navega entre meses (anterior/proximo) para ver o historico mes a mes e comparar periodos.",
+        "parametros_consulta": [
+          {
+            "id": "PARAM-OVW-001",
+            "nome": "mes_selecionado",
+            "tipo": "string(7) - formato YYYY-MM",
+            "descricao": "Mes/periodo cujo overview esta sendo exibido. Default: mes corrente (mes/ano atuais). Usuario navega para meses anteriores/seguintes via os controles da tela; cada navegacao recalcula os indicadores abaixo filtrando Renda e Despesas cujo mes_referencia == mes_selecionado. Nao ha limite predefinido de quantos meses para tras o usuario pode navegar (limite/paginacao, se necessario, e decisao de arquitetura do design-agent, nao de requisito)."
+          }
+        ],
+        "indicadores_calculados": [
+          {
+            "id": "IND-OVW-001",
+            "nome": "renda_total",
+            "formula": "soma de CAMPO-REN-004 (valor_liquido) das fontes de renda do usuario cujo mes_referencia == mes_selecionado"
+          },
+          {
+            "id": "IND-OVW-002",
+            "nome": "despesas_total",
+            "formula": "soma de CAMPO-DESP-004 (valor) das despesas do usuario cujo mes_referencia == mes_selecionado"
+          },
+          {
+            "id": "IND-OVW-003",
+            "nome": "saldo_disponivel",
+            "formula": "renda_total - despesas_total, para o mes_selecionado"
+          },
+          {
+            "id": "IND-OVW-004",
+            "nome": "percentual_comprometido",
+            "formula": "(despesas_total / renda_total) * 100, para o mes_selecionado — regra de negocio da Fase 3 define o comportamento quando renda_total = 0"
+          }
+        ]
+      }
+    },
+    "historico_revisoes": [
+      {
+        "gate": "aprovacao_campos",
+        "rodada": 1,
+        "resposta": "Decidir sobre historico/recorrencia mensal: usuario optou por 'Por mes/periodo (com historico)' — cada renda/despesa deve ter uma data ou mes de referencia; o usuario deve poder ver o overview de meses diferentes e o historico fica registrado mes a mes (navegacao por mes, comparacao entre periodos). Este requisito substitui o draft anterior de DOM-002/DOM-003 sem recorte temporal. As demais decisoes do draft original permanecem confirmadas: multiplas fontes de renda e multiplas despesas por usuario, e categoria opcional de texto livre em despesas.",
+        "respondido_em": "2026-08-17T16:52:00Z",
+        "resultado": "Draft revisado: adicionados CAMPO-REN-007 (mes_referencia) e CAMPO-DESP-008 (mes_referencia), ambos obrigatorios, formato YYYY-MM. DOM-004 (Overview) passou a expor PARAM-OVW-001 (mes_selecionado, default mes corrente, navegavel) e todos os indicadores calculados (IND-OVW-001..004) agora filtram por mes_referencia == mes_selecionado. Prototipo (prototipo/index.html) atualizado com seletor de mes/navegacao no Overview e campo de mes/periodo nos formularios de Renda e Despesas. Multiplicidade de renda/despesas e categoria opcional de despesa mantidas sem alteracao. Novo gate aprovacao_campos reaberto para confirmacao do draft revisado — 1a rodada de ajuste, dentro do limite de 2."
+      },
+      {
+        "gate": "aprovacao_campos",
+        "rodada": 2,
+        "resposta": "Confirmar campos e prototipo revisados",
+        "respondido_em": "2026-08-17T16:59:00Z",
+        "resultado": "Usuario confirmou o draft revisado (modelo por mes/periodo com historico) sem nenhum ajuste adicional. campos.status marcado aprovado; todos os itens de campos.dominios.* passaram de 'proposto' para 'aprovado'. documentacao.prototipo.status marcado aprovado (pendente apenas da aplicacao das regras de negocio da Fase 3 sobre o mesmo prototipo, conforme previsto na opcao escolhida). Nenhuma pergunta aberta na resposta do usuario (ex: comportamento de edicao retroativa de mes_referencia) foi tratada como decidida implicitamente — permanece em aberto e sera levantada como regra de negocio na Fase 3."
+      }
+    ]
+  },
+  "regras_negocio": {
+    "status": "aprovado",
+    "itens": [
+      {
+        "id": "RN-001",
+        "nome": "Percentual comprometido sem renda no periodo",
+        "dominio_ref": "DOM-004",
+        "campos_ref": [
+          "IND-OVW-004",
+          "IND-OVW-001"
+        ],
+        "condicao": "renda_total do mes_selecionado == 0",
+        "acao": "percentual_comprometido nao e calculado (evita divisao por zero); Overview exibe um indicador alternativo (ex: 'Sem renda cadastrada no periodo') no lugar do percentual numerico",
+        "origem": "usuario",
+        "status": "aprovado"
+      },
+      {
+        "id": "RN-002",
+        "nome": "Valor de renda/despesa deve ser positivo",
+        "dominio_ref": [
+          "DOM-002",
+          "DOM-003"
+        ],
+        "campos_ref": [
+          "CAMPO-REN-004",
+          "CAMPO-DESP-004"
+        ],
+        "condicao": "valor informado (valor_liquido em Renda ou valor em Despesa) <= 0",
+        "acao": "sistema rejeita a submissao do formulario (criacao ou edicao) com mensagem de erro 'o valor deve ser maior que zero'; nada e persistido",
+        "origem": "usuario",
+        "status": "aprovado"
+      },
+      {
+        "id": "RN-003",
+        "nome": "Formato e obrigatoriedade de mes_referencia",
+        "dominio_ref": [
+          "DOM-002",
+          "DOM-003"
+        ],
+        "campos_ref": [
+          "CAMPO-REN-007",
+          "CAMPO-DESP-008"
+        ],
+        "condicao": "mes_referencia esta ausente, fora do formato YYYY-MM, ou representa um mes invalido (ex: '2026-13')",
+        "acao": "sistema rejeita a submissao do formulario com mensagem de erro de formato invalido; nada e persistido",
+        "origem": "usuario",
+        "status": "aprovado"
+      },
+      {
+        "id": "RN-004",
+        "nome": "Unicidade de email no cadastro",
+        "dominio_ref": "DOM-001",
+        "campos_ref": [
+          "CAMPO-USU-003"
+        ],
+        "condicao": "email informado no registro ja existe para outro usuario cadastrado",
+        "acao": "sistema rejeita o cadastro com mensagem 'e-mail ja cadastrado' e nao cria o novo usuario",
+        "origem": "usuario",
+        "status": "aprovado"
+      },
+      {
+        "id": "RN-005",
+        "nome": "Isolamento de dados por usuario autenticado",
+        "dominio_ref": [
+          "DOM-002",
+          "DOM-003",
+          "DOM-004"
+        ],
+        "campos_ref": [
+          "CAMPO-REN-002",
+          "CAMPO-DESP-002"
+        ],
+        "condicao": "qualquer operacao de leitura, criacao, edicao ou exclusao sobre Renda ou Despesas, ou consulta ao Overview",
+        "acao": "sistema restringe automaticamente a operacao aos registros cujo usuario_id == usuario autenticado na sessao; tentativa de acessar/alterar registro de outro usuario retorna erro de nao encontrado/nao autorizado, sem expor a existencia do registro de terceiros",
+        "origem": "usuario",
+        "status": "aprovado"
+      },
+      {
+        "id": "RN-006",
+        "nome": "Credenciais invalidas no login",
+        "dominio_ref": "DOM-001",
+        "campos_ref": [
+          "CAMPO-USU-003",
+          "CAMPO-USU-004"
+        ],
+        "condicao": "tentativa de login com email nao cadastrado ou senha incorreta",
+        "acao": "sistema rejeita o acesso com mensagem generica de 'credenciais invalidas' (sem indicar qual dos dois campos esta incorreto), sem autenticar o usuario",
+        "origem": "usuario",
+        "status": "aprovado"
+      },
+      {
+        "id": "RN-007",
+        "nome": "Despesas superam a renda no periodo (percentual > 100%)",
+        "dominio_ref": "DOM-004",
+        "campos_ref": [
+          "IND-OVW-004"
+        ],
+        "condicao": "despesas_total do mes_selecionado > renda_total do mes_selecionado (percentual_comprometido > 100%)",
+        "acao": "Overview exibe o percentual normalmente, sem teto em 100%, e destaca visualmente o indicador (cor/estado de alerta) sinalizando que as despesas superam a renda no periodo",
+        "origem": "usuario",
+        "status": "aprovado"
+      },
+      {
+        "id": "RN-008",
+        "nome": "Imutabilidade de mes_referencia apos criacao",
+        "dominio_ref": [
+          "DOM-002",
+          "DOM-003"
+        ],
+        "campos_ref": [
+          "CAMPO-REN-007",
+          "CAMPO-DESP-008"
+        ],
+        "condicao": "tentativa de alterar o valor de mes_referencia de um lancamento de Renda ou Despesa ja existente, durante uma operacao de edicao",
+        "acao": "sistema nao permite a alteracao de mes_referencia na edicao (campo tratado como somente leitura fora da criacao do lancamento); para mover o lancamento para outro mes, o usuario deve excluir o lancamento existente e recria-lo com o mes_referencia correto",
+        "origem": "usuario",
+        "status": "aprovado"
+      }
+    ],
+    "historico_revisoes": [
+      {
+        "gate": "aprovacao_regras",
+        "resposta": "Confirmar RN-001 a RN-007 como propostas. RN-008: Imutavel — mes_referencia nao pode ser alterado apos a criacao do lancamento; para mudar de mes, o usuario exclui e recria o lancamento no mes correto (campo mes_referencia somente leitura fora da criacao).",
+        "respondido_em": "2026-08-17T17:04:00Z",
+        "resultado": "Usuario confirmou as 7 regras propostas sem ajuste e decidiu RN-008 (mes_referencia imutavel apos a criacao). regras_negocio.status marcado aprovado; RN-001 a RN-007 passaram de 'proposto' para 'aprovado'; RN-008 registrado ja como 'aprovado'. Prototipo (prototipo/index.html) atualizado para refletir as 8 regras na interacao: validacao de valor>0 (RN-002) e de formato/obrigatoriedade de mes_referencia (RN-003) nos formularios de Renda/Despesas, com mensagens de erro dedicadas por campo; estado alternativo do Overview quando renda_total do mes selecionado = 0 (RN-001— indicador 'Sem renda cadastrada no periodo' no lugar do percentual, mes de demonstracao 2025-12 adicionado ao mock); alerta visual dedicado quando despesas_total > renda_total (RN-007 — banner de atencao e barra em vermelho, mes de demonstracao 2026-09 adicionado); campo mes/periodo tornado somente leitura ao editar um lancamento existente de Renda/Despesa, com nota explicativa e botoes Editar/Excluir funcionais (RN-008); unicidade de email (RN-004) e credenciais invalidas (RN-006) wireados nas telas de Registro/Login via valores reservados de demonstracao documentados na propria tela. Isolamento por usuario (RN-005) e uma regra de backend, sem representacao visual direta possivel num mock estatico — sera verificada pelo security-agent (RNF-002) e pelo dev-agent na implementacao real. Nenhum conflito identificado entre as 8 regras nem dependencia de campo inexistente. Seguindo para a Fase 4 (documentacao/RFs/RNFs)."
+      }
+    ]
+  },
+  "documentacao": {
+    "status": "revisao_pendente",
+    "requisitos_funcionais": [
+      {
+        "id": "RF-001",
+        "titulo": "Cadastro de usuario (registro aberto)",
+        "descricao": "Permite que qualquer visitante crie uma conta informando nome, email e senha, sem necessidade de aprovacao/convite (registro aberto). E a porta de entrada para o isolamento de dados por usuario: sem conta, nao ha como usar Renda, Despesas ou Overview.",
+        "dominio_ref": "DOM-001",
+        "campos_ref": [
+          "CAMPO-USU-002",
+          "CAMPO-USU-003",
+          "CAMPO-USU-004"
+        ],
+        "regras_ref": [
+          "RN-004"
+        ],
+        "criterio_aceite": [
+          "Formulario de registro exige nome, email valido e senha com no minimo 8 caracteres (CAMPO-USU-004); confirmacao de senha deve coincidir com a senha informada.",
+          "Submissao com email ja cadastrado (RN-004) e rejeitada com a mensagem 'e-mail ja cadastrado'; nenhum novo usuario e criado.",
+          "Cadastro bem-sucedido cria um novo registro em Usuarios, com a senha armazenada como hash — nunca em texto puro, nunca retornada em nenhuma resposta de API (ver RNF-001)."
+        ],
+        "status": "aprovado",
+        "implementacao_existente": false,
+        "evidencia_codigo": []
+      },
+      {
+        "id": "RF-002",
+        "titulo": "Login (autenticacao)",
+        "descricao": "Permite que um usuario ja cadastrado se autentique com email e senha para acessar suas proprias informacoes financeiras.",
+        "dominio_ref": "DOM-001",
+        "campos_ref": [
+          "CAMPO-USU-003",
+          "CAMPO-USU-004"
+        ],
+        "regras_ref": [
+          "RN-006"
+        ],
+        "criterio_aceite": [
+          "Formulario de login exige email valido e senha preenchida antes de submeter.",
+          "Tentativa de login com email nao cadastrado ou senha incorreta (RN-006) e rejeitada com mensagem generica de 'credenciais invalidas', sem indicar qual dos dois campos esta incorreto.",
+          "Login bem-sucedido autentica o usuario e inicia uma sessao usada para restringir todo acesso subsequente aos proprios dados (ver RF-003)."
+        ],
+        "status": "aprovado",
+        "implementacao_existente": false,
+        "evidencia_codigo": []
+      },
+      {
+        "id": "RF-003",
+        "titulo": "Isolamento de dados por usuario autenticado",
+        "descricao": "Garante que cada usuario autenticado so acessa suas proprias informacoes financeiras (Renda, Despesas, Overview), nunca dados de outro usuario — requisito transversal que sustenta a confianca do sistema, sem tela propria (aplicado por RF-004 a RF-008).",
+        "dominio_ref": [
+          "DOM-002",
+          "DOM-003",
+          "DOM-004"
+        ],
+        "campos_ref": [
+          "CAMPO-REN-002",
+          "CAMPO-DESP-002"
+        ],
+        "regras_ref": [
+          "RN-005"
+        ],
+        "criterio_aceite": [
+          "Toda leitura, criacao, edicao e exclusao de Renda ou Despesas, e toda consulta ao Overview, e restrita automaticamente aos registros cujo usuario_id corresponde ao usuario autenticado na sessao (RN-005).",
+          "Tentativa de acessar ou alterar um registro de Renda/Despesa pertencente a outro usuario (inclusive por manipulacao direta de identificador) retorna erro de nao encontrado/nao autorizado, sem expor a existencia do registro de terceiros."
+        ],
+        "status": "aprovado",
+        "implementacao_existente": false,
+        "evidencia_codigo": []
+      },
+      {
+        "id": "RF-004",
+        "titulo": "Cadastro de fonte de renda",
+        "descricao": "Permite que o usuario cadastre uma nova fonte de renda (ex: salario, freelance) com valor liquido e mes/periodo de referencia, podendo ter mais de uma fonte por mes.",
+        "dominio_ref": "DOM-002",
+        "campos_ref": [
+          "CAMPO-REN-003",
+          "CAMPO-REN-004",
+          "CAMPO-REN-007"
+        ],
+        "regras_ref": [
+          "RN-002",
+          "RN-003"
+        ],
+        "criterio_aceite": [
+          "Formulario de nova fonte de renda exige descricao, valor liquido (> 0, RN-002) e mes/periodo de referencia no formato YYYY-MM (RN-003).",
+          "Submissao com valor <= 0 e rejeitada com a mensagem 'o valor deve ser maior que zero'; nada e persistido.",
+          "Submissao com mes_referencia ausente, fora do formato YYYY-MM ou com mes invalido (ex: '2026-13') e rejeitada; nada e persistido.",
+          "Cadastro bem-sucedido cria uma nova fonte de renda vinculada ao usuario autenticado (RF-003) e ao mes/periodo informado, refletida no Overview desse mes (RF-008)."
+        ],
+        "status": "aprovado",
+        "implementacao_existente": false,
+        "evidencia_codigo": []
+      },
+      {
+        "id": "RF-005",
+        "titulo": "Edicao e exclusao de fonte de renda",
+        "descricao": "Permite que o usuario liste, edite (descricao/valor) e exclua fontes de renda ja cadastradas. O mes/periodo de referencia nao pode ser alterado apos a criacao (RN-008).",
+        "dominio_ref": "DOM-002",
+        "campos_ref": [
+          "CAMPO-REN-003",
+          "CAMPO-REN-004",
+          "CAMPO-REN-007"
+        ],
+        "regras_ref": [
+          "RN-002",
+          "RN-008"
+        ],
+        "criterio_aceite": [
+          "Usuario visualiza a lista de suas fontes de renda com descricao, valor liquido e mes/periodo de referencia.",
+          "Usuario pode editar descricao e valor liquido de uma fonte de renda existente; valor <= 0 e rejeitado (RN-002).",
+          "O campo mes/periodo de referencia e somente leitura durante a edicao (RN-008): para mover o lancamento para outro mes, o usuario deve excluir e recriar a fonte de renda no mes correto.",
+          "Usuario pode excluir uma fonte de renda existente; apos a exclusao, ela deixa de compor os indicadores do Overview do mes correspondente (RF-008)."
+        ],
+        "status": "aprovado",
+        "implementacao_existente": false,
+        "evidencia_codigo": []
+      },
+      {
+        "id": "RF-006",
+        "titulo": "Cadastro de despesa",
+        "descricao": "Permite que o usuario cadastre uma nova despesa com valor, categoria opcional e mes/periodo de referencia, podendo ter mais de uma despesa por mes.",
+        "dominio_ref": "DOM-003",
+        "campos_ref": [
+          "CAMPO-DESP-003",
+          "CAMPO-DESP-004",
+          "CAMPO-DESP-005",
+          "CAMPO-DESP-008"
+        ],
+        "regras_ref": [
+          "RN-002",
+          "RN-003"
+        ],
+        "criterio_aceite": [
+          "Formulario de nova despesa exige descricao, valor (> 0, RN-002) e mes/periodo de referencia no formato YYYY-MM (RN-003); categoria e opcional (CAMPO-DESP-005).",
+          "Submissao com valor <= 0 e rejeitada com a mensagem 'o valor deve ser maior que zero'; nada e persistido.",
+          "Submissao com mes_referencia ausente, fora do formato YYYY-MM ou com mes invalido e rejeitada; nada e persistido.",
+          "Cadastro bem-sucedido cria uma nova despesa vinculada ao usuario autenticado (RF-003) e ao mes/periodo informado, refletida no Overview desse mes (RF-008)."
+        ],
+        "status": "aprovado",
+        "implementacao_existente": false,
+        "evidencia_codigo": []
+      },
+      {
+        "id": "RF-007",
+        "titulo": "Edicao e exclusao de despesa",
+        "descricao": "Permite que o usuario liste, edite (descricao/valor/categoria) e exclua despesas ja cadastradas. O mes/periodo de referencia nao pode ser alterado apos a criacao (RN-008).",
+        "dominio_ref": "DOM-003",
+        "campos_ref": [
+          "CAMPO-DESP-003",
+          "CAMPO-DESP-004",
+          "CAMPO-DESP-005",
+          "CAMPO-DESP-008"
+        ],
+        "regras_ref": [
+          "RN-002",
+          "RN-008"
+        ],
+        "criterio_aceite": [
+          "Usuario visualiza a lista de suas despesas com descricao, valor, categoria e mes/periodo de referencia.",
+          "Usuario pode editar descricao, valor e categoria de uma despesa existente; valor <= 0 e rejeitado (RN-002).",
+          "O campo mes/periodo de referencia e somente leitura durante a edicao (RN-008): para mover o lancamento para outro mes, o usuario deve excluir e recriar a despesa no mes correto.",
+          "Usuario pode excluir uma despesa existente; apos a exclusao, ela deixa de compor os indicadores do Overview do mes correspondente (RF-008)."
+        ],
+        "status": "aprovado",
+        "implementacao_existente": false,
+        "evidencia_codigo": []
+      },
+      {
+        "id": "RF-008",
+        "titulo": "Overview financeiro com navegacao por mes",
+        "descricao": "Apresenta o painel consolidado de saude financeira do usuario (renda total, despesas totais, saldo disponivel e percentual da renda comprometido) para o mes/periodo selecionado, permitindo navegar entre meses para consultar historico e comparar periodos.",
+        "dominio_ref": "DOM-004",
+        "campos_ref": [
+          "PARAM-OVW-001",
+          "IND-OVW-001",
+          "IND-OVW-002",
+          "IND-OVW-003",
+          "IND-OVW-004"
+        ],
+        "regras_ref": [
+          "RN-001",
+          "RN-007"
+        ],
+        "criterio_aceite": [
+          "Overview exibe renda_total, despesas_total, saldo_disponivel e percentual_comprometido (IND-OVW-001 a 004) filtrados pelo mes_selecionado (PARAM-OVW-001), com default no mes corrente.",
+          "Usuario navega para o mes anterior/seguinte; cada navegacao recalcula os 4 indicadores para o novo mes_selecionado.",
+          "Quando renda_total do mes selecionado = 0 (RN-001), percentual_comprometido nao e calculado e a interface exibe um indicador alternativo (ex: 'Sem renda cadastrada no periodo') no lugar do numero.",
+          "Quando despesas_total > renda_total no periodo (RN-007), o percentual e exibido normalmente sem teto em 100% e a interface destaca visualmente o indicador como alerta.",
+          "Quando nao ha renda nem despesa cadastrada no mes selecionado, a interface exibe um estado vazio orientando o usuario a cadastrar renda/despesas para aquele periodo."
+        ],
+        "status": "aprovado",
+        "implementacao_existente": false,
+        "evidencia_codigo": []
+      }
+    ],
+    "requisitos_nao_funcionais": [
+      {
+        "id": "RNF-001",
+        "categoria": "seguranca",
+        "descricao": "Senhas de usuario devem ser armazenadas de forma segura (hash com algoritmo forte), nunca em texto puro, e o campo senha nunca deve ser retornado em nenhuma resposta de API, mesmo para o proprio usuario dono da conta.",
+        "metrica_alvo": "100% das senhas armazenadas com hash bcrypt (custo >= 10) ou argon2id; 0% dos payloads de resposta de API (incluindo endpoints de perfil e autenticacao) contem o campo senha, em texto puro ou hasheado.",
+        "criterio_verificacao": "security-agent audita o mecanismo de hashing utilizado e confirma, por amostragem de endpoints que retornam dados de Usuario, que o campo senha nunca esta presente na resposta.",
+        "rf_refs": [
+          "RF-001",
+          "RF-002"
+        ],
+        "status": "aprovado",
+        "origem": "usuario"
+      },
+      {
+        "id": "RNF-002",
+        "categoria": "seguranca",
+        "descricao": "Alem da regra de negocio de isolamento (RN-005/RF-003), nenhuma rota/endpoint do sistema deve permitir acesso a dados de Renda, Despesas ou Overview de outro usuario mesmo por manipulacao direta de identificadores (IDOR), incluindo tentativas via URL/parametros de API.",
+        "metrica_alvo": "0 rotas vulneraveis a IDOR sobre Renda/Despesas/Overview, verificado por pentest whitebox direcionado a cada RF de escrita/leitura desses dominios.",
+        "criterio_verificacao": "security-agent executa pentest whitebox (ver 05.3-security-agent.md) sobre RF-003 a RF-008 e confirma ausencia de acesso cross-usuario por manipulacao de identificador.",
+        "rf_refs": [
+          "RF-003",
+          "RF-004",
+          "RF-005",
+          "RF-006",
+          "RF-007",
+          "RF-008"
+        ],
+        "status": "aprovado",
+        "origem": "usuario"
+      },
+      {
+        "id": "RNF-003",
+        "categoria": "usabilidade",
+        "descricao": "O calculo e a exibicao dos indicadores do Overview (incluindo a navegacao entre meses) devem ser rapidos o suficiente para nao impactar a percepcao de uso do usuario, mesmo com historico de varios meses acumulado.",
+        "metrica_alvo": "p95 do tempo de resposta do calculo/consulta do Overview < 500ms, para um usuario com ate 24 meses de historico de renda/despesas cadastrado.",
+        "criterio_verificacao": "Teste de carga/performance simples sobre o endpoint/consulta de Overview, medindo p95 com um usuario de teste contendo 24 meses de renda/despesas cadastradas.",
+        "rf_refs": [
+          "RF-008"
+        ],
+        "status": "aprovado",
+        "origem": "usuario"
+      },
+      {
+        "id": "RNF-PADRAO-IDIOMA",
+        "categoria": "internacionalizacao",
+        "descricao": "O sistema deve oferecer suporte multi-idioma, com toda a interface (textos, labels, mensagens de validacao/erro) disponivel em Portugues, Ingles e Espanhol, permitindo a troca de idioma pelo proprio usuario nas configuracoes do sistema.",
+        "metrica_alvo": "100% das strings de interface (textos estaticos, labels, mensagens de validacao/erro) resolvidas via mecanismo de i18n nos 3 idiomas — nenhuma string de UI hardcoded fora dele; idioma trocavel em runtime, sem exigir novo deploy.",
+        "criterio_verificacao": "Alternar o idioma no controle de configuracoes do sistema e confirmar, em cada tela do escopo aprovado, que todo texto (incluindo mensagens de validacao/erro) reflete o idioma selecionado, sem string remanescente do idioma anterior.",
+        "rf_refs": [],
+        "status": "aprovado",
+        "origem": "padrao_pipeline"
+      },
+      {
+        "id": "RNF-PADRAO-ACESSIBILIDADE-CONFIG",
+        "categoria": "acessibilidade",
+        "descricao": "As configuracoes do sistema devem sempre oferecer, de forma visivel e acessivel ao usuario: configuracao de tamanho de fonte, foco visivel em todo elemento interativo, modo de alto contraste e opcao de reducao de movimento (permitindo desativar/reduzir animacoes e transicoes nao essenciais).",
+        "metrica_alvo": "4 controles presentes e funcionais na tela de configuracoes do sistema (tamanho de fonte, foco visivel, alto contraste, reducao de movimento); indicador de foco com razao de contraste minima 3:1 contra o fundo adjacente (WCAG 2.2 SC 2.4.11); reducao de movimento honra prefers-reduced-motion do sistema operacional como valor inicial do controle.",
+        "criterio_verificacao": "accessibility-agent confirma, na tela de configuracoes do sistema, a presenca e o funcionamento dos 4 controles, o contraste do indicador de foco em elementos interativos-chave, e que a opcao de reducao de movimento efetivamente desativa/reduz animacoes e transicoes nao essenciais.",
+        "rf_refs": [],
+        "status": "aprovado",
+        "origem": "padrao_pipeline"
+      },
+      {
+        "id": "RNF-PADRAO-LOG-AUDITORIA",
+        "categoria": "auditoria",
+        "descricao": "O sistema deve manter uma unica tabela de log de auditoria para todo o sistema (nunca uma tabela de log por entidade/modulo), registrando toda operacao de criacao, alteracao e exclusao de dados de negocio: a acao realizada (criacao/alteracao/exclusao), o usuario autenticado que a executou, o valor anterior e o valor novo dos dados alterados (De/Para), a tabela/entidade que teve o registro incluido ou alterado, e a data/hora da operacao. O sistema deve oferecer tambem um relatorio especifico e padrao para consulta a esses dados de log.",
+        "metrica_alvo": "100% das operacoes de criacao/alteracao/exclusao de dados de negocio geram um registro na tabela de log unica, com os 5 campos obrigatorios preenchidos (acao, usuario, De/Para, tabela/entidade afetada, data/hora); relatorio padrao de consulta ao log disponivel, com filtro por usuario, tabela/entidade, acao e periodo.",
+        "criterio_verificacao": "Para uma amostra de RFs com operacao de escrita (criar/editar/excluir — RF-001, RF-004 a RF-007), confirmar que cada operacao gerou exatamente um registro correspondente na tabela de log unica, com os 5 campos corretos, e que o relatorio de consulta localiza esse registro pelos filtros padrao (usuario, tabela/entidade, acao, periodo).",
+        "rf_refs": [],
+        "status": "aprovado",
+        "origem": "padrao_pipeline"
+      },
+      {
+        "id": "RNF-004",
+        "categoria": "acessibilidade",
+        "descricao": "O sistema deve atender ao nivel de conformidade WCAG 2.2 AA em todas as telas do escopo aprovado, com suporte funcional a leitor de tela (navegacao completa por teclado, landmarks/regioes e atributos ARIA corretos) e oferecer tema claro e escuro selecionavel pelo usuario, alem dos 4 controles ja garantidos por RNF-PADRAO-ACESSIBILIDADE-CONFIG. Decisao explicita do usuario no gate aprovacao_documentacao (ver documentacao.historico_revisoes).",
+        "metrica_alvo": "100% das telas de documentacao.prototipo.telas conformes a WCAG 2.2 nivel AA; contraste minimo 4.5:1 para texto normal e 3:1 para texto grande (>=18pt, ou >=14pt em negrito)/componentes de UI, em ambos os temas; navegacao completa por teclado sem armadilha de foco e leitura correta via NVDA (Windows) e VoiceOver (macOS/iOS) nos fluxos criticos (RF-001, RF-002, RF-004 a RF-008); tema claro e tema escuro disponiveis e selecionaveis pelo usuario, cada um atendendo aos mesmos criterios de contraste.",
+        "criterio_verificacao": "accessibility-agent audita cada tela de documentacao.prototipo.telas com ferramenta automatizada de WCAG 2.2 AA mais checagem manual de navegacao por teclado, landmarks/ARIA e leitura por NVDA/VoiceOver nos fluxos criticos; confirma a existencia, o funcionamento do alternador de tema claro/escuro e o contraste de ambos os temas.",
+        "rf_refs": [],
+        "status": "aprovado",
+        "origem": "usuario"
+      }
+    ],
+    "prototipo": {
+      "caminho": "prototipo/index.html",
+      "status": "aprovado",
+      "telas": [
+        {
+          "id": "TELA-001",
+          "nome": "Login",
+          "dominio_ref": "DOM-001",
+          "rf_refs": [
+            "RF-002"
+          ],
+          "descricao": "Autenticacao por email/senha. Estados cobertos: preenchimento normal, erro de validacao de campo (email invalido, senha vazia) e erro de credenciais invalidas RN-006 (mockado via botao de demo e via valores reservados: email 'naocadastrado@exemplo.com' ou senha 'errada'). Link para a tela de Registro."
+        },
+        {
+          "id": "TELA-002",
+          "nome": "Registro",
+          "dominio_ref": "DOM-001",
+          "rf_refs": [
+            "RF-001"
+          ],
+          "descricao": "Cadastro aberto de novo usuario (nome, email, senha, confirmar senha). Estados cobertos: campo obrigatorio vazio, senha curta (< 8 caracteres), senhas nao coincidentes, email ja cadastrado RN-004 (mockado via valor reservado 'ja@cadastrado.com'). Link para a tela de Login."
+        },
+        {
+          "id": "TELA-003",
+          "nome": "Overview Financeiro",
+          "dominio_ref": "DOM-004",
+          "rf_refs": [
+            "RF-003",
+            "RF-008"
+          ],
+          "descricao": "Dashboard com renda total, despesas totais, saldo disponivel e percentual da renda comprometido (barra de progresso), filtrado pelo mes/periodo selecionado (PARAM-OVW-001), com navegacao anterior/proximo. Estados cobertos: carregando (skeleton, via botao de demo), vazio (sem renda/despesas no mes selecionado), sem renda cadastrada no periodo RN-001 (indicador alternativo no lugar do percentual, mes de demo 2025-12), alerta visual quando despesas > renda RN-007 (banner + barra em vermelho, mes de demo 2026-09), e conteudo preenchido normal."
+        },
+        {
+          "id": "TELA-004",
+          "nome": "Renda",
+          "dominio_ref": "DOM-002",
+          "rf_refs": [
+            "RF-003",
+            "RF-004",
+            "RF-005"
+          ],
+          "descricao": "Listagem das fontes de renda do usuario (descricao, valor liquido, mes/periodo, editar/excluir funcionais) e formulario de cadastro/edicao de fonte de renda. Estados cobertos: lista vazia (via botao de demo), erro de valor invalido RN-002, erro de mes/periodo invalido ou ausente RN-003, e modo de edicao com mes/periodo somente leitura RN-008 (nota explicativa exibida)."
+        },
+        {
+          "id": "TELA-005",
+          "nome": "Despesas",
+          "dominio_ref": "DOM-003",
+          "rf_refs": [
+            "RF-003",
+            "RF-006",
+            "RF-007"
+          ],
+          "descricao": "Listagem das despesas do usuario (descricao, valor, categoria, mes/periodo, editar/excluir funcionais) e formulario de cadastro/edicao de despesa (categoria opcional). Estados cobertos: lista vazia (via botao de demo), erro de valor invalido RN-002, erro de mes/periodo invalido ou ausente RN-003, e modo de edicao com mes/periodo somente leitura RN-008 (nota explicativa exibida)."
+        }
+      ]
+    },
+    "historico_revisoes": [
+      {
+        "gate": "aprovacao_documentacao",
+        "resposta": "Confirmar draft — acessibilidade WCAG AA + leitor de tela + tema claro e escuro",
+        "respondido_em": "2026-08-17T17:14:00Z",
+        "resultado": "Usuario confirmou os 8 RFs (RF-001 a RF-008) e os 6 RNFs propostos (RNF-001 a RNF-003, RNF-PADRAO-IDIOMA, RNF-PADRAO-ACESSIBILIDADE-CONFIG, RNF-PADRAO-LOG-AUDITORIA) sem ajuste, e decidiu o nivel de acessibilidade alvo do sistema: WCAG 2.2 AA em todas as telas, suporte funcional a leitor de tela (navegacao por teclado, landmarks/ARIA, testado com NVDA e VoiceOver), contraste minimo 4.5:1 (texto normal) e 3:1 (texto grande/componentes de UI), e tema claro e escuro selecionavel pelo usuario. Registrado RNF-004 (categoria acessibilidade, origem usuario, status aprovado, transversal — rf_refs vazio) com essa decisao. Todos os RFs e RNFs em documentacao.requisitos_funcionais/requisitos_nao_funcionais tiveram status atualizado de 'proposto' para 'aprovado'. documentacao.status marcado 'aprovado'. Nenhuma referencia orfa identificada: todo RF referencia dominio/campos/regras existentes e aprovados, toda tela de documentacao.prototipo.telas aponta rf_refs validos e nenhuma tela ficou com rf_refs vazio sem ser removida a chave (todas as 5 telas atendem pelo menos um RF). A implementacao concreta de RNF-004 (alternador de tema, ARIA/landmarks, foco de teclado) na interface real fica para o design-agent/dev-agent traduzirem o prototipo aprovado ao stack, conforme o principio de que nao ha fase de redesenho de tela adiante — nao bloqueia a conclusao desta fase, pois a decisao de negocio ja esta totalmente especificada no proprio RNF-004 (metrica_alvo e criterio_verificacao)."
+      }
+    ]
+  },
+  "planejamento": {
+    "status": "aprovado",
+    "viabilidade": {
+      "status": "aprovado",
+      "itens": [
+        {
+          "id": "RF-001",
+          "tipo": "RF",
+          "classificacao": "viavel",
+          "justificativa": "Cadastro de usuario com hash de senha e padrao consolidado em qualquer stack web; sem restricao declarada que o inviabilize."
+        },
+        {
+          "id": "RF-002",
+          "tipo": "RF",
+          "classificacao": "viavel",
+          "justificativa": "Autenticacao por email/senha e sessao; padrao consolidado, sem dependencia externa incomum."
+        },
+        {
+          "id": "RF-003",
+          "tipo": "RF",
+          "classificacao": "viavel",
+          "justificativa": "Isolamento por usuario_id em toda query/rota e requisito transversal padrao (filtro por dono do registro), aplicavel em qualquer stack que o design-agent venha a escolher."
+        },
+        {
+          "id": "RF-004",
+          "tipo": "RF",
+          "classificacao": "viavel",
+          "justificativa": "CRUD de criacao simples com validacao de valor e formato de mes; sem complexidade tecnica incomum."
+        },
+        {
+          "id": "RF-005",
+          "tipo": "RF",
+          "classificacao": "viavel",
+          "justificativa": "CRUD de edicao/exclusao com campo somente-leitura (RN-008); padrao de formulario comum."
+        },
+        {
+          "id": "RF-006",
+          "tipo": "RF",
+          "classificacao": "viavel",
+          "justificativa": "Igual a RF-004, para o dominio de Despesas, com campo opcional adicional (categoria)."
+        },
+        {
+          "id": "RF-007",
+          "tipo": "RF",
+          "classificacao": "viavel",
+          "justificativa": "Igual a RF-005, para o dominio de Despesas."
+        },
+        {
+          "id": "RF-008",
+          "tipo": "RF",
+          "classificacao": "viavel",
+          "justificativa": "Agregacao/soma de Renda e Despesas filtrada por mes, com navegacao entre periodos; calculo simples, sem dependencia de dado externo."
+        },
+        {
+          "id": "RNF-001",
+          "tipo": "RNF",
+          "classificacao": "viavel",
+          "justificativa": "Hash de senha (bcrypt/argon2id) e omissao do campo senha em respostas de API sao praticas padrao, independentes de stack."
+        },
+        {
+          "id": "RNF-002",
+          "tipo": "RNF",
+          "classificacao": "viavel",
+          "justificativa": "Prevencao de IDOR decorre diretamente da mesma logica de isolamento por usuario_id de RF-003; nenhuma restricao a impede."
+        },
+        {
+          "id": "RNF-003",
+          "tipo": "RNF",
+          "classificacao": "viavel",
+          "justificativa": "p95 < 500ms para uma agregacao de ate 24 meses de historico e uma meta modesta para consulta com poucos registros por usuario; sem indicio de inviabilidade."
+        },
+        {
+          "id": "RNF-004",
+          "tipo": "RNF",
+          "classificacao": "viavel",
+          "justificativa": "WCAG 2.2 AA, leitor de tela e tema claro/escuro sao alcancaveis com bibliotecas/praticas de acessibilidade padrao; nenhuma tela do prototipo aprovado apresenta padrao que o impeca."
+        },
+        {
+          "id": "RNF-PADRAO-IDIOMA",
+          "tipo": "RNF",
+          "classificacao": "viavel",
+          "justificativa": "i18n de 3 idiomas via mecanismo de traducao em runtime e pratica padrao de mercado."
+        },
+        {
+          "id": "RNF-PADRAO-ACESSIBILIDADE-CONFIG",
+          "tipo": "RNF",
+          "classificacao": "viavel",
+          "justificativa": "4 controles de configuracao (fonte, foco visivel, alto contraste, reducao de movimento) sao praticas padrao de acessibilidade."
+        },
+        {
+          "id": "RNF-PADRAO-LOG-AUDITORIA",
+          "tipo": "RNF",
+          "classificacao": "viavel",
+          "justificativa": "Tabela unica de log de auditoria com De/Para e relatorio de consulta e padrao arquitetural comum, sem dependencia de infraestrutura especial."
+        }
+      ],
+      "observacao": "Nenhum item classificado inviavel ou viavel_com_ressalva. O stack ainda nao existe neste ponto do pipeline (decidido na Fase 1 do design-agent) — esta classificacao e um filtro grosso sobre a especificacao aprovada, nao um veredito tecnico definitivo; inviabilidade nao percebida aqui pode ainda ser revelada pelo design-agent, que aciona retorno controlado se identificar algo."
+    },
+    "escopo": {
+      "status": "aprovado",
+      "marcos": [
+        {
+          "id": "marco-1-mvp",
+          "nome": "MVP",
+          "rf_refs": [
+            "RF-001",
+            "RF-002",
+            "RF-003",
+            "RF-004",
+            "RF-006",
+            "RF-008"
+          ],
+          "ordem": 1,
+          "status": "em_andamento"
+        },
+        {
+          "id": "marco-2-gestao-completa",
+          "nome": "Gestao completa (edicao e exclusao de lancamentos)",
+          "rf_refs": [
+            "RF-005",
+            "RF-007"
+          ],
+          "ordem": 2,
+          "status": "aprovado"
+        }
+      ],
+      "racional": "Marco 1 (MVP) entrega o fluxo de uso completo e minimo que realiza a proposta de valor do sistema: cadastro (RF-001) -> login (RF-002) -> isolamento de dados, transversal a partir daqui (RF-003) -> lancar renda (RF-004) -> lancar despesa (RF-006) -> ver overview de saude financeira (RF-008). Marco 2 adiciona a capacidade de corrigir/remover lancamentos ja feitos (RF-005 edicao/exclusao de renda, RF-007 edicao/exclusao de despesa), na mesma ordem de dominio (renda antes de despesa) usada no Marco 1. Nenhum RF foi classificado inviavel; nenhum backlog futuro foi identificado alem dos 8 RFs aprovados — todos pertencem a um dos dois marcos."
+    },
+    "recursos": {
+      "status": "aprovado",
+      "itens": [],
+      "observacao": "Nenhuma restricao de infraestrutura, orcamento, prazo ou stack foi declarada pelo usuario ate este ponto do pipeline (ver dominios/campos/regras_negocio/documentacao). Sem restricao real, nenhum plano de recursos foi inventado aqui — o design-agent decide stack/infraestrutura livremente dentro do que foi aprovado."
+    },
+    "historico_revisoes": [
+      {
+        "gate": "aprovacao_escopo",
+        "resposta": "Confirmar 2 marcos como proposto",
+        "respondido_em": "2026-08-17T17:20:00Z",
+        "resultado": "Usuario confirmou a proposta de 2 marcos sem ajuste: marco-1-mvp (RF-001, RF-002, RF-003, RF-004, RF-006, RF-008, nessa ordem de fluxo de uso) e marco-2-gestao-completa (RF-005, RF-007, nessa ordem). Nenhum RF mudou de marco em relacao a proposta original. planejamento.viabilidade.status, planejamento.escopo.status, planejamento.recursos.status e o rollup planejamento.status marcados 'aprovado'; status de ambos os marcos passou de 'aguardando' para 'aprovado'. decisao_pendente limpo apos leitura e aplicacao da resposta."
+      }
+    ]
+  },
+  "arquitetura": {
+    "marco_ref": "marco-1-mvp",
+    "status": "aprovado",
+    "padroes_tecnologias": {
+      "status": "aprovado",
+      "observacao": "Gate 'escolha_stack' resolvido (ver historico_revisoes) — usuario escolheu 'Outra combinacao': PHP 8.3 + Laravel 13 full-stack acoplado (Blade + Livewire/Alpine.js), SQLite, Pest. Decisao de projeto inteiro (nao redecidida por marco), herdada por marco-2-gestao-completa e quaisquer marcos futuros.",
+      "stack": {
+        "backend": {
+          "linguagem": "PHP",
+          "versao": "8.3",
+          "framework": "Laravel",
+          "framework_versao": "13",
+          "orm": "Eloquent (nativo do Laravel)"
+        },
+        "frontend": {
+          "abordagem": "Blade + Livewire + Alpine.js",
+          "livewire_versao": "mais recente estavel compativel com Laravel 13 (a resolver pelo dev-agent via composer no momento da inicializacao do projeto — Laravel 13 e um release posterior ao conhecimento de treinamento deste agente, sem numero de versao Livewire fixavel com seguranca agora)",
+          "alpine_versao": "mais recente estavel compativel com Laravel 13 (mesma logica acima; Alpine.js normalmente vem via CDN/npm junto ao starter kit oficial)",
+          "css": "TailwindCSS (versao mais recente estavel no momento da inicializacao) — nao apontado explicitamente pelo usuario, mas e o padrao dos starter kits oficiais do Laravel/Livewire e a base de referencia de reference/layout-guidelines.md (bioform-layout, 'Stack diferente: reproduza a mesma composicao e organizacao de pastas, adaptando so sintaxe/API'); tokens de cor/tema custom (nao a paleta brand.* dos fragmentos) vem de padroes_tecnologias.acessibilidade.paleta_cores abaixo.",
+          "observacao": "fe_be_desacoplado = false: nao ha SPA nem API REST/GraphQL separada. Views Blade + componentes Livewire renderizam servidor + hidratacao parcial via AJAX/morph do proprio Livewire; Alpine.js cobre interatividade puramente client-side (toggles, dropdowns) sem requisicao ao servidor."
+        },
+        "banco_dados": {
+          "tipo": "SQLite",
+          "versao": "extensao PDO SQLite bundled ao runtime PHP 8.3 (sem versao propria a fixar; gerenciada pelo ambiente/container de deploy)",
+          "arquivo": "database/database.sqlite (padrao do scaffold Laravel)",
+          "observacao": "Escolha do usuario. Adequado ao volume esperado do MVP (poucos usuarios, poucas dezenas/centenas de lancamentos por usuario/mes) e a RNF-003 (p95 < 500ms para ate 24 meses de historico — trivial neste volume com indice em (usuario_id, mes_referencia)). Risco conhecido, nao bloqueante: SQLite serializa escritas concorrentes (lock de escritor unico) — se o uso crescer para muitos usuarios simultaneos escrevendo, isso pode virar gargalo; nao ha indicio disso no escopo aprovado, mas fica registrado como ponto de atencao para revisao futura, nao como incompatibilidade a barrar a escolha do usuario."
+        },
+        "framework_teste": "Pest (versao mais recente compativel com Laravel 13, resolvida pelo scaffold oficial 'laravel/laravel' + 'pestphp/pest' no momento da inicializacao) — padrao do ecossistema Laravel, conforme escolha do usuario. fe_be_desacoplado = false: um unico framework de teste para o projeto inteiro (nao ha framework_teste_backend/frontend separado).",
+        "deploy": {
+          "mecanismo": null,
+          "acionamento": null,
+          "verificacao": null,
+          "status": "pendente_infraestrutura",
+          "observacao": "Usuario confirmou que ainda nao existe pipeline de CI/CD configurado no servidor. Nao inventado mecanismo placeholder. Pre-requisito de infraestrutura fora do escopo deste pipeline — o deploy-agent so pode atuar (abrir/mergear PR de cada RF, publicar em produção) depois que isso existir e for registrado aqui pelo usuario."
+        },
+        "controle_versao": {
+          "plataforma": "github",
+          "mecanismo_pr": "cli",
+          "estrategia_merge": "squash",
+          "observacao": "plataforma e mecanismo_pr confirmados por deteccao real do ambiente (remote origin = https://github.com/Yanfgomes/my-bills, gh CLI v2.97.0 autenticado com escopos 'repo' e 'workflow', pronto para 'gh pr create'/'gh pr merge'); estrategia_merge = squash confirmada pelo usuario."
+        },
+        "ferramenta_qualidade_codigo": {
+          "ferramenta": null,
+          "acionamento": null,
+          "status": "pendente_infraestrutura",
+          "observacao": "Usuario confirmou que ainda nao existe ferramenta de analise estatica/quality gate configurada. O code-review-agent continua fazendo a revisao qualitativa normalmente; so o gate automatizado fica indisponivel ate a ferramenta existir."
+        },
+        "ferramenta_seguranca": {
+          "ferramenta": null,
+          "acionamento": null,
+          "status": "pendente_infraestrutura",
+          "observacao": "Usuario confirmou que ainda nao existe ferramenta de SAST/scanner de dependencias configurada. O security-agent continua fazendo o pentest whitebox manual normalmente; so o complemento automatizado fica indisponivel ate a ferramenta existir."
+        }
+      },
+      "fe_be_desacoplado": false,
+      "sinergia_avaliada": "PHP 8.3 + Laravel 13 + Eloquent + SQLite + Blade/Livewire/Alpine e uma combinacao madura e amplamente usada em producao, sem atrito conhecido de integracao: Eloquent suporta SQLite nativamente (driver 'sqlite' de primeira classe no Laravel), Livewire e mantido pela mesma organizacao do Laravel (integracao oficial), Alpine.js e a dependencia leve recomendada oficialmente para interatividade dentro de componentes Livewire. Unico ponto de atencao registrado (nao bloqueante): SQLite e escrita concorrente, ja anotado acima em stack.banco_dados.observacao. Nenhuma incompatibilidade real identificada contra RNF-001 a RNF-004, RNF-PADRAO-IDIOMA, RNF-PADRAO-ACESSIBILIDADE-CONFIG e RNF-PADRAO-LOG-AUDITORIA (ver campos correspondentes abaixo) — Laravel oferece suporte nativo/idiomatico para hashing de senha (Hash facade, bcrypt/argon2id configuravel), ocultacao de campo em serializacao ($hidden no model User), autorizacao por Policy (isolamento RN-005/RNF-002), localizacao (Lang/__()), e Eloquent Model Observers (auditoria).",
+      "convencoes": {
+        "estilo_codigo": "PSR-12, formatado com Laravel Pint (ferramenta oficial do framework).",
+        "estrutura_pastas": "Padrao do scaffold Laravel 13: app/Models (Eloquent), app/Livewire (componentes Livewire, namespace padrao do Laravel 13 — substituiu app/Http/Livewire de versoes anteriores), app/Policies (autorizacao), app/Observers (auditoria), app/Services (logica de negocio nao-trivial, ver arquitetura.camadas_servicos), database/migrations, database/factories, resources/views/livewire (Blade views dos componentes), resources/views/layouts (AppLayout/casca, ver layout-guidelines), routes/web.php, tests/Feature + tests/Unit (Pest).",
+        "nomenclatura": "Classes Model em PascalCase singular (ex: FonteRenda, Despesa); tabelas em snake_case plural (ex: fontes_renda, despesas); componentes Livewire em PascalCase (ex: OverviewFinanceiro, RendaForm, DespesaForm) com Blade tag kebab-case (<livewire:overview-financeiro />); rotas nomeadas em dot notation por dominio (ex: renda.index, renda.store, despesas.index, overview.show); colunas de banco em snake_case; metodos PHP em camelCase.",
+        "validacao": "Livewire Form Objects (padrao Laravel 13) ou $rules em cada componente, aplicando RN-002 (valor > 0), RN-003 (formato/obrigatoriedade YYYY-MM), RN-004 (email unico), RN-006 (credenciais invalidas, mensagem generica), RN-008 (mes_referencia somente leitura/imutavel na edicao — campo desabilitado no formulario E validacao server-side rejeitando qualquer tentativa de altera-lo via payload manipulado, nao so via UI).",
+        "autorizacao": "Laravel Policies (RendaPolicy, DespesaPolicy) aplicadas via $this->authorize() em todo componente Livewire que le/escreve Renda ou Despesa, garantindo RN-005/RNF-002 (isolamento por usuario_id == auth()->id(), erro 404/403 sem expor existencia do registro de terceiros)."
+      },
+      "acessibilidade": {
+        "wcag_nivel": "AA",
+        "paleta_cores": {
+          "tema_claro": {
+            "bg": {
+              "valor": "#f4f6f8",
+              "uso": "fundo da pagina"
+            },
+            "card": {
+              "valor": "#ffffff",
+              "uso": "fundo de cards/paineis"
+            },
+            "border": {
+              "valor": "#e1e5ea",
+              "uso": "bordas de cards/inputs"
+            },
+            "text": {
+              "valor": "#1f2937",
+              "uso": "texto principal",
+              "contraste_verificado": "13.55:1 sobre bg, 14.67:1 sobre card — aprovado (>=4.5:1 texto normal)"
+            },
+            "text_muted": {
+              "valor": "#54606e",
+              "uso": "texto secundario/legendas",
+              "contraste_verificado": "5.87:1 sobre bg, 6.35:1 sobre card — ajustado do #6b7280 original do prototipo (4.46:1 sobre bg, abaixo do minimo); aprovado apos ajuste"
+            },
+            "primary": {
+              "valor": "#2563eb",
+              "uso": "acao primaria (botoes, links, foco)",
+              "contraste_verificado": "5.17:1 com texto branco sobre o botao — aprovado"
+            },
+            "primary_dark": {
+              "valor": "#1d4ed8",
+              "uso": "estado hover/active da acao primaria"
+            },
+            "danger": {
+              "valor": "#dc2626",
+              "uso": "erro/exclusao/alerta critico",
+              "contraste_verificado": "4.83:1 sobre fundo claro — aprovado para texto normal"
+            },
+            "success": {
+              "valor": "#157347",
+              "uso": "saldo positivo/confirmacao",
+              "contraste_verificado": "5.87:1 sobre branco — ajustado do #16a34a original do prototipo (3.30:1, insuficiente para texto normal); aprovado apos ajuste"
+            },
+            "warn": {
+              "valor": "#92400e",
+              "uso": "texto de alerta/atencao (percentual comprometido > 100%, RN-007)",
+              "contraste_verificado": "7.09:1 sobre branco — ajustado do #d97706 original do prototipo (3.19:1, insuficiente para texto normal); #d97706 mantido so para uso decorativo/large-text (preenchimento de barra, icones) onde 3:1 basta"
+            }
+          },
+          "tema_escuro": {
+            "bg": {
+              "valor": "#0f172a",
+              "uso": "fundo da pagina"
+            },
+            "card": {
+              "valor": "#1e293b",
+              "uso": "fundo de cards/paineis"
+            },
+            "border": {
+              "valor": "#334155",
+              "uso": "bordas de cards/inputs"
+            },
+            "text": {
+              "valor": "#f1f5f9",
+              "uso": "texto principal",
+              "contraste_verificado": "~16:1 sobre bg — aprovado"
+            },
+            "text_muted": {
+              "valor": "#94a3b8",
+              "uso": "texto secundario/legendas",
+              "contraste_verificado": "6.96:1 sobre bg, 5.70:1 sobre card — aprovado"
+            },
+            "primary": {
+              "valor": "#3b82f6",
+              "uso": "acao primaria (botoes, links, foco)",
+              "observacao": "recalcular contraste final texto-sobre-botao na implementacao se o tom for ajustado por preferencia visual; manter sempre >=4.5:1 com o texto do botao"
+            },
+            "danger": {
+              "valor": "#f87171",
+              "uso": "erro/exclusao/alerta critico"
+            },
+            "success": {
+              "valor": "#4ade80",
+              "uso": "saldo positivo/confirmacao"
+            },
+            "warn": {
+              "valor": "#fbbf24",
+              "uso": "texto de alerta/atencao (RN-007)"
+            }
+          },
+          "nota": "Paleta derivada da ja usada no prototipo aprovado (prototipo/index.html), com 3 ajustes de contraste (text_muted, success, warn) para WCAG 2.2 AA (4.5:1 texto normal / 3:1 texto grande e componentes de UI) no tema claro; tema escuro e conjunto de tokens novo (nao existe no prototipo, que so cobre tema claro), dimensionado com a mesma logica de contraste. Nao inclui a variante de alto-contraste (camada adicional sobre a mesma infraestrutura de tokens, RNF-PADRAO-ACESSIBILIDADE-CONFIG) nem a verificacao final do indicador de foco (3:1 minimo contra fundo adjacente) — ambos ficam para a implementacao (dev-agent), seguindo reference/layout-guidelines.md e reference/bioform-layout/temas.md, e sao auditados depois pelo accessibility-agent."
+        },
+        "suporte_tema": "claro_escuro",
+        "fonte_configuravel": true,
+        "foco_visivel": true,
+        "alto_contraste": true,
+        "reducao_movimento": true,
+        "padroes_aria": [
+          "Todo <img> com atributo alt descritivo (ou alt=\"\" se puramente decorativo).",
+          "Todo campo de formulario (Livewire wire:model) com <label> associado via 'for'/'id' ou aria-label quando label visivel nao for viavel.",
+          "Landmarks semanticos em toda tela: <header>, <nav aria-label=\"...\">, <main>, <footer>; cabecalho de pagina (PageHero) como h1 unico por tela.",
+          "Componentes interativos customizados (ex: seletor de mes do Overview, toggle de tema) com role apropriado, estado via aria-* (aria-pressed, aria-expanded, aria-current) e navegacao completa por teclado (Tab/Enter/Espaco/setas conforme o padrao ARIA do widget).",
+          "Livewire faz atualizacao parcial de DOM via AJAX (wire:model/wire:click) sem navegacao de pagina — mensagens de erro de validacao e alertas dinamicos (ex: alerta RN-007 no Overview) precisam de aria-live=\"polite\" (ou \"assertive\" para erros de submissao) para leitores de tela perceberem a mudanca sem reload; estados de carregamento (wire:loading) sinalizados com aria-busy.",
+          "Foco gerenciado explicitamente apos acoes Livewire que alteram o conteudo da tela (ex: apos submissao de formulario com erro, foco vai para a primeira mensagem de erro; apos exclusao bem-sucedida em lista, foco nao fica orfao em elemento removido do DOM).",
+          "Skip-link ('Pular para o conteudo principal') como primeiro elemento focavel de toda tela autenticada."
+        ]
+      },
+      "internacionalizacao": {
+        "idiomas_suportados": [
+          "pt",
+          "en",
+          "es"
+        ],
+        "idioma_padrao": "pt",
+        "mecanismo": "Localizacao nativa do Laravel: arquivos de traducao lang/{locale}.json (strings de UI/labels/mensagens de validacao) + lang/{locale}/validation.php (mensagens de validacao customizadas quando o texto padrao do Laravel nao cobrir RN especificas), helper __() em toda view Blade/componente Livewire, middleware SetLocale (app/Http/Middleware) persistindo a escolha do usuario em sessao (e futuramente coluna de preferencia do usuario, se necessario) e aplicando app()->setLocale() no boot da requisicao.",
+        "observacao": "idioma_padrao = 'pt' definido pelo contexto do projeto (prototipo aprovado em lang=pt-BR, dominio de negocio e todos os RFs/RNFs redigidos em portugues) — nao houve necessidade de perguntar ao usuario, conforme permitido quando a escolha e obvia pelo contexto."
+      },
+      "log_auditoria": {
+        "tabela": "logs_auditoria",
+        "campos": [
+          "acao (enum: criacao | alteracao | exclusao)",
+          "usuario_id (FK -> users; para RF-001, ver observacao abaixo)",
+          "tabela_afetada (string — nome da tabela/entidade de negocio afetada)",
+          "registro_id (identificador do registro afetado na tabela_afetada)",
+          "valor_anterior (json, nullable — nulo em criacao)",
+          "valor_novo (json, nullable — nulo em exclusao)",
+          "criado_em (datetime — momento da operacao; tabela imutavel, sem atualizado_em, sem update/delete permitido por nenhum endpoint da aplicacao)"
+        ],
+        "mecanismo_captura": "interceptor_aplicacao",
+        "mecanismo_captura_detalhe": "Eloquent Model Observers (app/Observers), registrados no AppServiceProvider para todo model de dado de negocio (User, FonteRenda, Despesa e qualquer novo model de dominio adicionado em marcos futuros), escutando os eventos created/updated/deleted e gravando o registro correspondente em logs_auditoria. Escolhido em vez de trigger_banco porque todo acesso a dados desta stack passa por Eloquent (sem uso planejado de queries SQL cruas/DB::table() fora do ORM); qualquer ponto de escrita que no futuro precise contornar o Eloquent (ex: bulk insert direto) e responsabilidade de quem implementa garantir que tambem grava no log, ja que o Observer nao intercepta esse caminho.",
+        "observacao_rf001": "RF-001 (cadastro/registro aberto) cria um usuario sem que exista sessao autenticada no momento da operacao. Convencao adotada: usuario_id do registro de auditoria = id do proprio usuario recem-criado (acao autoatribuida), unico caso do sistema em que o 'usuario autenticado que executou' e o proprio registro afetado.",
+        "relatorio_consulta": "Nenhum RF do escopo aprovado (RF-001 a RF-008, marcos 1 e 2) implementa a tela de relatorio de consulta ao log exigida por RNF-PADRAO-LOG-AUDITORIA. Mecanismo de captura fica pronto desde RF-001 (arquitetural, conforme exigido), mas a tela de consulta em si (filtros: usuario, tabela/entidade, acao, periodo — ver reference/layout-guidelines.md '#Relatorio de Log/Auditoria') carece de um RF proprio, ainda nao escopado. Sinalizado em conclusao_agente para o orquestrador avaliar retorno controlado ao analise-planejamento-agent/requisitos-agent (provavel novo RF em marco futuro)."
+      },
+      "historico_revisoes": [
+        {
+          "gate": "escolha_stack",
+          "resposta": "Stack escolhido (Outra combinacao): PHP 8.3 + Laravel 13 full-stack (acoplado, fe_be_desacoplado = false), Blade + Livewire/Alpine.js, SQLite, Pest. Estrategia de merge = squash. Pipeline de CI/CD e ferramentas de qualidade/seguranca ainda nao existem — registrados como pendente_infraestrutura.",
+          "respondido_em": "2026-08-17T17:35:00Z",
+          "resultado": "padroes_tecnologias.status = aprovado. Nenhuma incompatibilidade real encontrada contra os RNFs aprovados (ver sinergia_avaliada). controle_versao ja estava parcialmente resolvido por deteccao real do ambiente antes da pergunta (github + gh CLI autenticado); so estrategia_merge dependia do usuario. idioma_padrao = 'pt' e a paleta de cores/verificacao de contraste (rascunhadas antes do gate) mantidas sem alteracao."
+        }
+      ]
+    },
+    "documentacao_tecnica": {
+      "status": "aprovado",
+      "marco_ref": "marco-1-mvp",
+      "observacao_geral": "fe_be_desacoplado = false (monolito Laravel/Livewire): nao ha API REST/GraphQL separada. O equivalente funcional ao 'contrato de API' e o contrato publico de cada componente Livewire (rota de entrada, propriedades publicas com wire:model, actions/metodos publicos acionaveis da view, eventos emitidos) mais o contrato de metodo do Service de calculo (OverviewService). Escopo desta Fase 4 cobre somente os RFs do marco-1-mvp (RF-001, RF-002, RF-003, RF-004, RF-006, RF-008); RF-005 e RF-007 (edicao/exclusao de Renda/Despesa) pertencem ao marco-2-gestao-completa e serao documentados quando o design-agent rodar novamente para aquele marco — os componentes RendaManager/DespesaManager ja preveem essas actions na arquitetura (camadas_servicos), mas os contratos abaixo descrevem apenas o subconjunto de acoes ativas no marco-1 (listar + criar).",
+      "rotas": [
+        {
+          "nome": "login",
+          "metodo": "GET",
+          "path": "/login",
+          "middleware": "guest",
+          "handler": "Livewire\\Volt ou componente Livewire de pagina: App\\Livewire\\Auth\\LoginForm (full-page component, layout AppLayout variante 'guest')",
+          "rf_ref": "RF-002"
+        },
+        {
+          "nome": "registro",
+          "metodo": "GET",
+          "path": "/registro",
+          "middleware": "guest",
+          "handler": "App\\Livewire\\Auth\\RegistroForm (full-page component, layout AppLayout variante 'guest')",
+          "rf_ref": "RF-001"
+        },
+        {
+          "nome": "logout",
+          "metodo": "POST",
+          "path": "/logout",
+          "middleware": "auth",
+          "handler": "Controller de logout padrao do scaffold Laravel (invalida sessao + regenera token), sem componente Livewire proprio.",
+          "rf_ref": "RF-002"
+        },
+        {
+          "nome": "overview",
+          "metodo": "GET",
+          "path": "/ (raiz, redirect de '/' para 'overview' quando autenticado) e /overview",
+          "middleware": "auth",
+          "handler": "App\\Livewire\\Overview\\OverviewFinanceiro (full-page component, layout AppLayout autenticado)",
+          "rf_ref": "RF-003, RF-008"
+        },
+        {
+          "nome": "renda.index",
+          "metodo": "GET",
+          "path": "/renda",
+          "middleware": "auth",
+          "handler": "App\\Livewire\\Renda\\RendaManager (full-page component, layout AppLayout autenticado)",
+          "rf_ref": "RF-003, RF-004"
+        },
+        {
+          "nome": "despesas.index",
+          "metodo": "GET",
+          "path": "/despesas",
+          "middleware": "auth",
+          "handler": "App\\Livewire\\Despesas\\DespesaManager (full-page component, layout AppLayout autenticado)",
+          "rf_ref": "RF-003, RF-006"
+        }
+      ],
+      "componentes_livewire": [
+        {
+          "componente": "App\\Livewire\\Auth\\LoginForm",
+          "tela_ref": "TELA-001",
+          "rf_ref": "RF-002",
+          "propriedades_publicas": [
+            { "nome": "email", "tipo": "string", "wire_model": true, "campo_ref": "CAMPO-USU-003" },
+            { "nome": "senha", "tipo": "string", "wire_model": true, "campo_ref": "CAMPO-USU-004" }
+          ],
+          "actions": [
+            {
+              "metodo": "autenticar()",
+              "trigger": "wire:submit no formulario",
+              "validacao": [
+                "email: required, formato de email valido",
+                "senha: required"
+              ],
+              "regras_aplicadas": ["RN-006"],
+              "fluxo": "Resolve o usuario por email; se nao existir ou Hash::check(senha, usuario.senha) falhar, dispara ValidationException com mensagem generica unica 'credenciais invalidas' anexada a ambos os campos email/senha (nunca indica qual esta incorreto, RN-006). Sucesso: Auth::login($usuario), regenera sessao, redirect para rota 'overview'.",
+              "resposta_sucesso": "Redirect 'overview' (302), sessao autenticada iniciada.",
+              "resposta_erro": "Erros de validacao renderizados inline no formulario (Livewire property bag $errors), sem reload de pagina; foco movido para a primeira mensagem de erro (padroes_aria)."
+            }
+          ]
+        },
+        {
+          "componente": "App\\Livewire\\Auth\\RegistroForm",
+          "tela_ref": "TELA-002",
+          "rf_ref": "RF-001",
+          "propriedades_publicas": [
+            { "nome": "nome", "tipo": "string", "wire_model": true, "campo_ref": "CAMPO-USU-002" },
+            { "nome": "email", "tipo": "string", "wire_model": true, "campo_ref": "CAMPO-USU-003" },
+            { "nome": "senha", "tipo": "string", "wire_model": true, "campo_ref": "CAMPO-USU-004" },
+            { "nome": "senha_confirmation", "tipo": "string", "wire_model": true, "descricao": "confirmacao de senha, exigida pelo criterio de aceite de RF-001; nao persistida." }
+          ],
+          "actions": [
+            {
+              "metodo": "registrar()",
+              "trigger": "wire:submit no formulario",
+              "validacao": [
+                "nome: required, string, max:120",
+                "email: required, formato de email valido, unique:users,email (RN-004, mensagem 'e-mail ja cadastrado')",
+                "senha: required, min:8, confirmed (compara com senha_confirmation)"
+              ],
+              "regras_aplicadas": ["RN-004"],
+              "fluxo": "Cria User (id uuid, nome, email, senha=Hash::make(senha)), dispara Observer de auditoria (acao=criacao, usuario_id=id do proprio usuario recem-criado, conforme padroes_tecnologias.log_auditoria.observacao_rf001), autentica automaticamente (Auth::login) e redireciona para 'overview'.",
+              "resposta_sucesso": "Redirect 'overview' (302), usuario autenticado, registro em logs_auditoria criado.",
+              "resposta_erro": "Erro de email duplicado (RN-004) ou validacao de campo renderizado inline, nada persistido."
+            }
+          ]
+        },
+        {
+          "componente": "App\\Livewire\\Overview\\OverviewFinanceiro",
+          "tela_ref": "TELA-003",
+          "rf_ref": "RF-003, RF-008",
+          "propriedades_publicas": [
+            { "nome": "mesSelecionado", "tipo": "string(7) YYYY-MM", "wire_model": false, "campo_ref": "PARAM-OVW-001", "descricao": "Inicializado no mes corrente (mount()); alterado apenas pelas actions de navegacao, nunca por input direto do usuario." }
+          ],
+          "actions": [
+            {
+              "metodo": "mesAnterior()",
+              "trigger": "wire:click no botao de navegacao 'anterior'",
+              "fluxo": "mesSelecionado = mesSelecionado subtraido de 1 mes (sem limite minimo predefinido, conforme campos.dominios.DOM-004.parametros_consulta); recalcula indicadores via OverviewService."
+            },
+            {
+              "metodo": "proximoMes()",
+              "trigger": "wire:click no botao de navegacao 'proximo'",
+              "fluxo": "mesSelecionado = mesSelecionado somado a 1 mes; recalcula indicadores via OverviewService. Sem limite maximo predefinido (nao ha requisito que proiba navegar para meses futuros sem lancamento — resultara no estado vazio ja coberto pela tela)."
+            }
+          ],
+          "dados_exibidos": {
+            "origem": "App\\Services\\OverviewService::calcular(usuario_id: auth()->id(), mesReferencia: mesSelecionado) — ver arquitetura.documentacao_tecnica.servicos.OverviewService",
+            "campos_ref": ["IND-OVW-001", "IND-OVW-002", "IND-OVW-003", "IND-OVW-004"],
+            "regras_aplicadas": ["RN-001", "RN-005", "RN-007"]
+          }
+        },
+        {
+          "componente": "App\\Livewire\\Renda\\RendaManager",
+          "tela_ref": "TELA-004",
+          "rf_ref": "RF-003, RF-004",
+          "escopo_marco": "marco-1-mvp implementa somente listagem (leitura) e criacao. Actions de edicao/exclusao (editar()/excluir()) fazem parte do contrato do componente na arquitetura (camadas_servicos) mas pertencem ao escopo de RF-005 (marco-2-gestao-completa) e NAO sao documentadas/implementadas nesta rodada.",
+          "propriedades_publicas": [
+            { "nome": "descricao", "tipo": "string", "wire_model": true, "campo_ref": "CAMPO-REN-003" },
+            { "nome": "valorLiquido", "tipo": "decimal(12,2)", "wire_model": true, "campo_ref": "CAMPO-REN-004" },
+            { "nome": "mesReferencia", "tipo": "string(7) YYYY-MM", "wire_model": true, "campo_ref": "CAMPO-REN-007" }
+          ],
+          "actions": [
+            {
+              "metodo": "criar()",
+              "trigger": "wire:submit no formulario de nova fonte de renda",
+              "validacao": [
+                "descricao: required, string, max:120",
+                "valorLiquido: required, numeric, gt:0 (RN-002, mensagem 'o valor deve ser maior que zero')",
+                "mesReferencia: required, regex formato YYYY-MM, mes valido 01-12 (RN-003)"
+              ],
+              "regras_aplicadas": ["RN-002", "RN-003", "RN-005"],
+              "fluxo": "$this->authorize('create', FonteRenda::class) (RendaPolicy, RN-005). Cria FonteRenda vinculada a usuario_id=auth()->id(). Observer de auditoria grava acao=criacao. Reseta formulario e atualiza a listagem exibida no proprio componente (sem reload de pagina).",
+              "resposta_sucesso": "Fonte de renda listada imediatamente no componente; refletida no Overview do mes correspondente (RF-008) na proxima visita/refresh daquela tela.",
+              "resposta_erro": "Erros de validacao inline por campo (mensagens dedicadas RN-002/RN-003); nada persistido."
+            }
+          ],
+          "listagem": {
+            "origem": "FonteRenda::where('usuario_id', auth()->id())->orderByDesc('mes_referencia')->orderByDesc('criado_em')->get() — RN-005 aplicado via escopo da query, reforcado por RendaPolicy em qualquer acao futura de edicao/exclusao.",
+            "campos_exibidos": ["CAMPO-REN-003 (descricao)", "CAMPO-REN-004 (valor_liquido)", "CAMPO-REN-007 (mes_referencia)"],
+            "estado_vazio": "Nenhuma fonte de renda cadastrada pelo usuario: mensagem orientando a cadastrar a primeira fonte de renda (mesmo padrao visual do prototipo aprovado)."
+          }
+        },
+        {
+          "componente": "App\\Livewire\\Despesas\\DespesaManager",
+          "tela_ref": "TELA-005",
+          "rf_ref": "RF-003, RF-006",
+          "escopo_marco": "marco-1-mvp implementa somente listagem (leitura) e criacao. Actions de edicao/exclusao pertencem ao escopo de RF-007 (marco-2-gestao-completa) e NAO sao documentadas/implementadas nesta rodada.",
+          "propriedades_publicas": [
+            { "nome": "descricao", "tipo": "string", "wire_model": true, "campo_ref": "CAMPO-DESP-003" },
+            { "nome": "valor", "tipo": "decimal(12,2)", "wire_model": true, "campo_ref": "CAMPO-DESP-004" },
+            { "nome": "categoria", "tipo": "string(60), nullable", "wire_model": true, "campo_ref": "CAMPO-DESP-005" },
+            { "nome": "mesReferencia", "tipo": "string(7) YYYY-MM", "wire_model": true, "campo_ref": "CAMPO-DESP-008" }
+          ],
+          "actions": [
+            {
+              "metodo": "criar()",
+              "trigger": "wire:submit no formulario de nova despesa",
+              "validacao": [
+                "descricao: required, string, max:120",
+                "valor: required, numeric, gt:0 (RN-002, mensagem 'o valor deve ser maior que zero')",
+                "categoria: nullable, string, max:60",
+                "mesReferencia: required, regex formato YYYY-MM, mes valido 01-12 (RN-003)"
+              ],
+              "regras_aplicadas": ["RN-002", "RN-003", "RN-005"],
+              "fluxo": "$this->authorize('create', Despesa::class) (DespesaPolicy, RN-005). Cria Despesa vinculada a usuario_id=auth()->id(). Observer de auditoria grava acao=criacao. Reseta formulario e atualiza a listagem exibida no proprio componente.",
+              "resposta_sucesso": "Despesa listada imediatamente no componente; refletida no Overview do mes correspondente (RF-008) na proxima visita/refresh daquela tela.",
+              "resposta_erro": "Erros de validacao inline por campo (mensagens dedicadas RN-002/RN-003); nada persistido."
+            }
+          ],
+          "listagem": {
+            "origem": "Despesa::where('usuario_id', auth()->id())->orderByDesc('mes_referencia')->orderByDesc('criado_em')->get() — RN-005 aplicado via escopo da query, reforcado por DespesaPolicy em qualquer acao futura de edicao/exclusao.",
+            "campos_exibidos": ["CAMPO-DESP-003 (descricao)", "CAMPO-DESP-004 (valor)", "CAMPO-DESP-005 (categoria, opcional)", "CAMPO-DESP-008 (mes_referencia)"],
+            "estado_vazio": "Nenhuma despesa cadastrada pelo usuario: mensagem orientando a cadastrar a primeira despesa (mesmo padrao visual do prototipo aprovado)."
+          }
+        }
+      ],
+      "servicos": [
+        {
+          "classe": "App\\Services\\OverviewService",
+          "rf_ref": "RF-008",
+          "metodo": "calcular(string $usuarioId, string $mesReferencia): OverviewData",
+          "input": {
+            "usuarioId": "uuid do usuario autenticado (RN-005, nunca aceito de parametro externo confiavel sem revalidar contra auth()->id() no componente chamador)",
+            "mesReferencia": "string YYYY-MM (PARAM-OVW-001, mesSelecionado do componente OverviewFinanceiro)"
+          },
+          "output_contrato": {
+            "rendaTotal": "decimal(12,2) — IND-OVW-001, soma de fontes_renda.valor_liquido do usuario onde mes_referencia == mesReferencia",
+            "despesasTotal": "decimal(12,2) — IND-OVW-002, soma de despesas.valor do usuario onde mes_referencia == mesReferencia",
+            "saldoDisponivel": "decimal(12,2) — IND-OVW-003 = rendaTotal - despesasTotal",
+            "percentualComprometido": "decimal|null — IND-OVW-004 = (despesasTotal / rendaTotal) * 100; null quando rendaTotal == 0 (RN-001, evita divisao por zero — Overview exibe indicador alternativo em vez do numero)",
+            "alertaComprometimento": "bool — true quando despesasTotal > rendaTotal (RN-007); sinaliza a UI a aplicar o destaque visual de alerta (percentual exibido sem teto em 100%)"
+          },
+          "regras_aplicadas": ["RN-001", "RN-005", "RN-007"],
+          "performance": "Consulta indexada por (usuario_id, mes_referencia) em fontes_renda e despesas (ver arquitetura.modelagem_dados.entidades[].indices), atendendo RNF-003 (p95 < 500ms ate 24 meses de historico) — duas agregacoes SUM() indexadas, sem N+1."
+        }
+      ],
+      "contratos_dados": [
+        {
+          "nome": "UsuarioRegistroInput",
+          "rf_ref": "RF-001",
+          "campos": ["nome (CAMPO-USU-002)", "email (CAMPO-USU-003)", "senha (CAMPO-USU-004)", "senha_confirmation (nao persistido)"],
+          "observacao": "senha nunca aparece em nenhum output/contrato de resposta (RNF-001)."
+        },
+        {
+          "nome": "UsuarioLoginInput",
+          "rf_ref": "RF-002",
+          "campos": ["email (CAMPO-USU-003)", "senha (CAMPO-USU-004)"]
+        },
+        {
+          "nome": "FonteRendaInput",
+          "rf_ref": "RF-004",
+          "campos": ["descricao (CAMPO-REN-003)", "valor_liquido (CAMPO-REN-004)", "mes_referencia (CAMPO-REN-007)"]
+        },
+        {
+          "nome": "FonteRendaOutput",
+          "rf_ref": "RF-004, RF-008",
+          "campos": ["id (CAMPO-REN-001)", "descricao (CAMPO-REN-003)", "valor_liquido (CAMPO-REN-004)", "mes_referencia (CAMPO-REN-007)", "criado_em (CAMPO-REN-005)", "atualizado_em (CAMPO-REN-006)"]
+        },
+        {
+          "nome": "DespesaInput",
+          "rf_ref": "RF-006",
+          "campos": ["descricao (CAMPO-DESP-003)", "valor (CAMPO-DESP-004)", "categoria (CAMPO-DESP-005, opcional)", "mes_referencia (CAMPO-DESP-008)"]
+        },
+        {
+          "nome": "DespesaOutput",
+          "rf_ref": "RF-006, RF-008",
+          "campos": ["id (CAMPO-DESP-001)", "descricao (CAMPO-DESP-003)", "valor (CAMPO-DESP-004)", "categoria (CAMPO-DESP-005)", "mes_referencia (CAMPO-DESP-008)", "criado_em (CAMPO-DESP-006)", "atualizado_em (CAMPO-DESP-007)"]
+        },
+        {
+          "nome": "OverviewOutput",
+          "rf_ref": "RF-008",
+          "campos": ["mes_selecionado (PARAM-OVW-001)", "renda_total (IND-OVW-001)", "despesas_total (IND-OVW-002)", "saldo_disponivel (IND-OVW-003)", "percentual_comprometido (IND-OVW-004, nullable)", "alerta_comprometimento (derivado, RN-007)"]
+        },
+        {
+          "nome": "AuditLogEntry",
+          "rf_ref": "RF-001, RF-004, RF-006 (todo RF de escrita do marco)",
+          "campos": ["acao", "usuario_id", "tabela_afetada", "registro_id", "valor_anterior", "valor_novo", "criado_em"],
+          "observacao": "Contrato ja detalhado em arquitetura.modelagem_dados.entidades (tabela logs_auditoria) e padroes_tecnologias.log_auditoria; gravado automaticamente por Eloquent Observer a cada criar() dos componentes acima, sem acao explicita do usuario."
+        }
+      ],
+      "cobertura_telas": [
+        { "tela_ref": "TELA-001", "rf_ref": "RF-002", "contrato": "componentes_livewire.LoginForm", "coberto": true },
+        { "tela_ref": "TELA-002", "rf_ref": "RF-001", "contrato": "componentes_livewire.RegistroForm", "coberto": true },
+        { "tela_ref": "TELA-003", "rf_ref": "RF-003, RF-008", "contrato": "componentes_livewire.OverviewFinanceiro + servicos.OverviewService", "coberto": true },
+        { "tela_ref": "TELA-004", "rf_ref": "RF-003, RF-004 (marco-1); RF-005 fora do escopo desta rodada", "contrato": "componentes_livewire.RendaManager (listar+criar)", "coberto": true },
+        { "tela_ref": "TELA-005", "rf_ref": "RF-003, RF-006 (marco-1); RF-007 fora do escopo desta rodada", "contrato": "componentes_livewire.DespesaManager (listar+criar)", "coberto": true }
+      ],
+      "historico_revisoes": [
+        {
+          "gate": "aprovacao_doc_tecnica",
+          "resposta": "Aprovar como proposto",
+          "respondido_em": "2026-08-18T13:38:44Z",
+          "resultado": "Usuario aprovou a documentacao tecnica do marco-1-mvp exatamente como proposta (6 rotas, 5 componentes Livewire, 1 servico OverviewService, 8 contratos de dados), sem ajuste, incluindo o ponto de atencao de que RendaManager/DespesaManager implementam neste marco apenas listar+criar (editar/excluir ficam para RF-005/RF-007 no marco-2-gestao-completa). documentacao_tecnica.status marcado aprovado. Com padroes_tecnologias, camadas_servicos e modelagem_dados ja aprovados anteriormente, rollup arquitetura.status marcado aprovado para o marco-1-mvp."
+        }
+      ]
+    },
+    "modelagem_dados": {
+      "status": "aprovado",
+      "banco_dados": "SQLite (arquivo database/database.sqlite), conforme padroes_tecnologias.stack.banco_dados. Paradigma relacional — entidades derivadas 1:1 de campos.dominios ja aprovados, mais 1 entidade transversal (logs_auditoria) derivada de RNF-PADRAO-LOG-AUDITORIA.",
+      "codebase_existente_check": "codebase_existente.detectado = false — sem migrations/models reais preexistentes para cruzar contra o modelo proposto (nao aplicavel o passo de reconciliacao com codebase_existente.evidencias.migrations previsto na Fase 3).",
+      "entidades": [
+        {
+          "tabela": "users",
+          "dominio_ref": "DOM-001",
+          "model_eloquent": "App\\Models\\User (model de autenticacao padrao do Laravel, customizado)",
+          "colunas": [
+            {
+              "nome": "id",
+              "tipo": "uuid (string(36), PK)",
+              "campo_ref": "CAMPO-USU-001",
+              "observacao": "HasUuids trait do Laravel — funciona nativamente com SQLite (coluna string)."
+            },
+            {
+              "nome": "nome",
+              "tipo": "varchar(120), not null",
+              "campo_ref": "CAMPO-USU-002"
+            },
+            {
+              "nome": "email",
+              "tipo": "varchar, not null, unique",
+              "campo_ref": "CAMPO-USU-003",
+              "constraint": "unique index — enforca RN-004 tambem no banco (defesa em profundidade alem da validacao de app)"
+            },
+            {
+              "nome": "senha",
+              "tipo": "varchar, not null",
+              "campo_ref": "CAMPO-USU-004",
+              "observacao": "hash bcrypt (Hash facade, RNF-001); coluna nomeada 'senha' (nao 'password', para manter fidelidade ao campo aprovado) — exige override de getAuthPassword() no model User para o guard de autenticacao do Laravel apontar para esta coluna; $hidden = ['senha'] no model garante que RNF-001 (nunca retornar o campo em resposta) tambem se aplique a qualquer serializacao acidental do model."
+            },
+            {
+              "nome": "criado_em",
+              "tipo": "datetime, not null",
+              "campo_ref": "CAMPO-USU-005",
+              "observacao": "mapeado via const CREATED_AT = 'criado_em' no model (customizacao do timestamp padrao do Eloquent, que por default seria 'created_at')."
+            },
+            {
+              "nome": "atualizado_em",
+              "tipo": "datetime, not null",
+              "campo_ref": "CAMPO-USU-006",
+              "observacao": "mapeado via const UPDATED_AT = 'atualizado_em'."
+            }
+          ],
+          "omissoes_deliberadas": "Nenhuma coluna alem das 6 aprovadas em campos.dominios.DOM-001 (ex: sem 'remember_token' do scaffold padrao do Laravel, sem 'email_verified_at') — nenhum RF/criterio_aceite aprovado menciona verificacao de email ou 'lembrar-me' persistente; login via sessao padrao do Laravel funciona sem essas colunas. Se um dia forem necessarias, e adicao real de campo — retorno controlado ao requisitos-agent, nao decisao do design-agent."
+        },
+        {
+          "tabela": "fontes_renda",
+          "dominio_ref": "DOM-002",
+          "model_eloquent": "App\\Models\\FonteRenda",
+          "colunas": [
+            {
+              "nome": "id",
+              "tipo": "uuid (string(36), PK)",
+              "campo_ref": "CAMPO-REN-001"
+            },
+            {
+              "nome": "usuario_id",
+              "tipo": "uuid (FK -> users.id), not null, on delete cascade",
+              "campo_ref": "CAMPO-REN-002",
+              "observacao": "escopado a auth()->id() em toda query (RN-005/RF-003/RNF-002); indice proprio incluso no indice composto abaixo."
+            },
+            {
+              "nome": "descricao",
+              "tipo": "varchar(120), not null",
+              "campo_ref": "CAMPO-REN-003"
+            },
+            {
+              "nome": "valor_liquido",
+              "tipo": "decimal(12,2), not null",
+              "campo_ref": "CAMPO-REN-004",
+              "constraint": "CHECK (valor_liquido > 0) no banco (SQLite suporta CHECK) + validacao RN-002 na camada de app — defesa em profundidade."
+            },
+            {
+              "nome": "mes_referencia",
+              "tipo": "varchar(7), not null",
+              "campo_ref": "CAMPO-REN-007",
+              "constraint": "validacao de formato YYYY-MM (RN-003) e imutabilidade apos criacao (RN-008) sao regras de aplicacao (Livewire Form Object), nao ha CHECK de formato/imutabilidade viavel no SQLite sem trigger — decisao consistente com a Fase 2 (auditoria via Eloquent Observer, nao trigger de banco)."
+            },
+            {
+              "nome": "criado_em",
+              "tipo": "datetime, not null",
+              "campo_ref": "CAMPO-REN-005"
+            },
+            {
+              "nome": "atualizado_em",
+              "tipo": "datetime, not null",
+              "campo_ref": "CAMPO-REN-006"
+            }
+          ],
+          "indices": [
+            "INDEX composto (usuario_id, mes_referencia) — suporta RNF-003 (p95 < 500ms) e o filtro de PARAM-OVW-001."
+          ]
+        },
+        {
+          "tabela": "despesas",
+          "dominio_ref": "DOM-003",
+          "model_eloquent": "App\\Models\\Despesa",
+          "colunas": [
+            {
+              "nome": "id",
+              "tipo": "uuid (string(36), PK)",
+              "campo_ref": "CAMPO-DESP-001"
+            },
+            {
+              "nome": "usuario_id",
+              "tipo": "uuid (FK -> users.id), not null, on delete cascade",
+              "campo_ref": "CAMPO-DESP-002"
+            },
+            {
+              "nome": "descricao",
+              "tipo": "varchar(120), not null",
+              "campo_ref": "CAMPO-DESP-003"
+            },
+            {
+              "nome": "valor",
+              "tipo": "decimal(12,2), not null",
+              "campo_ref": "CAMPO-DESP-004",
+              "constraint": "CHECK (valor > 0) no banco + validacao RN-002 na app."
+            },
+            {
+              "nome": "categoria",
+              "tipo": "varchar(60), nullable",
+              "campo_ref": "CAMPO-DESP-005"
+            },
+            {
+              "nome": "mes_referencia",
+              "tipo": "varchar(7), not null",
+              "campo_ref": "CAMPO-DESP-008",
+              "constraint": "mesma logica de fontes_renda.mes_referencia (RN-003/RN-008 em camada de app)."
+            },
+            {
+              "nome": "criado_em",
+              "tipo": "datetime, not null",
+              "campo_ref": "CAMPO-DESP-006"
+            },
+            {
+              "nome": "atualizado_em",
+              "tipo": "datetime, not null",
+              "campo_ref": "CAMPO-DESP-007"
+            }
+          ],
+          "indices": [
+            "INDEX composto (usuario_id, mes_referencia) — mesma razao de fontes_renda."
+          ]
+        },
+        {
+          "tabela": "logs_auditoria",
+          "dominio_ref": null,
+          "rf_ref": null,
+          "model_eloquent": "App\\Models\\AuditLog",
+          "origem": "RNF-PADRAO-LOG-AUDITORIA (transversal, sem RF proprio no escopo atual — ver observacao_relatorio abaixo)",
+          "colunas": [
+            {
+              "nome": "id",
+              "tipo": "bigint autoincrement, PK",
+              "observacao": "unica entidade do sistema sem PK uuid — decisao do design-agent: tabela append-only sem FK de terceiros apontando para ela, ordenacao/paginacao por id sequencial e mais barata que uuid para um log que so cresce; nao ha necessidade de opacidade de identificador (nao e exposta como URL publica)."
+            },
+            {
+              "nome": "acao",
+              "tipo": "varchar/enum ('criacao'|'alteracao'|'exclusao'), not null"
+            },
+            {
+              "nome": "usuario_id",
+              "tipo": "uuid (FK -> users.id), not null",
+              "observacao": "Para RF-001 (cadastro, sem sessao autenticada previa): usuario_id = id do proprio usuario recem-criado (acao autoatribuida) — convencao registrada em padroes_tecnologias.log_auditoria.observacao_rf001."
+            },
+            {
+              "nome": "tabela_afetada",
+              "tipo": "varchar, not null",
+              "observacao": "nome da tabela de negocio afetada (ex: 'users', 'fontes_renda', 'despesas')."
+            },
+            {
+              "nome": "registro_id",
+              "tipo": "varchar, not null",
+              "observacao": "id (uuid) do registro afetado na tabela_afetada, armazenado como string para nao amarrar o log a um tipo de PK especifico de cada tabela de dominio."
+            },
+            {
+              "nome": "valor_anterior",
+              "tipo": "json, nullable",
+              "observacao": "nulo em criacao (acao=criacao)."
+            },
+            {
+              "nome": "valor_novo",
+              "tipo": "json, nullable",
+              "observacao": "nulo em exclusao (acao=exclusao). Nunca inclui o campo 'senha' de users (mesma logica de RNF-001 — Observer serializa o model ja com $hidden aplicado)."
+            },
+            {
+              "nome": "criado_em",
+              "tipo": "datetime, not null",
+              "observacao": "unico timestamp da tabela — nao ha atualizado_em: tabela imutavel por design, nenhum endpoint da aplicacao permite update/delete sobre logs_auditoria (auditado pelo security-agent depois)."
+            }
+          ],
+          "indices": [
+            "INDEX (usuario_id)",
+            "INDEX (tabela_afetada)",
+            "INDEX (acao)",
+            "INDEX (criado_em)",
+            "— os 4 juntos suportam os filtros minimos do relatorio de consulta (usuario, tabela/entidade, acao, periodo) exigidos por RNF-PADRAO-LOG-AUDITORIA."
+          ],
+          "observacao_relatorio": "Tabela e mecanismo de captura (Eloquent Observers, ver camadas_servicos) ficam prontos desde RF-001, conforme exigido — mas nenhum RF do escopo aprovado ainda implementa a TELA de relatorio de consulta a esta tabela (gap ja sinalizado em conclusao_agente anterior, sob avaliacao do orquestrador para um RF futuro)."
+        }
+      ],
+      "sem_tabela_propria": [
+        {
+          "dominio_ref": "DOM-004",
+          "nome": "Overview Financeiro",
+          "motivo": "Dominio agregador, conforme ja registrado em campos.dominios.DOM-004.observacao — nenhum campo persistido proprio. IND-OVW-001 a 004 sao calculados em tempo de consulta por App\\Services\\OverviewService a partir de fontes_renda + despesas do usuario autenticado, filtrados por mes_referencia == mes_selecionado (PARAM-OVW-001). Documentado como contrato de servico (input/output), nao como tabela, na Fase 4 (documentacao_tecnica)."
+        }
+      ],
+      "relacionamentos": [
+        "users 1:N fontes_renda (fontes_renda.usuario_id -> users.id, cascade on delete)",
+        "users 1:N despesas (despesas.usuario_id -> users.id, cascade on delete)",
+        "users 1:N logs_auditoria (logs_auditoria.usuario_id -> users.id, sem cascade — log de auditoria de um usuario excluido permanece; nenhum RF aprovado cobre exclusao de usuario neste marco, entao esta e uma decisao de baixo risco/reversivel se necessidade real surgir depois)"
+      ],
+      "convencoes_migracao": "Migrations no padrao Laravel (database/migrations), uma tabela por migration, nomeadas com timestamp sequencial: create_users_table (customiza a migration padrao do scaffold para adicionar 'nome' e renomear 'password'->'senha'/'created_at'->'criado_em'/'updated_at'->'atualizado_em', remover 'remember_token'/'email_verified_at'), create_fontes_renda_table, create_despesas_table, create_logs_auditoria_table (por ultimo, ja que referencia users.id).",
+      "historico_revisoes": [
+        {
+          "gate": "aprovacao_modelagem",
+          "resposta": "Aprovar como proposto",
+          "respondido_em": "2026-08-18T13:31:22Z",
+          "resultado": "Usuario aprovou a modelagem de dados exatamente como proposta (3 tabelas de dominio + logs_auditoria transversal), incluindo as 3 decisoes de design destacadas no gate (coluna 'senha'/'criado_em'/'atualizado_em' customizadas em vez dos nomes padrao do Eloquent, PK bigint sequencial em logs_auditoria como unica excecao a uuid, nenhuma coluna extra alem das aprovadas em campos.dominios). modelagem_dados.status marcado aprovado. Seguindo para a Fase 4 (documentacao tecnica: design de APIs/contratos Livewire e contratos de dados)."
+        }
+      ]
+    },
+    "camadas_servicos": {
+      "status": "aprovado",
+      "proposta": {
+        "resumo": "Monolito Laravel classico (fe_be_desacoplado = false): sem API separada, sem camada de Service para toda e qualquer operacao — Service reservado so para logica de calculo nao-trivial (Overview). Nenhuma integracao externa no escopo do marco-1-mvp.",
+        "camadas": [
+          {
+            "nome": "Apresentacao",
+            "descricao": "Blade views + componentes Livewire (app/Livewire), um por tela aprovada em documentacao.prototipo.telas: LoginForm (TELA-001/RF-002), RegistroForm (TELA-002/RF-001), OverviewFinanceiro (TELA-003/RF-003+RF-008), RendaManager (TELA-004/RF-003+RF-004, RF-005 no marco-2), DespesaManager (TELA-005/RF-003+RF-006, RF-007 no marco-2). Alpine.js para interatividade puramente client-side (ex: dropdown de navegacao) sem round-trip ao servidor. Constroem sobre o protótipo aprovado (traducao para Blade/Livewire/Tailwind, nao redesenho), seguindo reference/layout-guidelines.md."
+          },
+          {
+            "nome": "Roteamento e Middleware",
+            "descricao": "routes/web.php com dois grupos: rotas publicas (login, registro) e rotas protegidas pelo middleware 'auth' padrao do Laravel (session guard) para overview/renda/despesas. Middleware custom SetLocale aplicando o idioma persistido do usuario (padroes_tecnologias.internacionalizacao) em toda requisicao."
+          },
+          {
+            "nome": "Autorizacao",
+            "descricao": "Laravel Policies (RendaPolicy, DespesaPolicy) — todo componente Livewire que le/escreve Renda ou Despesa chama $this->authorize() antes da operacao, restringindo a auth()->id() (RN-005/RNF-002). Sem policy para Overview em si (dado agregado, calculado so a partir dos registros ja autorizados do proprio usuario)."
+          },
+          {
+            "nome": "Validacao",
+            "descricao": "Livewire Form Objects (padrao Laravel 13) ou $rules por componente: RN-002 (valor > 0) em RendaForm/DespesaForm, RN-003 (formato/obrigatoriedade YYYY-MM de mes_referencia), RN-004 (email unico) em RegistroForm, RN-006 (credenciais invalidas, mensagem generica sem indicar qual campo) em LoginForm, RN-008 (mes_referencia somente leitura na edicao — campo disabled no formulario E validacao server-side rejeitando alteracao via payload manipulado; RN-008 nao se aplica ao marco-1-mvp, que cobre so criacao, mas o campo/regra ja fica modelado desde ja porque marco-2 reutiliza os mesmos formularios de RendaForm/DespesaForm em modo edicao)."
+          },
+          {
+            "nome": "Dominio/Negocio",
+            "descricao": "CRUDs simples (RF-004 criacao de renda, RF-006 criacao de despesa, e RF-005/RF-007 edicao/exclusao no marco-2) ficam diretos no componente Livewire + Model Eloquent, sem camada de Service propria — nao ha logica alem de validacao + persistencia. Excecao: OverviewService (app/Services/OverviewService.php) concentra o calculo dos 4 indicadores (IND-OVW-001 a 004), incluindo RN-001 (renda_total = 0 -> percentual nao calculado, indicador alternativo) e RN-007 (despesas_total > renda_total -> alerta visual, sem teto em 100%) — isolado em Service porque e logica testavel isoladamente (unit test Pest) e reaproveitada entre o componente Livewire da tela e qualquer teste automatizado, diferente dos CRUDs triviais."
+          },
+          {
+            "nome": "Persistencia",
+            "descricao": "Eloquent ORM sobre SQLite. Models: User (auth padrao do Laravel, tabela 'users'), FonteRenda (tabela 'fontes_renda'), Despesa (tabela 'despesas'), AuditLog (tabela 'logs_auditoria', ver arquitetura.modelagem_dados). Migrations versionadas em database/migrations. Indice composto (usuario_id, mes_referencia) em fontes_renda e despesas para atender RNF-003 (p95 < 500ms na consulta do Overview)."
+          },
+          {
+            "nome": "Transversal — Auditoria",
+            "descricao": "Eloquent Observers (app/Observers: UserObserver, FonteRendaObserver, DespesaObserver), registrados no AppServiceProvider, gravando em AuditLog a cada evento created/updated/deleted dos models de dado de negocio, conforme padroes_tecnologias.log_auditoria (mecanismo_captura = interceptor_aplicacao)."
+          },
+          {
+            "nome": "Transversal — Internacionalizacao e Acessibilidade",
+            "descricao": "i18n via arquivos lang/{pt,en,es}.json + helper __() em toda view (padroes_tecnologias.internacionalizacao). Tokens de tema (claro/escuro/alto-contraste) via variaveis CSS/config Tailwind (padroes_tecnologias.acessibilidade.paleta_cores); preferencia de tema/fonte/alto-contraste/reducao-movimento gerenciada por um Alpine.js store persistido em localStorage, seguindo reference/bioform-layout/temas.md e reference/bioform-layout/configuracoes.md. A tela de configuracoes do sistema (RF que expoe esses controles) e o relatorio de log de auditoria AINDA NAO tem RF proprio no escopo aprovado (ver conclusao_agente) — a infraestrutura arquitetural (tokens, mecanismo i18n, tabela de log) fica pronta desde RF-001, mas os controles/telas visiveis dependem de RF futuro."
+          }
+        ],
+        "integracoes_externas": "Nenhuma no escopo do marco-1-mvp — sistema fechado, sem dependencia de servico de terceiros (nenhum RF/RNF aprovado requer isso)."
+      },
+      "alternativas_consideradas": [
+        {
+          "alternativa": "Camada de Service para TODA operacao de negocio, inclusive os CRUDs triviais de Renda/Despesas.",
+          "motivo_descarte": "Over-engineering para o escopo aprovado: RF-004/RF-006 (e RF-005/RF-007 no marco-2) sao CRUDs de 1-2 regras de validacao sem logica adicional; uma camada de Service so para redirecionar chamadas ao Eloquent nao agrega testabilidade real. Reservado Service apenas para o calculo agregado do Overview, que de fato concentra regras (RN-001, RN-007) reaproveitaveis e testaveis isoladamente."
+        },
+        {
+          "alternativa": "Auditoria via trigger nativo do SQLite em vez de Eloquent Observer.",
+          "motivo_descarte": "Triggers SQLite sao menos portaveis/testaveis dentro do ciclo de testes Pest do proprio Laravel, e toda a stack ja acessa dados exclusivamente via Eloquent (sem uso planejado de queries SQL cruas) — Observer e a opcao idiomatica com o mesmo nivel de garantia, mais simples de auditar em code review."
+        },
+        {
+          "alternativa": "Separar Renda e Despesas em Services dedicados (RendaService, DespesaService) desde o marco-1.",
+          "motivo_descarte": "Mesma razao da primeira alternativa — nenhuma logica compartilhada real entre criacao/edicao/exclusao alem de validacao+persistencia. Se o marco-2 (edicao/exclusao) revelar necessidade real de logica compartilhada nao coberta pelo Model, isso e promovido then, nao antecipado sem justificativa concreta."
+        }
+      ],
+      "historico_revisoes": [
+        {
+          "gate": "aprovacao_arquitetura",
+          "resposta": "Aprovar como proposto",
+          "respondido_em": "2026-08-17T17:40:30Z",
+          "resultado": "Usuario aprovou a proposta de camadas/servicos exatamente como descrita (Apresentacao/Roteamento-Middleware/Autorizacao/Validacao/Dominio-Negocio/Persistencia/Auditoria-transversal/i18n-Acessibilidade-transversal), incluindo as 3 alternativas descartadas, sem ajuste. camadas_servicos.status marcado aprovado."
+        }
+      ]
+    }
+  },
+  "desenvolvimento": {
+    "marco_ref": "marco-1-mvp",
+    "status": "em_andamento",
+    "pausado": false,
+    "ordem_execucao": [
+      "RF-001",
+      "RF-002",
+      "RF-003",
+      "RF-004",
+      "RF-006",
+      "RF-008"
+    ],
+    "checkpoint_lote": {
+      "observacao": "Ordem copiada diretamente de planejamento.escopo.marcos[marco-1-mvp].rf_refs (posicao ja aprovada no gate aprovacao_escopo). RF-001 implementado e commitado nesta invocacao (branch rf/RF-001, aguardando_qa em specs/estado-rf-RF-001.json). Demais RFs do marco seguem pendentes."
+    },
+    "historico_revisoes": []
+  },
+  "testes": {
+    "marco_ref": null,
+    "status": "pendente",
+    "cobertura_minima": 90,
+    "cobertura_meta": 100,
+    "fluxos": [],
+    "testes_sistema": {},
+    "seguranca": {},
+    "historico_revisoes": []
+  },
+  "bpx": {
+    "aplicavel": false,
+    "consultoria": {},
+    "validacao": {}
+  },
+  "controle_reabertura": {
+    "contadores": {
+      "marco-1-mvp": 1
+    },
+    "limite_por_elemento": 2
+  },
+  "decisao_pendente": null,
+  "conclusao_agente": {
+    "agente": "dev-agent",
+    "criterios_saida_atendidos": false,
+    "observacoes": "Primeira invocacao do dev-agent para marco-1-mvp. Fase 0: desenvolvimento.ordem_execucao inicializada copiando planejamento.escopo.marcos[marco-1-mvp].rf_refs (RF-001, RF-002, RF-003, RF-004, RF-006, RF-008) — nenhuma dependencia real encontrada que contradissesse essa ordem. Projeto Laravel 13 + Livewire 4.4 + Tailwind v4 + Pest v4 inicializado do zero (nao existia scaffold antes deste RF; Livewire/Tailwind/Pest resolveram para as versoes mais recentes compativeis com Laravel 13, conforme padroes_tecnologias.stack previa). RF-001 (cadastro de usuario / registro aberto, TELA-002) implementado, lint (Pint) OK, verificado funcionalmente via Livewire::test ad-hoc (nao commitado): validacao de campos, RN-004 (email duplicado), senha sempre hash, auditoria gravada corretamente sem expor a senha. Commit unico na branch rf/RF-001 (commit_ref em specs/estado-rf-RF-001.json), status = aguardando_qa, handoff_qa.status = aguardando. Nao e o ultimo RF do marco (ultimo_rf_do_marco = false) — restam RF-002, RF-003, RF-004, RF-006, RF-008. criterios_saida_atendidos = false porque o marco inteiro ainda nao fechou; controle devolvido ao orquestrador para conduzir QA/validacao local/merge/deploy de RF-001 antes da proxima invocacao. GAP sinalizado pelo design-agent (relatorio de log/auditoria e tela de configuracoes do sistema sem RF proprio) permanece em aberto — nao endereçado por este agente, fora do seu escopo de decisao.",
+    "concluido_em": "2026-08-18T14:06:45Z"
+  }
+}
