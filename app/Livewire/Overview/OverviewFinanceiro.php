@@ -2,10 +2,13 @@
 
 namespace App\Livewire\Overview;
 
+use App\Models\Despesa;
+use App\Models\FonteRenda;
 use App\Services\OverviewService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /**
@@ -19,10 +22,25 @@ use Livewire\Component;
 #[Layout('layouts.app')]
 class OverviewFinanceiro extends Component
 {
+    /**
+     * CR-RF-008-01-fix (correcao de SEC-RF-008-01): #[Locked] impede que o payload de
+     * sincronizacao do Livewire sobrescreva esta propriedade a partir do cliente — o unico jeito
+     * de alterar mesSelecionado passa a ser mesAnterior()/mesProximo() (codigo do servidor, que
+     * sempre produz um valor 'Y-m' valido a partir do proprio valor anterior). Elimina o vetor que
+     * permitia enviar um valor fora do formato esperado e derrubar Carbon::createFromFormat() com
+     * excecao nao tratada (500).
+     */
+    #[Locked]
     public string $mesSelecionado = '';
 
     public function mount(): void
     {
+        // CR-RF-008-01: defesa em profundidade (mesmo padrao de convencoes.autorizacao ja aplicado
+        // em RendaManager::mount()/DespesaManager::mount() para as mesmas entidades) — reforca em
+        // nivel de acao a restricao que o OverviewService ja aplica via Auth::id() nas queries.
+        $this->authorize('viewAny', FonteRenda::class);
+        $this->authorize('viewAny', Despesa::class);
+
         $this->mesSelecionado = now()->format('Y-m');
     }
 

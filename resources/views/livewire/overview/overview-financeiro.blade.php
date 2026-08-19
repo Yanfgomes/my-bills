@@ -1,5 +1,5 @@
 <div>
-    <h1 class="text-[20px] font-semibold mb-5" style="color:var(--color-text)">
+    <h1 class="text-[1.25rem] font-semibold mb-5" style="color:var(--color-text)">
         {{ __('Overview financeiro') }}
     </h1>
 
@@ -15,7 +15,7 @@
                 wire:click="mesAnterior"
                 data-cy="overview-mes-anterior"
                 aria-label="{{ __('Mes anterior') }}"
-                class="focus-ring px-3 py-2 rounded-lg text-[13px] font-semibold border"
+                class="focus-ring px-3 py-2 rounded-lg text-[0.8125rem] font-semibold border"
                 style="border-color:var(--color-border);color:var(--color-text)"
             >
                 &laquo; {{ __('Mes anterior') }}
@@ -30,14 +30,14 @@
                 wire:click="mesProximo"
                 data-cy="overview-mes-proximo"
                 aria-label="{{ __('Proximo mes') }}"
-                class="focus-ring px-3 py-2 rounded-lg text-[13px] font-semibold border"
+                class="focus-ring px-3 py-2 rounded-lg text-[0.8125rem] font-semibold border"
                 style="border-color:var(--color-border);color:var(--color-text)"
             >
                 {{ __('Proximo mes') }} &raquo;
             </button>
         </div>
 
-        <span class="text-[12px]" style="color:var(--color-text-muted)">
+        <span class="text-[0.75rem]" style="color:var(--color-text-muted)">
             {{ __('Navegue entre meses para ver o historico.') }}
         </span>
     </div>
@@ -50,7 +50,7 @@
         @if ($overview->estaVazio())
             <p
                 data-cy="overview-vazio"
-                class="rounded-lg border border-dashed px-3 py-3 text-[13px] text-center"
+                class="rounded-lg border border-dashed px-3 py-3 text-[0.8125rem] text-center"
                 style="color:var(--color-text-muted);border-color:var(--color-border)"
             >
                 {{ __('Nenhuma renda ou despesa cadastrada para este mes. Cadastre sua renda e suas despesas para ver o overview deste periodo.') }}
@@ -60,7 +60,7 @@
                 <div
                     data-cy="overview-alerta-percentual"
                     role="alert"
-                    class="rounded-lg border px-3 py-3 text-[13px] mb-4"
+                    class="rounded-lg border px-3 py-3 text-[0.8125rem] mb-4"
                     style="background-color:var(--color-danger-bg);border-color:var(--color-danger-border);color:var(--color-danger)"
                 >
                     {{ __('Atencao: as despesas superam a renda neste periodo.') }}
@@ -69,24 +69,24 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="rounded-lg border p-4" style="border-color:var(--color-border)">
-                    <div class="text-[12px] mb-1" style="color:var(--color-text-muted)">{{ __('Renda total (mes)') }}</div>
-                    <div data-cy="overview-renda-total" class="text-[18px] font-semibold" style="color:var(--color-text)">
+                    <div class="text-[0.75rem] mb-1" style="color:var(--color-text-muted)">{{ __('Renda total (mes)') }}</div>
+                    <div data-cy="overview-renda-total" class="text-[1.125rem] font-semibold" style="color:var(--color-text)">
                         R$ {{ number_format($overview->rendaTotal, 2, ',', '.') }}
                     </div>
                 </div>
 
                 <div class="rounded-lg border p-4" style="border-color:var(--color-border)">
-                    <div class="text-[12px] mb-1" style="color:var(--color-text-muted)">{{ __('Despesas totais (mes)') }}</div>
-                    <div data-cy="overview-despesas-total" class="text-[18px] font-semibold" style="color:var(--color-text)">
+                    <div class="text-[0.75rem] mb-1" style="color:var(--color-text-muted)">{{ __('Despesas totais (mes)') }}</div>
+                    <div data-cy="overview-despesas-total" class="text-[1.125rem] font-semibold" style="color:var(--color-text)">
                         R$ {{ number_format($overview->despesasTotal, 2, ',', '.') }}
                     </div>
                 </div>
 
                 <div class="rounded-lg border p-4" style="border-color:var(--color-border)">
-                    <div class="text-[12px] mb-1" style="color:var(--color-text-muted)">{{ __('Saldo disponivel (mes)') }}</div>
+                    <div class="text-[0.75rem] mb-1" style="color:var(--color-text-muted)">{{ __('Saldo disponivel (mes)') }}</div>
                     <div
                         data-cy="overview-saldo"
-                        class="text-[18px] font-semibold"
+                        class="text-[1.125rem] font-semibold"
                         style="color:{{ $overview->saldoDisponivel < 0 ? 'var(--color-danger)' : 'var(--color-success)' }}"
                     >
                         R$ {{ number_format($overview->saldoDisponivel, 2, ',', '.') }}
@@ -94,16 +94,16 @@
                 </div>
 
                 <div class="rounded-lg border p-4" style="border-color:var(--color-border)">
-                    <div class="text-[12px] mb-1" style="color:var(--color-text-muted)">{{ __('% da renda comprometido (mes)') }}</div>
+                    <div class="text-[0.75rem] mb-1" style="color:var(--color-text-muted)">{{ __('% da renda comprometido (mes)') }}</div>
 
                     @if ($overview->percentualComprometido === null)
-                        <div data-cy="overview-sem-renda" class="text-[13px] font-semibold" style="color:var(--color-warn)">
+                        <div data-cy="overview-sem-renda" class="text-[0.8125rem] font-semibold" style="color:var(--color-warn)">
                             {{ __('Sem renda cadastrada no periodo') }}
                         </div>
                     @else
                         <div
                             data-cy="overview-percentual"
-                            class="text-[18px] font-semibold"
+                            class="text-[1.125rem] font-semibold"
                             style="color:{{ $overview->alertaComprometimento ? 'var(--color-danger)' : 'var(--color-text)' }}"
                         >
                             {{ number_format($overview->percentualComprometido, 1, ',', '.') }}%
