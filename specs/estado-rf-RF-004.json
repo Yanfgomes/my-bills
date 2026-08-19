@@ -1,6 +1,6 @@
 {
   "rf_ref": "RF-004",
-  "versao": 1,
+  "versao": 3,
   "status": "aguardando_qa",
   "implementacao_existente": false,
   "gap_implementado": null,
@@ -10,7 +10,7 @@
   "grupo_commit": [],
   "handoff_qa": {
     "disparado_em": "2026-08-19T12:09:00Z",
-    "status": "aguardando"
+    "status": "em_qa"
   },
   "tentativas_correcao": 0,
   "bugs": [],
