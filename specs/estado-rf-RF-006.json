@@ -1,0 +1,18 @@
+{
+  "rf_ref": "RF-006",
+  "versao": 1,
+  "status": "aguardando_qa",
+  "implementacao_existente": false,
+  "gap_implementado": null,
+  "branch_ref": "rf/RF-006",
+  "commit_ref": "7d774a6e69e513d00c8522944244efb331ee2a57",
+  "commit_ref_testes": "",
+  "grupo_commit": [],
+  "handoff_qa": {
+    "disparado_em": "2026-08-19T13:19:02Z",
+    "status": "aguardando"
+  },
+  "tentativas_correcao": 0,
+  "bugs": [],
+  "observacoes": "Implementado sozinho (fe_be_desacoplado = false), seguindo o mesmo padrao ja estabelecido em RF-004 (Renda): migration despesas (uuid PK, usuario_id FK cascade, valor com CHECK > 0 em banco alem de RN-002 na app, categoria opcional, mes_referencia varchar(7), criado_em/atualizado_em conforme contrato aprovado; mesmo desvio tecnico de convencoes_migracao ja registrado em fontes_renda — CREATE TABLE bruto porque SQLite nao suporta ALTER TABLE ADD CONSTRAINT), App\\Models\\Despesa, App\\Policies\\DespesaPolicy (RN-005, mesma convencao de FonteRendaPolicy: viewAny/create usados por este RF, view/update/delete ja presentes para RF-007 reutilizar sem recriar do zero), App\\Livewire\\Despesas\\DespesaManager (rota despesas.index), nav 'Despesas' adicionada ao layout autenticado compartilhado (app.blade.php), Observer de auditoria registrado para Despesa no AppServiceProvider, strings novas em lang/{pt,en,es}.json. Escopo marco-1-mvp: apenas listar+criar (editar/excluir sao RF-007, marco-2-gestao-completa, fora desta rodada, conforme componentes_livewire.DespesaManager.escopo_marco ja registrado pelo design-agent). Lint (Pint) passou sem ajustes (vendor/bin/pint --test nos arquivos tocados). Migration aplicada localmente (php artisan migrate --force) para validacao local futura.\n\nVerificacao manual descartavel (script standalone, nao commitado, mesma pratica ja documentada em RF-004): bootei o app Laravel real contra copia isolada do sqlite em scratchpad (nunca database/database.sqlite do projeto), criei 2 usuarios reais (Alice/Bob) com 1 despesa cada, autenticado como Alice: Gate::allows('view'|'update'|'delete', $despesaDeBob) retornou false nos 3 casos (RN-005/DespesaPolicy funcionando contra usuario real, nao so null/ausencia de auth); viewAny/create permitidos para Alice; query de listagem escopada a usuario_id retornou apenas o registro dela (count=1); CHECK (valor > 0) do banco rejeitou insercao direta de valor negativo contornando a validacao de app (defesa em profundidade confirmada); Gate::allows('view', ...) sem sessao autenticada retornou false sem excecao. Nao escrevi nenhum teste automatizado (fora do meu escopo) — essa verificacao e so sanidade previa ao handoff, a suite formal (Pest, unitario+integracao+RN-005 cross-user) e responsabilidade do tester-agent na Onda 2 da QA.\n\nSeguindo a mesma decisao ja registrada em RF-004 sobre RN-005/RF-003 (checkpoint_lote.observacao): DespesaPolicy foi criada agora, junto com este RF, materializando a convencao ja aprovada em padroes_tecnologias.convencoes.autorizacao (mesmo raciocinio de FonteRendaPolicy — RF-003 nao tem entidade propria para produzir codigo isolado, e o contrato tecnico de DespesaManager::criar() exige literalmente $this->authorize('create', Despesa::class)). Isso deixa RF-003, quando rodar por ultimo no lote, com Policies de Renda e Despesa ja existentes para consolidar/validar com testabilidade cross-user real (via tester-agent), em vez de criar do zero.\n\nRF-006 nao e o ultimo RF pendente do marco (restam RF-008 e RF-003 na ordem_execucao apos este) — ultimo_rf_do_marco = false, conforme instrucao do orquestrador para este handoff."
+}
