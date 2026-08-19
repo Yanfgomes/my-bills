@@ -52,5 +52,16 @@
     "Ex: Moradia, Alimentacao": "E.g.: Housing, Food",
     "Adicionar despesa": "Add expense",
     "Informe um valor maior que zero.": "Enter an amount greater than zero.",
-    "A categoria deve ter no maximo 60 caracteres.": "Category must be at most 60 characters."
+    "A categoria deve ter no maximo 60 caracteres.": "Category must be at most 60 characters.",
+    "Overview financeiro": "Financial overview",
+    "Mes anterior": "Previous month",
+    "Proximo mes": "Next month",
+    "Navegue entre meses para ver o historico.": "Navigate between months to see the history.",
+    "Renda total (mes)": "Total income (month)",
+    "Despesas totais (mes)": "Total expenses (month)",
+    "Saldo disponivel (mes)": "Available balance (month)",
+    "% da renda comprometido (mes)": "% of income committed (month)",
+    "Sem renda cadastrada no periodo": "No income registered for the period",
+    "Atencao: as despesas superam a renda neste periodo.": "Warning: expenses exceed income for this period.",
+    "Nenhuma renda ou despesa cadastrada para este mes. Cadastre sua renda e suas despesas para ver o overview deste periodo.": "No income or expenses registered for this month. Add your income and expenses to see the overview for this period."
 }

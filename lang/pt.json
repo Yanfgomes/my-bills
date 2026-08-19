@@ -52,5 +52,16 @@
     "Ex: Moradia, Alimentacao": "Ex: Moradia, Alimentacao",
     "Adicionar despesa": "Adicionar despesa",
     "Informe um valor maior que zero.": "Informe um valor maior que zero.",
-    "A categoria deve ter no maximo 60 caracteres.": "A categoria deve ter no maximo 60 caracteres."
+    "A categoria deve ter no maximo 60 caracteres.": "A categoria deve ter no maximo 60 caracteres.",
+    "Overview financeiro": "Overview financeiro",
+    "Mes anterior": "Mes anterior",
+    "Proximo mes": "Proximo mes",
+    "Navegue entre meses para ver o historico.": "Navegue entre meses para ver o historico.",
+    "Renda total (mes)": "Renda total (mes)",
+    "Despesas totais (mes)": "Despesas totais (mes)",
+    "Saldo disponivel (mes)": "Saldo disponivel (mes)",
+    "% da renda comprometido (mes)": "% da renda comprometido (mes)",
+    "Sem renda cadastrada no periodo": "Sem renda cadastrada no periodo",
+    "Atencao: as despesas superam a renda neste periodo.": "Atencao: as despesas superam a renda neste periodo.",
+    "Nenhuma renda ou despesa cadastrada para este mes. Cadastre sua renda e suas despesas para ver o overview deste periodo.": "Nenhuma renda ou despesa cadastrada para este mes. Cadastre sua renda e suas despesas para ver o overview deste periodo."
 }

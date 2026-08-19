@@ -1,0 +1,226 @@
+{
+  "rf_ref": "RF-008",
+  "versao": 10,
+  "status": "aprovado",
+  "implementacao_existente": false,
+  "gap_implementado": null,
+  "branch_ref": "rf/RF-008",
+  "commit_ref": "5060df123071943a859f4cea9a92f7eb579c3c47",
+  "commit_ref_testes": "a7a821aeed0a131c21ecaf3bce9bc3bd76716427",
+  "grupo_commit": [],
+  "handoff_qa": {
+    "disparado_em": "2026-08-19T18:45:04Z",
+    "status": "em_qa",
+    "motivo": "Correcao (tentativa 2/5) dos 3 achados escalados na Onda 1 anterior (CR-RF-008-01, SEC-RF-008-01, ACC-RF-008-01) commitada em 5060df123071943a859f4cea9a92f7eb579c3c47, mesma branch rf/RF-008. Reiniciando o ciclo de QA pela Onda 1 (re-disparo seletivo por diff -- code-review sempre; security e accessibility disparados de novo pois o diff toca escopo de ambos: OverviewFinanceiro.php com authorize()/Locked, e a blade com troca de unidade de fonte). NOTA code-review-agent: campos commit_ref/versao/handoff_qa.status restaurados nesta escrita apos inconsistencia observada no arquivo em disco (revertido para o commit 550418c/versao 5 entre a aquisicao do lock e esta gravacao) -- corrigido para refletir o commit_ref real informado pelo qa-coordenador-agent (5060df1); secoes qa.security/qa.accessibility nao foram alteradas por este agente, apenas o code_review e estes campos de topo."
+  },
+  "qa": {
+    "code_review": {
+      "status": "passou",
+      "auditado_em": "2026-08-19T18:52:16Z",
+      "sonar": {
+        "gate_status": "indisponivel",
+        "detalhes_ref": "arquitetura.padroes_tecnologias.stack.ferramenta_qualidade_codigo.status = pendente_infraestrutura (specs/spec.json) -- nenhuma ferramenta de analise estatica configurada. Revisao qualitativa executada normalmente em substituicao ao gate automatizado."
+      },
+      "revisao_qualitativa": {
+        "status": "aprovada",
+        "observacoes": [
+          {
+            "id": "CR-RF-008-01",
+            "natureza": "achado_real",
+            "status": "corrigido_confirmado",
+            "arquivo": "app/Livewire/Overview/OverviewFinanceiro.php",
+            "trecho": "mount() -- diff do commit 5060df123071943a859f4cea9a92f7eb579c3c47 comparado ao commit anterior 550418cf8fa483f00b83ec90296c09012a989d63",
+            "descricao": "Re-auditoria confirma que a correcao fecha o achado original sem introduzir problema novo. `git show 5060df1 -- app/Livewire/Overview/OverviewFinanceiro.php` mostra $this->authorize('viewAny', FonteRenda::class) e $this->authorize('viewAny', Despesa::class) adicionadas como as duas primeiras instrucoes de mount(), antes de $this->mesSelecionado = now()->format('Y-m'), com comentario referenciando CR-RF-008-01/convencoes.autorizacao. Comparado linha a linha com app/Livewire/Renda/RendaManager.php::mount() e app/Livewire/Despesas/DespesaManager.php::mount(): mesma chamada, mesmo comentario de intencao (RN-005/defesa em profundidade), mesma posicao (primeira instrucao do metodo) -- padrao replicado com fidelidade, nao aproximado. Nenhuma Policy nova criada; reaproveita FonteRendaPolicy/DespesaPolicy ja existentes, cujo viewAny() (conferido em app/Policies/FonteRendaPolicy.php e app/Policies/DespesaPolicy.php) retorna true incondicionalmente -- mesmo shape ja usado pelos dois siblings, portanto a chamada nao altera nenhum comportamento observavel do componente (nunca lanca AuthorizationException para usuario autenticado), so fecha a lacuna estrutural de defesa em profundidade. convencoes.autorizacao volta a ser seguida de forma consistente nos tres componentes irmaos que leem FonteRenda/Despesa.",
+            "sugestao_para_dev_agent": "Nenhuma (achado resolvido)."
+          },
+          {
+            "id": "CR-RF-008-02",
+            "natureza": "observacao_baixa_prioridade",
+            "arquivo": "resources/views/livewire/overview/overview-financeiro.blade.php",
+            "trecho": "ocorrencias de classes text-[**px] convertidas para text-[**rem] no mesmo commit (correcao de ACC-RF-008-01)",
+            "descricao": "Mudanca de unidade px->rem (fora do escopo primario deste agente, e achado do accessibility-agent) e puramente mecanica: `git show 5060df1 -- resources/views/livewire/overview/overview-financeiro.blade.php` confirma mesmo valor visual (ex.: text-[20px] -> text-[1.25rem]), sem alteracao de estrutura, nomenclatura ou logica. Nao encontrada divergencia de convencoes.estrutura_pastas/nomenclatura nem duplicacao nova introduzida por essa troca. Registrado apenas como confirmacao de que a revisao qualitativa cobriu o arquivo, sem achado a reportar.",
+            "sugestao_para_dev_agent": "Nenhuma (observacao informativa)."
+          },
+          {
+            "id": "CR-RF-008-03",
+            "natureza": "observacao_baixa_prioridade",
+            "arquivo": "n/a (RF-008 e read-only)",
+            "trecho": "n/a",
+            "descricao": "OverviewFinanceiro nao cria/altera/exclui dados de negocio (apenas agrega e exibe FonteRenda/Despesa ja existentes) -- RNF-PADRAO-LOG-AUDITORIA nao se aplica a este RF. Verificado para nao deixar a checagem de auditoria implicita.",
+            "sugestao_para_dev_agent": "Nenhuma (fora de escopo, nao e achado)."
+          }
+        ]
+      }
+    },
+    "security": {
+      "status": "passou",
+      "reauditado_em": "2026-08-19T18:55:09Z",
+      "commit_ref_auditado": "5060df123071943a859f4cea9a92f7eb579c3c47",
+      "ferramenta": {
+        "nome": null,
+        "status": "indisponivel",
+        "detalhes_ref": "arquitetura.padroes_tecnologias.stack.ferramenta_seguranca.status = pendente_infraestrutura (specs/spec.json) -- sem SAST/scanner de dependencias configurado; pentest whitebox manual executado normalmente."
+      },
+      "pentest_manual": {
+        "status": "concluido",
+        "achados_confirmados": 0,
+        "achados_por_analise_estatica": 0,
+        "reauditoria": "Re-auditoria (tentativa 2/5) do commit_ref 5060df123071943a859f4cea9a92f7eb579c3c47, foco na correcao de SEC-RF-008-01 e checagem de regressao introduzida pelos dois $this->authorize() novos (achado do code-review-agent, dentro da superficie de autorizacao que este agente audita). Confirmado por leitura direta do codigo-fonte do proprio Livewire (nao apenas assumido o comportamento documentado do atributo): vendor/livewire/livewire/src/Attributes/Locked.php extends Features/SupportLockedProperties/BaseLocked.php, cujo metodo update() lanca CannotUpdateLockedPropertyException(...) incondicionalmente, sem nenhuma condicao a contornar; esse metodo e disparado por Features/SupportAttributes/SupportAttributes::update($propertyName, $fullPath, $newValue) -- o ComponentHook padrao do Livewire para toda propriedade de nivel PROPERTY presente no payload de sincronizacao (updates[]) de uma requisicao ao endpoint do componente -- que filtra os atributos LivewireAttribute de nivel PROPERTY cujo nome bate com o path atualizado e invoca update() em cada um antes de aplicar o novo valor. Ou seja, #[Locked] em `public string $mesSelecionado` (app/Livewire/Overview/OverviewFinanceiro.php) bloqueia o vetor na camada de enforcement do proprio framework, nao por uma convencao de uso (ausencia de wire:model na view) que um payload manual poderia contornar. O hook so e acionado pelo processamento de updates[] do payload do cliente -- atribuicoes feitas em codigo de servidor (mesAnterior()/mesProximo()/mount(), que sempre produzem um valor 'Y-m' valido a partir de now() ou do proprio valor anterior) nao passam por ele, entao a navegacao legitima continua funcionando sem alteracao de comportamento observavel. Nao houve exploracao ao vivo contra um payload real (sem runtime PHP/servidor disponivel nesta sessao para montar uma requisicao Livewire manual), mas a confirmacao via leitura do mecanismo de enforcement no codigo-fonte do framework (BaseLocked::update() incondicional + SupportAttributes::update() como hook de update de toda requisicao de sincronizacao) e mais forte que analise estatica pura contra o codigo da aplicacao -- por isso classificado achados_confirmados=0 (vulnerabilidade eliminada), nao achado_por_analise_estatica. SEC-RF-008-01 considerado corrigido, sem regressao.\n\nVerificacao de nao-regressao dos dois $this->authorize('viewAny', FonteRenda::class)/$this->authorize('viewAny', Despesa::class) adicionados a mount() (CR-RF-008-01, code-review-agent, dentro do escopo de autorizacao auditado por este agente): FonteRendaPolicy::viewAny() e DespesaPolicy::viewAny() (app/Policies/FonteRendaPolicy.php, app/Policies/DespesaPolicy.php) retornam true incondicionalmente para qualquer User autenticado -- mesmo shape ja usado em RendaManager::mount()/DespesaManager::mount(), nenhuma excecao nova introduzida. Rota GET /overview ja protegida por middleware 'auth' (routes/web.php linha 27-29), portanto Auth::user() sempre existe no momento da chamada -- nenhum caminho em que authorize() lance AuthorizationException para usuario legitimamente autenticado, e nenhum acesso novo aberto a usuario nao autenticado (ja barrado pelo middleware antes desta correcao). Nao ha vetor de IDOR introduzido: nenhuma das duas policies recebe um identificador vindo de input do cliente (viewAny nao recebe model instance), RN-005/RNF-002 seguem garantidas pela mesma via de sempre (OverviewService::calcular(Auth::id(), ...), nunca um usuario_id de propriedade publica/wire:model).\n\nDiff completo da correcao revisado por inteiro (app/Livewire/Overview/OverviewFinanceiro.php e resources/views/livewire/overview/overview-financeiro.blade.php): blade contem apenas troca de unidade px->rem em classes Tailwind (fora do escopo de seguranca, achado do accessibility-agent), sem output de dado nao escapado nem mudanca de logica -- nenhum achado novo de superficie de ataque introduzido pela correcao como um todo. Este pentest nao substitui auditoria de seguranca externa/formal; achado por analise estatica sem confirmacao por exploracao ao vivo teria taxa de falso positivo maior, mas aqui a confirmacao veio da leitura do mecanismo de enforcement do framework em si, nao de inferencia sobre o comportamento documentado."
+      }
+    },
+    "accessibility": {
+      "status": "passou",
+      "auditado_em": "2026-08-19T18:45:00Z",
+      "re_auditado_em": "2026-08-19T19:15:00Z",
+      "contraste": {
+        "status": "passou",
+        "observacoes": [
+          "Paleta de cores aprovada em arquitetura.padroes_tecnologias.acessibilidade.paleta_cores utilizada corretamente via tokens CSS (var(--color-*)) — nenhuma mudança de cores em px→rem (mudança foi só de unidade de fonte, não de valores RGB)",
+          "Contraste verificado para WCAG AA (re-auditoria confirma idêntico ao anterior): danger (#dc2626) 4.83:1, warn (#92400e) 7.09:1, text-muted (#54606e) 5.87:1 — todos >= 4.5:1 para texto normal",
+          "Banner de alerta (overview-alerta-percentual) com cor danger sobre fundo danger-bg (#fef2f2) atinge ~8.23:1 de contraste — aprovado",
+          "Indicador alternativo (overview-sem-renda) usa cor warn (#92400e) com contraste suficiente em ambos os temas",
+          "Conversão de px para rem não altera combinações texto/fundo, portanto contraste permanece exatamente o mesmo antes/depois"
+        ]
+      },
+      "tags_leitor_tela": {
+        "status": "falhou",
+        "observacoes": [
+          "Re-auditoria em 2026-08-19: Dois achados não bloqueantes identificados na auditoria anterior continuam não corrigidos (dev-agent corrigiu só o bloqueante ACC-RF-008-01 nesta tentativa 2/5). Ambos já estão registrados e sendo gerenciados como não bloqueantes.",
+          "ACHADO NÃO BLOQUEANTE (já registrado em auditoria anterior, não foi alvo de correção nesta rodada): Falta gestão de foco após navegação de mês via Livewire AJAX (wire:click='mesAnterior'/'mesProximo') — o foco permanece no botão clicado após atualização do DOM, deixando usuário de leitor de tela desorientado sobre onde começar a ler o novo conteúdo de mês selecionado. Padrão esperado (conforme padroes_aria): após ação Livewire que altera conteúdo da tela, foco deve ser movido explicitamente (ex: autofocus no h1 'Overview financeiro' ou no container aria-live).",
+          "ACHADO NÃO BLOQUEANTE (já registrado em auditoria anterior, não foi alvo de correção nesta rodada): Container de navegação de mês (rodapé com botões 'Mes anterior'/'Proximo mes') sem aria-label — deixa a função dessa seção ambígua para leitor de tela, embora botões individuais tenham aria-label e exista um aria-live no container principal",
+          "Tags presentes e corretas (re-auditoria confirma idênticas): h1 único na tela (heading principal), aria-label nos botões 'Mes anterior'/'Proximo mes', aria-live='polite' no container principal, role='alert' no banner de alerta (RN-007), wire:loading.attr='aria-busy' no container de navegação com wire:target apropriado"
+        ]
+      },
+      "aderencia_estrutural": {
+        "status": "passou",
+        "observacoes": [
+          "ACHADO BLOQUEANTE ACC-RF-008-01 RESOLVIDO (re-auditoria em 2026-08-19): Conversão de tamanho de fonte de px para rem validada e completa — 15 ocorrências de text-[**px] convertidas para text-[**rem] com cálculos corretos (base 16px): text-[20px]→text-[1.25rem], text-[18px]→text-[1.125rem], text-[13px]→text-[0.8125rem], text-[12px]→text-[0.75rem]. Nenhuma ocorrência de text-[**px] permanece no arquivo (verificado via grep). Conformidade com arquitetura.fonte_configuravel=true validada sem quebra visual/estrutural.",
+          "",
+          "Landmarks semânticos presentes no layout compartilhado (app.blade.php): <header>, <nav aria-label='Navegacao principal'>, <main id='conteudo-principal'>, <footer> — RF-008 insere sua view dentro de <main>, aprovado",
+          "Skip-link ('Pular para o conteudo principal') presente como primeiro elemento focável antes de <header>, com classe focus-ring (outline: 3px solid var(--color-focus-ring)), apontando para id='conteudo-principal'",
+          "Foco visível via classe focus-ring: outline com color-focus-ring (tema claro: #2563eb, tema escuro: #60a5fa) com outline-offset: 2px — contraste suficiente e visibilidade clara. Foco-ring aplicado corretamente aos botões de navegação de mês.",
+          "Suporte a tema claro/escuro implementado via data-theme attribute com fallback a prefers-color-scheme — todas as cores usam tokens CSS sem valores hardcoded (verificado em overview-financeiro.blade.php: todas as cores via var(--color-*))",
+          "Redução de movimento respeitada: app.css contém @media (prefers-reduced-motion: reduce) que remove animações/transições — overview-financeiro não introduz animações (barra de progresso é estática, sem transition). Preferência respeitada.",
+          "Unidades relativas (rem) funcionam corretamente com variação de tamanho de fonte do usuário via controle em RNF-PADRAO-ACESSIBILIDADE-CONFIG, sem alteração adicional necessária no componente.",
+          "wire:loading.attr='aria-busy' no container de navegação com wire:target='mesAnterior,mesProximo' — comunica estado de carregamento a leitores de tela quando Livewire está processando",
+          "aria-live='polite' no container principal de conteúdo para comunicar mudanças dinâmicas (ex: alerta RN-007)",
+          "role='alert' no banner de alerta RN-007 — semântica apropriada para alertas críticos"
+        ]
+      },
+      "recomendacoes": [
+        {
+          "descricao": "Adicionar aria-current (ex: aria-current='date' ou similar) ao elemento que exibe o mês selecionado (strong data-cy='overview-mes-atual') para facilitar navegação e orientação de usuário em leitor de tela sobre qual mês está em exibição. Não bloqueante.",
+          "criticidade": "baixa"
+        },
+        {
+          "descricao": "Adicionar aria-label ao container de navegação de mês (div com flex items-center gap-3 contendo os botões 'Mes anterior'/'Proximo mes') para deixar explícita a função dessa seção em leitores de tela — ex: aria-label='Navegacao entre meses'. Não bloqueante.",
+          "criticidade": "baixa"
+        },
+        {
+          "descricao": "Implementar gestão explícita de foco após ação Livewire que atualiza o conteúdo do mês selecionado — ex: adicionar autofocus ao h1 'Overview financeiro' ou mover foco programaticamente para o container aria-live após mesAnterior()/mesProximo() completarem. Melhora a experiência de navegação para usuários de leitor de tela. Não bloqueante no estado atual.",
+          "criticidade": "baixa"
+        }
+      ]
+    },
+    "tester": {
+      "status": "passou",
+      "testado_em": "2026-08-19T19:07:55Z",
+      "commit_ref_testado": "5060df123071943a859f4cea9a92f7eb579c3c47",
+      "unitarios": {
+        "status": "passou",
+        "cobertura": "100% (Services\\OverviewService e Services\\OverviewData) — vs. testes.cobertura_minima=90 em specs/spec.json",
+        "framework": "Pest",
+        "arquivo": "tests/Unit/Services/OverviewServiceTest.php",
+        "cenarios": [
+          "estado vazio (nenhuma renda/despesa no mes)",
+          "RN-001: renda_total = 0 com despesa -> percentual nulo",
+          "calculo normal (renda, despesas, saldo, percentual, sem alerta)",
+          "RN-007: despesas > renda -> alerta e percentual sem teto em 100%",
+          "RN-005: isolamento entre dois usuarios reais no mesmo mes",
+          "filtro por mes_referencia (lancamentos de outro mes nao entram no calculo)",
+          "OverviewData::estaVazio() nas 3 combinacoes de borda"
+        ]
+      },
+      "integracao": {
+        "status": "passou",
+        "cobertura": "100% (Livewire\\Overview\\OverviewFinanceiro) — vs. testes.cobertura_minima=90 em specs/spec.json",
+        "framework": "Pest",
+        "arquivo": "tests/Feature/Overview/OverviewFinanceiroTest.php",
+        "cenarios": [
+          "exige autenticacao para acessar a rota overview",
+          "estado vazio exibido corretamente na tela",
+          "RN-001 exibido corretamente na tela (indicador alternativo)",
+          "calculo normal exibido corretamente na tela (renda/despesas/saldo/percentual)",
+          "RN-007 exibido corretamente na tela (alerta + percentual sem teto)",
+          "RN-005 isolamento entre usuarios exibido corretamente na tela",
+          "navegacao de mes: mesAnterior()/mesProximo() alteram e revertem mesSelecionado",
+          "filtro por mes_referencia exibido corretamente na tela",
+          "SEC-RF-008-01: reflexao confirma atributo #[Locked] declarado em mesSelecionado",
+          "SEC-RF-008-01: tentativa de sobrescrever mesSelecionado via set() (payload de sincronizacao do cliente) lanca Livewire\\Features\\SupportLockedProperties\\CannotUpdateLockedPropertyException — vetor do achado original permanece bloqueado apos a correcao"
+        ]
+      },
+      "suite_completa": {
+        "resultado": "86 passed, 1 failed (326 assertions) -- a falha (Tests\\Feature\\ExampleTest::the application returns a successful response) e pre-existente, do stub padrao do scaffold Laravel (commit dbdae02, RF-001), nao relacionada a RF-008 e nao tocada por este RF; todos os 17 testes de RF-008 (7 unitarios + 10 integracao) passam."
+      },
+      "observacoes": "Retomada de execucao interrompida por erro de infraestrutura: tests/Unit/Services/OverviewServiceTest.php ja existia parcialmente (nao commitado) e foi revisado -- correto e completo, mantido sem alteracao de conteudo. Escrito tests/Feature/Overview/OverviewFinanceiroTest.php (nao existia). vendor/bin/pint --test aponta fully_qualified_strict_types (e ordered_imports em RendaManagerTest/DespesaManagerTest) como pendente em OverviewServiceTest.php -- mesmo padrao pre-existente ja registrado como fora de escopo do tester-agent nos testes irmaos de RF-004/RF-006 (nao corrigido por simetria com o precedente). Commit dos testes: a7a821aeed0a131c21ecaf3bce9bc3bd76716427, mesma branch rf/RF-008."
+    }
+  },
+  "validacao_local": {
+    "status": "aprovado",
+    "como_subir": "composer run dev (a partir da raiz do projeto -- sobe php artisan serve + vite dev + queue:listen + pail em paralelo, via concurrently; .env e database/database.sqlite ja existem no projeto)",
+    "o_que_testar": "RF-008 - Overview financeiro com navegacao por mes (rota /overview, TELA-003): (1) Overview exibe renda_total, despesas_total, saldo_disponivel e percentual_comprometido filtrados pelo mes_selecionado, com default no mes corrente. (2) Navegar para o mes anterior/seguinte recalcula os 4 indicadores para o novo mes. (3) Quando renda_total do mes selecionado = 0 (RN-001), percentual_comprometido nao e calculado e a tela exibe um indicador alternativo (ex: 'Sem renda cadastrada no periodo') no lugar do numero. (4) Quando despesas_total > renda_total no periodo (RN-007), o percentual e exibido sem teto em 100% e a interface destaca visualmente como alerta (banner + indicador em vermelho). (5) Quando nao ha renda nem despesa cadastrada no mes selecionado, a tela exibe um estado vazio orientando a cadastrar renda/despesas para aquele periodo. Validar tambem que os textos da tela permanecem legiveis/proporcionais (correcao de acessibilidade desta rodada trocou tamanho de fonte fixo em px por unidades relativas em rem, mesmo tamanho visual esperado).",
+    "rfs_cobertos": ["RF-008"],
+    "validado_em": "2026-08-19T20:05:00Z",
+    "observacoes": "Orquestrador subiu a aplicacao localmente via 'php84 artisan serve --port=8765' (php84 do Laravel Herd, fora do PATH do shell -- caminho completo usado) na branch rf/RF-008 (commit 5060df123071943a859f4cea9a92f7eb579c3c47), apos confirmar migrations em dia (migrate:status). Confirmado via curl que /login = 200 e /overview redireciona (302, middleware auth ok). Usuario exercitou o roteiro completo de RF-008 (indicadores do mes corrente, navegacao anterior/seguinte, RN-001 sem renda, RN-007 alerta despesas>renda, estado vazio, legibilidade apos troca px->rem) e aprovou a entrega para merge/deploy. Processo local encerrado apos a aprovacao."
+  },
+  "tentativas_correcao": 2,
+  "bugs": [
+    {
+      "id": "CR-RF-008-01",
+      "status": "corrigido",
+      "classificacao": "impacto_real",
+      "criticidade": "maior",
+      "origem": "code-review-agent",
+      "descricao": "OverviewFinanceiro::mount() nao chama $this->authorize('viewAny', ...) para FonteRenda nem Despesa, divergindo de arquitetura.padroes_tecnologias.convencoes.autorizacao e do padrao ja aplicado em RendaManager::mount()/DespesaManager::mount() para as mesmas entidades. Isolamento funcional (RN-005) nao esta comprometido na pratica (OverviewService sempre recebe Auth::id()), mas falta a camada de defesa em profundidade via Policy exigida pela convencao escrita.",
+      "sugestao_para_dev_agent": "Adicionar $this->authorize('viewAny', FonteRenda::class) e $this->authorize('viewAny', Despesa::class) em OverviewFinanceiro::mount(), reaproveitando FonteRendaPolicy/DespesaPolicy ja existentes (nenhuma Policy nova necessaria).",
+      "escalado_para": "dev-agent",
+      "correcao": "Adicionados $this->authorize('viewAny', FonteRenda::class) e $this->authorize('viewAny', Despesa::class) no inicio de OverviewFinanceiro::mount(), antes de definir mesSelecionado -- mesmo padrao/comentario RN-005 ja usado em RendaManager::mount()/DespesaManager::mount().",
+      "commit_ref": "5060df123071943a859f4cea9a92f7eb579c3c47"
+    },
+    {
+      "id": "ACC-RF-008-01",
+      "status": "corrigido",
+      "classificacao": "impacto_real",
+      "escalado_para": "dev-agent",
+      "criticidade": "bloqueante",
+      "origem": "accessibility-agent",
+      "descricao": "Tamanho de fonte nao configuravel: resources/views/livewire/overview/overview-financeiro.blade.php usa classes Tailwind com tamanhos fixos em pixels (text-[20px], text-[18px], text-[13px], text-[12px]) em vez de unidades relativas ou tokens CSS configuráveis. Viola arquitetura.padroes_tecnologias.acessibilidade.fonte_configuravel = true (decisao aprovada do projeto) e a diretriz em reference/layout-guidelines.md: 'Fonte relativa: use unidades relativas (nao px fixo para texto) quando fonte_configuravel = true'. Impacto: quando o usuario ajustar o tamanho da fonte na tela de configuracoes do sistema (RNF-PADRAO-ACESSIBILIDADE-CONFIG), os tamanhos desta tela nao serao redimensionados proporcionalmente com os demais elementos do sistema -- violando o contrato de fonte configurável em todo o projeto.",
+      "elemento": "h1, botoes de navegacao (text-[13px]), labels de KPI (text-[12px]), valores de KPI (text-[18px]), mensagens de alerta (text-[13px]), indicador alternativo RN-001 (text-[13px])",
+      "evidencia": "Git show 550418cf8fa483f00b83ec90296c09012a989d63:resources/views/livewire/overview/overview-financeiro.blade.php retorna 11 ocorrencias de text-[**px] em classes Tailwind; nenhuma variavel CSS de tamanho de fonte (--font-size-*) ou unidade relativa (em, rem) utilizada. app.css nao define tokens de tamanho configuravel; referencias ao 'font-size' do usuario (localStorageItem, preferencias store) ausentes nesta view. Precedente: outras views (renda-manager, despesa-manager) tambem usam text-[**px] -- sugestao de escalacao: validar se e um desvio transversal do projeto (requer ajuste em multiplos RFs) ou especifico deste.",
+      "correcao": "Todas as 11 ocorrencias de text-[**px] em resources/views/livewire/overview/overview-financeiro.blade.php trocadas por unidades relativas equivalentes (arbitrary values em rem, mesmo tamanho visual): text-[20px]->text-[1.25rem], text-[18px]->text-[1.125rem], text-[13px]->text-[0.8125rem], text-[12px]->text-[0.75rem]. NAO corrigido em renda-manager.blade.php/despesa-manager.blade.php (RF-004/RF-006, ja aprovados e mergeados) -- mesmo padrao text-[**px] confirmado la (11 e 13 ocorrencias respectivamente), possivel desvio transversal ao projeto que excede o escopo de correcao deste RF; sinalizado ao orquestrador para decisao (nao e decisao do dev-agent corrigir RF ja fechado por conta propria).",
+      "commit_ref": "5060df123071943a859f4cea9a92f7eb579c3c47",
+      "observacao_transversal": "renda-manager.blade.php e despesa-manager.blade.php (RFs ja aprovados/mergeados) usam o mesmo padrao text-[**px] para tamanho de fonte. Se a violacao de fonte_configuravel for julgada transversal ao projeto, esses dois arquivos precisarao da mesma correcao aplicada aqui -- fora do escopo desta correcao pontual de RF-008, requer decisao do orquestrador/usuario sobre se abre um RF/tarefa de correcao dedicada."
+    },
+    {
+      "id": "SEC-RF-008-01",
+      "status": "corrigido",
+      "classificacao": "impacto_real",
+      "escalado_para": "dev-agent",
+      "criticidade": "menor",
+      "origem": "security-agent",
+      "descricao": "app/Livewire/Overview/OverviewFinanceiro.php: a propriedade publica `public string $mesSelecionado` nao tem validacao de formato (nenhum #[Validate]/#[Locked] nem checagem no updated()/mount() alem do default). Livewire expoe toda propriedade publica a atualizacao via payload do endpoint de sincronizacao do proprio componente, independente de existir wire:model correspondente na view -- so ha wire:click para mesAnterior()/mesProximo() no blade, mas isso nao impede um cliente de enviar uma requisicao Livewire manual definindo mesSelecionado para um valor fora do formato 'Y-m' esperado. Consequencia demonstrada por leitura de codigo (nao exploracao ao vivo, ambiente sem runtime PHP disponivel nesta sessao): render() passa mesSelecionado direto a OverviewService::calcular() sem validar formato (usado so em where() do Eloquent, portanto sem risco de SQL injection), mas uma chamada subsequente a mesAnterior()/mesProximo() executa Carbon::createFromFormat('Y-m-d', $this->mesSelecionado.'-01'), que lanca InvalidArgumentException nao tratada para qualquer valor que nao componha uma data valida -- resultando em erro 500 nao tratado. Nao ha vetor de acesso a dado de outro usuario aqui (RN-005 seguro, ver observacao de isolamento abaixo); e um gap de validacao de entrada / tratamento de excecao, nao de autorizacao. Combinado com APP_DEBUG=true (padrao herdado do .env.example do projeto, nao introduzido por este RF), um erro assim pode potencialmente expor stack trace em ambiente mal configurado -- registrado aqui como achado deste RF porque e o ponto de entrada da input nao validada, mas a causa raiz de exposicao de stack trace (APP_DEBUG) e configuracao pre-existente ao RF-008.",
+      "evidencia": "Analise estatica: app/Livewire/Overview/OverviewFinanceiro.php (mesAnterior/mesProximo usam Carbon::createFromFormat('Y-m-d', $this->mesSelecionado.'-01') sem try/catch nem validacao previa de formato de mesSelecionado); nenhum atributo Livewire de validacao/lock na declaracao de `public string $mesSelecionado`. Nao confirmado por exploracao ao vivo (sem `php`/runtime disponivel neste ambiente de auditoria).",
+      "correcao": "Propriedade $mesSelecionado marcada com #[Livewire\\Attributes\\Locked] -- bloqueia qualquer tentativa de sobrescrever a propriedade a partir do payload do cliente, deixando mesAnterior()/mesProximo()/mount() (codigo de servidor, sempre produzindo 'Y-m' valido) como unico caminho de escrita. Elimina o vetor de entrada nao validada na raiz, em vez de so tratar a excecao do Carbon::createFromFormat() posteriormente.",
+      "commit_ref": "5060df123071943a859f4cea9a92f7eb579c3c47"
+    }
+  ],
+  "decisao_pendente": {
+    "gate": "validacao_local",
+    "pergunta": "RF-008 (Overview financeiro com navegacao por mes) passou pelas duas ondas de QA (code-review, security, accessibility e tester-agent, todos passou; os 3 achados da tentativa anterior -- CR-RF-008-01, ACC-RF-008-01, SEC-RF-008-01 -- foram corrigidos e reconfirmados). Suba a aplicacao com `composer run dev` e valide manualmente contra o criterio_aceite do RF antes de autorizar o merge/deploy.",
+    "opcoes": ["aprovado", "reprovado"],
+    "contexto": "validacao_local.como_subir e validacao_local.o_que_testar (neste mesmo arquivo) tem o comando de start e o roteiro de validacao. Quem sobe a aplicacao e conduz a pergunta ao usuario e o orquestrador (thread principal), nao o qa-coordenador-agent. Nota informativa, nao bloqueia esta decisao: ACC-RF-008-01 registrou observacao_transversal de que renda-manager.blade.php e despesa-manager.blade.php (RF-004/RF-006, ja aprovados/mergeados) usam o mesmo padrao text-[**px] nao corrigido -- decisao de abrir tarefa dedicada fica para o orquestrador/usuario depois, fora deste ciclo.",
+    "resposta": "aprovado",
+    "respondido_em": "2026-08-19T20:05:00Z"
+  },
+  "observacoes": "Implementado sozinho (fe_be_desacoplado = false), seguindo o mesmo padrao ja estabelecido em RF-004/RF-006. Overview financeiro (TELA-003, DOM-004) nao possui tabela/model proprio -- agrega DOM-002 (fontes_renda) e DOM-003 (despesas) filtradas por (usuario_id, mes_referencia), usando os indices compostos ja criados em ambas as migrations (RNF-003). Criados: App\\Services\\OverviewData (DTO imutavel de retorno, com estaVazio()), App\\Services\\OverviewService::calcular(usuarioId, mesReferencia) (contrato ja aprovado em arquitetura.documentacao_tecnica.servicos), App\\Livewire\\Overview\\OverviewFinanceiro (rota 'overview', substitui o stub temporario em uso desde RF-001/RF-002 -- resources/views/overview-stub.blade.php removida). RN-005: Overview nao tem entidade/Policy propria a autorizar (nao ha o que registrar em app/Policies para isso); isolamento aplicado passando sempre Auth::id() ao servico a partir do componente -- nunca um usuario_id vindo de propriedade publica/wire:model (o componente nao expoe nenhuma). RN-001: quando renda_total do mes selecionado = 0, OverviewService retorna percentual_comprometido = null e a view exibe o indicador alternativo 'Sem renda cadastrada no periodo' (data-cy=overview-sem-renda) no lugar do numero. RN-007: quando despesas_total > renda_total, alertaComprometimento = true -> banner de alerta (data-cy=overview-alerta-percentual) e percentual exibido sem teto em 100% (calculo nunca limita o resultado, ex.: 250% permanece 250%, nao e truncado). Estado vazio (nem renda nem despesa no mes) tratado por OverviewData::estaVazio() -- seguro comparar contra 0.0 porque tanto fontes_renda.valor_liquido quanto despesas.valor tem CHECK (valor > 0) em banco, entao soma so pode ser 0 quando nao ha nenhum registro no periodo. Navegacao: mesAnterior()/mesProximo() (Carbon::subMonthNoOverflow/addMonthNoOverflow), default no mes corrente (now()->format('Y-m')) no mount(). Nav 'Overview' do layout compartilhado (app.blade.php) ja apontava para route('overview') desde RF-001/RF-002 -- nenhuma mudanca necessaria la. 12 strings novas de UI adicionadas em lang/{pt,en,es}.json (mesma chave nos 3 arquivos, sem chave orfa). Nenhuma migration nova (Overview nao introduz tabela).\n\nLint (Pint) passou sem ajustes nos arquivos deste RF apos correcao automatica de phpdoc_align em OverviewService.php (vendor/bin/pint app/Livewire/Overview app/Services resources/views/livewire/overview routes/web.php, seguido de --test = passed). Duas falhas de Pint pre-existentes em tests/Feature/Despesas/DespesaManagerTest.php e tests/Feature/Renda/RendaManagerTest.php (fully_qualified_strict_types, ordered_imports) NAO tocadas por este RF -- arquivos de teste de RF-004/RF-006, fora do escopo desta implementacao (nao e minha responsabilidade escrever/corrigir teste).\n\nVerificacao manual descartavel (dois scripts standalone, nao commitados, executados contra banco isolado em scratchpad -- nunca database/database.sqlite do projeto): (1) OverviewService::calcular() testado com 6 cenarios usando dados reais persistidos via Eloquent -- vazio (estaVazio=true, percentual=null), RN-001 (renda=0 com despesa>0 -> percentual=null), calculo normal (renda 6500 + despesa 4150 -> saldo 2350, percentual ~63.8%, sem alerta), RN-007 (despesa 2500 > renda 1000 -> alerta=true, percentual=250% sem teto, saldo negativo), RN-005 (overview de um segundo usuario real nao ve os lancamentos do primeiro), e o componente Livewire (mount() default mes corrente, mesAnterior()/mesProximo() alterando e revertendo mesSelecionado corretamente); (2) renderizacao real da view Blade (livewire.overview.overview-financeiro) com OverviewService real e usuario autenticado, confirmando presenca dos data-cy esperados (overview-renda-total, overview-percentual) e formatacao correta (R$ 6.500,00, 63,8%). Nao escrevi nenhum teste automatizado (fora do meu escopo) -- essa verificacao e so sanidade previa ao handoff; a suite formal (Pest) e responsabilidade do tester-agent na Onda 2 da QA.\n\nRF-008 nao e o ultimo RF pendente do marco (resta RF-003 apos este na ordem_execucao, deliberadamente adiado -- ver checkpoint_lote.observacao em specs/spec.json) -- ultimo_rf_do_marco = false."
+}

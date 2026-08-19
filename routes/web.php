@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LogoutController;
 use App\Livewire\Auth\LoginForm;
 use App\Livewire\Auth\RegistroForm;
 use App\Livewire\Despesas\DespesaManager;
+use App\Livewire\Overview\OverviewFinanceiro;
 use App\Livewire\Renda\RendaManager;
 use Illuminate\Support\Facades\Route;
 
@@ -19,13 +20,13 @@ Route::post('/logout', LogoutController::class)
     ->middleware('auth')
     ->name('logout');
 
-// Stub minimo de destino pos-registro/login (RF-001/RF-002 redirecionam para 'overview').
-// Substituido pelo App\Livewire\Overview\OverviewFinanceiro real quando RF-003/RF-008 forem
-// implementados (arquitetura.documentacao_tecnica.rotas) — nao antecipa aquele escopo, so
-// mantem o redirect ja aprovado para RF-001 funcional entre um RF e outro.
-Route::get('/overview', function () {
-    return view('overview-stub');
-})->middleware('auth')->name('overview');
+// RF-008 (Overview financeiro). Substitui o stub temporario que existia entre RF-001/RF-002 e
+// este RF (view overview-stub, removida). Rota flat 'overview', mesma convencao ja usada desde
+// RF-001/RF-002 para o destino pos-login/registro (nao dot notation por dominio, diferente de
+// renda.index/despesas.index).
+Route::get('/overview', OverviewFinanceiro::class)
+    ->middleware('auth')
+    ->name('overview');
 
 // RF-004 (Renda). Rota em dot notation por dominio (renda.index), conforme
 // arquitetura.padroes_tecnologias.convencoes.nomenclatura — diferente das rotas de auth
