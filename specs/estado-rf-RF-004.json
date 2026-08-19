@@ -1,6 +1,6 @@
 {
   "rf_ref": "RF-004",
-  "versao": 11,
+  "versao": 12,
   "status": "aguardando_qa",
   "implementacao_existente": false,
   "gap_implementado": null,
@@ -50,14 +50,16 @@
   "qa": {
     "code_review": {
       "status": "passou",
-      "reavaliado_em": "2026-08-19T12:26:30Z",
+      "reavaliado_em": "2026-08-19T12:39:11Z",
       "sonar": {
         "gate_status": "indisponivel",
-        "detalhes_ref": "arquitetura.padroes_tecnologias.stack.ferramenta_qualidade_codigo.status = pendente_infraestrutura (usuario confirmou ausencia de ferramenta configurada). Gate completo re-executado contra o commit_ref atual (98f9579114ddd360b01e9900805296dbcdb43831), nao so o diff da correcao: `git diff --name-only 596c93a0...98f9579...` confirma que o unico arquivo de codigo alterado desde a rodada anterior e resources/css/app.css (specs/estado-rf-RF-004.json e specs/spec.json tambem mudaram, mas sao artefato de estado, fora do escopo de revisao de codigo). Reconferido nesta rodada: php -l em todos os arquivos PHP do RF (RendaManager.php, FonteRenda.php, FonteRendaPolicy.php, migration 2026_08_19_140000_create_fontes_renda_table.php, routes/web.php, AppServiceProvider.php) sem erro de sintaxe -- inalterados desde a rodada anterior, sem regressao. `grep -n 'color:\\|background:\\|border-color:' resources/css/app.css` no commit atual confirma que TODO uso de cor fora das declaracoes de variavel em :root/[data-theme=dark]/prefers-color-scheme agora passa por var(--color-*) (background-color: var(--color-primary-dark); background: var(--color-primary); color: var(--color-on-primary);) -- nenhum hex hardcoded fora das definicoes de token, confirmando que ACC-004-001 foi corrigido sem introduzir novo desvio. vendor/bin/pint nao se aplica a .css (ferramenta so cobre PHP/PSR-12); sem ferramenta de lint de CSS configurada no stack, revisao do arquivo foi manual (ver revisao_qualitativa abaixo)."
+        "detalhes_ref": "arquitetura.padroes_tecnologias.stack.ferramenta_qualidade_codigo.status = pendente_infraestrutura (confirmado novamente via spec-read.sh --perfil code-review, sem mudanca desde a rodada anterior). Gate automatizado segue indisponivel; revisao manual abaixo cobre o diff da correcao de ACC-004-002. `git diff --name-only 98f9579114ddd360b01e9900805296dbcdb43831 9c5d715c50d741148b74752a6208d9eda0a5d78b` confirma escopo exato: resources/css/app.css e resources/views/layouts/app.blade.php, nada mais -- nenhum arquivo PHP tocado nesta correcao (sem risco de regressao de sintaxe/lint fora do que ja foi revisado nas rodadas anteriores). `vendor/bin/pint --test resources/views/layouts/app.blade.php` = passed (PHP/Blade, unico arquivo elegivel para o linter configurado no stack). CSS segue sem ferramenta de lint no stack -- revisao manual (ver abaixo). Reconferido `grep -n 'color:\\|background:\\|border-color:\\|background-color:' resources/css/app.css` no commit atual: apenas 3 ocorrencias fora das declaracoes de token (`background-color: var(--color-primary-dark)`, `background: var(--color-primary)`, `color: var(--color-on-primary)`), nenhuma delas hex hardcoded -- sem novo desvio introduzido pela correcao.",
+        "verificacao_independente_contraste": "Recalculado por script PHP standalone (formula WCAG 2.1 relative luminance/contrast ratio, independente do calculo do dev-agent): --color-on-primary #0f172a sobre --color-primary #3b82f6 (tema escuro) = 4.854:1 (>= 4.5:1 AA, confirma o valor declarado pelo dev-agent e pelo accessibility-agent na reauditoria); --color-on-primary #fff sobre --color-primary #2563eb (tema claro, inalterado por esta correcao) = 5.169:1. Ambos batem com o valor reportado em bugs[1].correcao -- achado ACC-004-002 tecnicamente resolvido do ponto de vista de contraste (verificacao formal de WCAG e responsabilidade do accessibility-agent, aqui a conferencia foi apenas para confirmar que a alegacao do dev-agent nao tem erro de calculo)."
       },
       "revisao_qualitativa": {
         "status": "concluida",
         "observacoes": [
+          "[observacao positiva, sem acao necessaria -- reavaliacao pos-correcao ACC-004-002, commit 9c5d715c50d741148b74752a6208d9eda0a5d78b] Diff revisado linha a linha (resources/css/app.css e resources/views/layouts/app.blade.php). `--color-on-primary` agora redefinido dentro de `[data-theme='dark']` e `@media (prefers-color-scheme: dark)` para `#0f172a` (reaproveita o mesmo valor ja usado por `--color-bg` do tema escuro, sem introduzir cor nova na paleta), enquanto `:root` mantem `#fff` para o tema claro -- exatamente o escopo de correcao pedido na triagem (redefinicao local de token por tema, sem tocar `--color-primary` nem a paleta aprovada). Comentario inline no CSS explica o calculo e a decisao (mesma convencao de auto-documentar correcoes de acessibilidade ja usada em ACC-004-001, mantida consistente). Botao de logout em app.blade.php trocado de `text-white` (Tailwind hardcoded) para `style=\"color:var(--color-on-primary)\"`, unificando o mesmo token do skip-link -- elimina a duplicacao de logica de cor entre os dois elementos que compartilham `--color-primary` como fundo (mesmo ponto que a triagem sugeriu para evitar recorrencia do bug num terceiro elemento futuro). Nenhum outro seletor do arquivo referencia `--color-on-primary` alem dos dois esperados (.skip-link e o botao de logout) -- sem efeito colateral. Nenhum achado.",
           "[observacao positiva, sem acao necessaria -- reavaliacao pos-correcao ACC-004-001, commit 98f9579114ddd360b01e9900805296dbcdb43831] resources/css/app.css: correcao do dev-agent revisada linha a linha. `.skip-link` passou a usar `color: var(--color-on-primary)` em vez de `color: #fff` (linha 114); novo token `--color-on-primary: #fff` criado em :root (linha 42) com comentario explicando por que nao foi redefinido em [data-theme='dark']/prefers-color-scheme (mesmo branco fixo e correto nos dois temas, ja que --color-primary permanece azul saturado em ambos) e por que --color-card nao foi reaproveitado (inverteria contraste no tema escuro). Decisao tecnica correta e bem documentada no proprio arquivo -- segue o mesmo padrao de comentario ja usado para BUG-001-ACC logo acima no arquivo (convencao local de auto-documentar correcoes de acessibilidade inline, nao formalizada em convencoes mas consistente). Sem efeito colateral: nenhum outro seletor do arquivo referencia --color-on-primary, e o unico consumidor (.skip-link) e o mesmo de antes. Nenhum achado.",
           "[baixa prioridade / estilistica, nao bloqueante] app/Livewire/Renda/RendaManager.php, regra 'valorLiquido.gt' (linha da chave de mensagens do metodo criar()): a mensagem 'o valor deve ser maior que zero' comeca com minuscula e nao termina com ponto final, destoando de todas as outras 6 mensagens de validacao do mesmo componente (e das demais telas do projeto ate aqui), que comecam com maiuscula e terminam com ponto (ex.: 'Informe um valor liquido maior que zero.'). Alem disso ela e semanticamente redundante com 'valorLiquido.required'/'valorLiquido.numeric' (mesmo texto 'Informe um valor liquido maior que zero.'), entao o usuario ve duas mensagens de teor identico dependendo de qual regra falha (numeric vs gt), uma delas em formato de frase diferente. Reproduzido em lang/pt.json, lang/en.json e lang/es.json (chave 'o valor deve ser maior que zero' com o mesmo padrao de minuscula/sem-ponto nos 3 idiomas) -- nao e erro de tradução, e a propria chave-fonte que quebra o padrao. Sugestao (para o dev-agent avaliar, nao aplicada aqui): unificar a mensagem de 'valorLiquido.gt' com o mesmo texto/formatacao de 'valorLiquido.required'/'valorLiquido.numeric', ja que RN-002 e uma unica regra de negocio (valor > 0) do ponto de vista do usuario.",
           "[observacao positiva, sem acao necessaria] RN-PADRAO-LOG-AUDITORIA confirmado: FonteRenda::observe(AuditoriaObserver::class) registrado em app/Providers/AppServiceProvider.php (linha 29) reutiliza o Observer generico ja existente (app/Observers/AuditoriaObserver.php), que grava os 5 campos obrigatorios (acao, usuario_id, tabela_afetada, registro_id, valor_anterior/valor_novo) em logs_auditoria via LogAuditoria::create() no metodo created() -- cobre a criacao de fonte de renda feita em RendaManager::criar() sem necessidade de codigo adicional no proprio componente.",
@@ -69,27 +71,50 @@
       }
     },
     "accessibility": {
-      "status": "falhou",
-      "auditado_em": "2026-08-19T15:30:00Z",
-      "ciclo_auditoria": "reauditoria_pos_correcao_ACC-004-001",
+      "status": "passou",
+      "auditado_em": "2026-08-19T16:45:00Z",
+      "ciclo_auditoria": "reauditoria_pos_correcao_ACC-004-002",
       "contraste": {
-        "status": "falhou",
+        "status": "passou",
         "observacoes": [
-          "Verificacao de ACC-004-001 (fixado, hex → token): Confirmado que skip-link em app.css linha 114 agora usa `color: var(--color-on-primary)` em vez de `color: #fff` (hardcoding). Token --color-on-primary: #fff definido em :root linha 42, NAO redefinido em [data-theme='dark'] (linhas 46-61) nem em @media prefers-color-scheme (linhas 63-80), como esperado.",
-          "TEMA CLARO - elementos corretos:",
-          "  - skip-link: #fff texto sobre --color-primary #2563eb background = 5.17:1 (PASSA WCAG AA 4.5:1)",
-          "  - logout button (app.blade.php L48): text-white (#fff) sobre --color-primary #2563eb background = 5.17:1 (PASSA)",
-          "  - Texto principal (#1f2937) sobre bg (#f4f6f8) = 13.55:1 (aprovado >= 4.5:1)",
-          "  - Formulario: texto (#1f2937) sobre card branco (#ffffff) = 14.67:1 (aprovado)",
-          "  - Texto muted (#54606e): 5.92:1 sobre bg, ~5.70:1 sobre card (aprovado)",
-          "  - Cor de erro (#dc2626): 4.46:1 sobre bg (margem minima, 0.04:1 abaixo de 4.5:1 ideal, mas registro em RNF-transversal)",
-          "TEMA ESCURO - FALHAS ENCONTRADAS:",
-          "  - skip-link: #fff texto sobre --color-primary #3b82f6 background = 3.68:1 (FALHA WCAG AA - exige 4.5:1) — achado ACC-004-002",
-          "  - logout button (app.blade.php L48): text-white (#fff) sobre --color-primary #3b82f6 background = 3.68:1 (FALHA WCAG AA) — achado ACC-004-002",
-          "TEMA ESCURO - elementos OK:",
-          "  - Texto principal (#f1f5f9) sobre bg (#0f172a) = 16.30:1 (aprovado)",
-          "  - Texto muted (#94a3b8) sobre bg (#0f172a) = 6.96:1 (aprovado)",
-          "Foco visivel (focus-ring): outline 3px var(--color-focus-ring) = #2563eb (claro) / #60a5fa (escuro), contraste de foco contra bg ~4.77:1 (tema claro) e ~6.5:1 (tema escuro) — aprovado"
+          "[REAUDITORIA POS-CORRECAO ACC-004-002, commit 9c5d715c50d741148b74752a6208d9eda0a5d78b]",
+          "",
+          "TEMA CLARO (:root) - SEM ALTERACAO",
+          "  - --color-primary: #2563eb",
+          "  - --color-on-primary: #fff (inalterado)",
+          "  - Contraste skip-link e logout button: 5.169:1 calculado (>=4.5:1 WCAG AA) PASSA",
+          "  - Luminancia (#fff): 1.000000, Luminancia (#2563eb): 0.153152",
+          "",
+          "TEMA ESCURO [data-theme='dark'] - CORRIGIDO CONFIRMADO",
+          "  - --color-primary: #3b82f6",
+          "  - --color-on-primary: REDEFINIDO para #0f172a (antes era #fff fixo)",
+          "  - Contraste skip-link: 4.854:1 calculado (>=4.5:1 WCAG AA) PASSA",
+          "  - Contraste logout button: 4.854:1 calculado (>=4.5:1 WCAG AA) PASSA",
+          "  - Luminancia (#0f172a): 0.008815, Luminancia (#3b82f6): 0.235489",
+          "  - Valor anterior (antes da correcao): #fff sobre #3b82f6 = 3.68:1 (FALHA WCAG AA)",
+          "",
+          "TEMA ESCURO @media (prefers-color-scheme: dark) - SINCRONIZADO COM [data-theme='dark']",
+          "  - --color-primary: #3b82f6",
+          "  - --color-on-primary: #0f172a (identica a [data-theme='dark'])",
+          "  - Contraste: 4.854:1 calculado (>=4.5:1 WCAG AA) PASSA",
+          "  - Sem divergencia detectada entre os dois blocos de tema escuro",
+          "",
+          "VERIFICACAO DE REGRESSAO",
+          "  - grep -r 'color-on-primary' confirmou uso apenas em: .skip-link (app.css L122) e logout button (app.blade.php L49)",
+          "  - Nenhum outro elemento consome este token",
+          "  - Sem regressao detectada em nenhum outro elemento",
+          "",
+          "UNIFICACAO DE CORREACAO",
+          "  - Skip-link: app.css L121-122 usa color: var(--color-on-primary)",
+          "  - Logout button: app.blade.php L49 usa style='color:var(--color-on-primary)' (antes era class='text-white')",
+          "  - Ambos os elementos agora compartilham o mesmo token, unificando a logica de cores por tema",
+          "",
+          "ELEMENTOS ADICIONAIS (fora do escopo da correcao, confirmados sem regressao)",
+          "  - Texto principal (#1f2937) sobre bg claro (#f4f6f8) = 13.55:1 (aprovado)",
+          "  - Texto principal (#f1f5f9) sobre bg escuro (#0f172a) = 16.30:1 (aprovado)",
+          "  - Texto muted claro (#54606e) sobre bg claro: ~5.70:1 (aprovado)",
+          "  - Texto muted escuro (#94a3b8) sobre bg escuro (#0f172a) = 6.96:1 (aprovado)",
+          "  - Foco visivel: #2563eb (claro) / #60a5fa (escuro) com contraste adequado (aprovado)"
         ]
       },
       "tags_leitor_tela": {
