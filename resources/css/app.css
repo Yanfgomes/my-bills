@@ -34,6 +34,8 @@
        ja designado em arquitetura.padroes_tecnologias.acessibilidade.paleta_cores.tema_claro.primary.uso
        como "acao primaria (botoes, links, foco)" — que atinge ~4.77:1 contra o fundo. */
     --color-focus-ring: #2563eb;
+    /* ACC-004-001 (corrigido por ACC-004-002, ver abaixo): texto sobre --color-primary (botoes/skip-link). */
+    --color-on-primary: #fff;
     --radius-surface: 10px;
 }
 
@@ -52,6 +54,15 @@
     --color-warn: #fbbf24;
     --color-warn-decorative: #fbbf24;
     --color-focus-ring: #60a5fa;
+    /* ACC-004-002: --color-primary do tema escuro (#3b82f6) contra o branco fixo de
+       --color-on-primary (:root, #fff) da so 3.68:1 -- abaixo do minimo WCAG AA 4.5:1 (texto
+       branco sobre este azul especifico nao consegue passar de ~3.68:1, ja que #fff e a maior
+       luminancia possivel; a unica saida sem tocar o fundo aprovado e usar um texto ESCURO em vez
+       de claro). Reaproveita o mesmo tom de --color-bg deste tema (#0f172a, ja aprovado na paleta)
+       em vez de introduzir uma cor nova: (0.28558+0.05)/(0.008823+0.05) = 4.86:1 (>= 4.5:1,
+       calculo WCAG 2.1 relative luminance / contrast ratio, formula em www.w3.org/TR/WCAG21). Tema
+       claro nao e afetado (--color-on-primary continua #fff, 5.17:1 contra #2563eb). */
+    --color-on-primary: #0f172a;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -70,6 +81,9 @@
         --color-warn: #fbbf24;
         --color-warn-decorative: #fbbf24;
         --color-focus-ring: #60a5fa;
+        /* ACC-004-002: mesmo ajuste do bloco [data-theme='dark'] acima, para o caso de tema
+           seguindo a preferencia do SO sem escolha explicita salva. */
+        --color-on-primary: #0f172a;
     }
 }
 
@@ -105,7 +119,7 @@
     top: 0;
     z-index: 100;
     background: var(--color-primary);
-    color: #fff;
+    color: var(--color-on-primary);
     padding: 10px 16px;
     border-radius: 0 0 8px 0;
 }

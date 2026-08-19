@@ -1728,13 +1728,13 @@
     "ordem_execucao": [
       "RF-001",
       "RF-002",
-      "RF-003",
       "RF-004",
       "RF-006",
-      "RF-008"
+      "RF-008",
+      "RF-003"
     ],
     "checkpoint_lote": {
-      "observacao": "Ordem copiada diretamente de planejamento.escopo.marcos[marco-1-mvp].rf_refs (posicao ja aprovada no gate aprovacao_escopo). RF-001 implementado e commitado nesta invocacao (branch rf/RF-001, aguardando_qa em specs/estado-rf-RF-001.json). Demais RFs do marco seguem pendentes."
+      "observacao": "RF-001 e RF-002 aprovados/mergeados. RF-003 (isolamento de dados por usuario) reordenado para o final do lote em 2026-08-19T11:56:47Z: dev-agent sinalizou (decisao_pendente em specs/estado-rf-RF-003.json, gate=ordem_execucao_dependencia) que RF-003 e requisito transversal sem tela propria, aplicado por RF-004/RF-006/RF-008, e nao ha entidade (Renda/Despesa/Overview) ainda existente para isolar nem testar RN-005. Usuario escolheu via AskUserQuestion adiar RF-003 para depois de RF-004/RF-006/RF-008, quando sera implementado como RendaPolicy/DespesaPolicy/restricao do Overview com testabilidade real. RF-004 implementado pelo dev-agent em 2026-08-19T12:09:00Z (branch rf/RF-004, commit 596c93a0599c07755467c8cacd7d674d354affb4, aguardando_qa em specs/estado-rf-RF-004.json) — inclui App\\Policies\\FonteRendaPolicy criada junto com o RF (materializacao antecipada da convencao de autorizacao ja aprovada, ver observacoes em specs/estado-rf-RF-004.json), reduzindo o trabalho de RF-003 quando este rodar por ultimo a consolidar/validar (nao criar do zero). Proximo RF a implementar: RF-006."
     },
     "historico_revisoes": []
   },
