@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LogoutController;
 use App\Livewire\Auth\LoginForm;
 use App\Livewire\Auth\RegistroForm;
+use App\Livewire\Despesas\DespesaManager;
 use App\Livewire\Renda\RendaManager;
 use Illuminate\Support\Facades\Route;
 
@@ -32,6 +33,11 @@ Route::get('/overview', function () {
 Route::get('/renda', RendaManager::class)
     ->middleware('auth')
     ->name('renda.index');
+
+// RF-006 (Despesas). Mesma convencao de nomenclatura de renda.index (dot notation por dominio).
+Route::get('/despesas', DespesaManager::class)
+    ->middleware('auth')
+    ->name('despesas.index');
 
 Route::get('/', function () {
     return redirect()->route(auth()->check() ? 'overview' : 'registro');

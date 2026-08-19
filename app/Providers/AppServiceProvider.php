@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Despesa;
 use App\Models\FonteRenda;
 use App\Models\User;
 use App\Observers\AuditoriaObserver;
@@ -27,5 +28,6 @@ class AppServiceProvider extends ServiceProvider
         // futuros) entram nesta mesma lista quando forem implementados.
         User::observe(AuditoriaObserver::class);
         FonteRenda::observe(AuditoriaObserver::class);
+        Despesa::observe(AuditoriaObserver::class);
     }
 }
