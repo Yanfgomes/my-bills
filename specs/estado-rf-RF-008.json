@@ -1,6 +1,6 @@
 {
   "rf_ref": "RF-008",
-  "versao": 10,
+  "versao": 11,
   "status": "aprovado",
   "implementacao_existente": false,
   "gap_implementado": null,
@@ -10,7 +10,7 @@
   "grupo_commit": [],
   "handoff_qa": {
     "disparado_em": "2026-08-19T18:45:04Z",
-    "status": "em_qa",
+    "status": "aprovado",
     "motivo": "Correcao (tentativa 2/5) dos 3 achados escalados na Onda 1 anterior (CR-RF-008-01, SEC-RF-008-01, ACC-RF-008-01) commitada em 5060df123071943a859f4cea9a92f7eb579c3c47, mesma branch rf/RF-008. Reiniciando o ciclo de QA pela Onda 1 (re-disparo seletivo por diff -- code-review sempre; security e accessibility disparados de novo pois o diff toca escopo de ambos: OverviewFinanceiro.php com authorize()/Locked, e a blade com troca de unidade de fonte). NOTA code-review-agent: campos commit_ref/versao/handoff_qa.status restaurados nesta escrita apos inconsistencia observada no arquivo em disco (revertido para o commit 550418c/versao 5 entre a aquisicao do lock e esta gravacao) -- corrigido para refletir o commit_ref real informado pelo qa-coordenador-agent (5060df1); secoes qa.security/qa.accessibility nao foram alteradas por este agente, apenas o code_review e estes campos de topo."
   },
   "qa": {
