@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\FonteRenda;
 use App\Models\User;
 use App\Observers\AuditoriaObserver;
 use Illuminate\Support\ServiceProvider;
@@ -25,5 +26,6 @@ class AppServiceProvider extends ServiceProvider
         // negocio e observado aqui. Novos models de dominio (FonteRenda, Despesa, marcos
         // futuros) entram nesta mesma lista quando forem implementados.
         User::observe(AuditoriaObserver::class);
+        FonteRenda::observe(AuditoriaObserver::class);
     }
 }
