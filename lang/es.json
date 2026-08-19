@@ -52,5 +52,16 @@
     "Ex: Moradia, Alimentacao": "Ej: Vivienda, Alimentacion",
     "Adicionar despesa": "Agregar gasto",
     "Informe um valor maior que zero.": "Ingresa un valor mayor que cero.",
-    "A categoria deve ter no maximo 60 caracteres.": "La categoria debe tener como maximo 60 caracteres."
+    "A categoria deve ter no maximo 60 caracteres.": "La categoria debe tener como maximo 60 caracteres.",
+    "Overview financeiro": "Resumen financiero",
+    "Mes anterior": "Mes anterior",
+    "Proximo mes": "Mes siguiente",
+    "Navegue entre meses para ver o historico.": "Navega entre meses para ver el historico.",
+    "Renda total (mes)": "Ingreso total (mes)",
+    "Despesas totais (mes)": "Gastos totales (mes)",
+    "Saldo disponivel (mes)": "Saldo disponible (mes)",
+    "% da renda comprometido (mes)": "% del ingreso comprometido (mes)",
+    "Sem renda cadastrada no periodo": "Sin ingresos registrados en el periodo",
+    "Atencao: as despesas superam a renda neste periodo.": "Atencion: los gastos superan el ingreso en este periodo.",
+    "Nenhuma renda ou despesa cadastrada para este mes. Cadastre sua renda e suas despesas para ver o overview deste periodo.": "Aun no hay ingresos ni gastos registrados para este mes. Agrega tus ingresos y gastos para ver el resumen de este periodo."
 }
