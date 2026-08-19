@@ -39,5 +39,18 @@
     "A descricao deve ter no maximo 120 caracteres.": "La descripcion debe tener como maximo 120 caracteres.",
     "Informe um valor liquido maior que zero.": "Ingresa un valor neto mayor que cero.",
     "o valor deve ser maior que zero": "el valor debe ser mayor que cero",
-    "Informe o mes/periodo de referencia (formato AAAA-MM).": "Ingresa el mes/periodo de referencia (formato AAAA-MM)."
+    "Informe o mes/periodo de referencia (formato AAAA-MM).": "Ingresa el mes/periodo de referencia (formato AAAA-MM).",
+    "Despesas": "Gastos",
+    "Minhas despesas": "Mis gastos",
+    "Nenhuma despesa cadastrada ainda. Adicione sua primeira despesa abaixo.": "Aun no hay gastos registrados. Agrega tu primer gasto abajo.",
+    "Valor": "Valor",
+    "Categoria": "Categoria",
+    "Nova despesa": "Nuevo gasto",
+    "Ex: Aluguel, Mercado": "Ej: Alquiler, Supermercado",
+    "Valor (R$)": "Valor (R$)",
+    "Categoria (opcional)": "Categoria (opcional)",
+    "Ex: Moradia, Alimentacao": "Ej: Vivienda, Alimentacion",
+    "Adicionar despesa": "Agregar gasto",
+    "Informe um valor maior que zero.": "Ingresa un valor mayor que cero.",
+    "A categoria deve ter no maximo 60 caracteres.": "La categoria debe tener como maximo 60 caracteres."
 }

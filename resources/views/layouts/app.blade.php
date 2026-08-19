@@ -39,6 +39,15 @@
                     >
                         {{ __('Renda') }}
                     </a>
+                    <a
+                        href="{{ route('despesas.index') }}"
+                        data-cy="nav-despesas"
+                        aria-current="{{ request()->routeIs('despesas.index') ? 'page' : 'false' }}"
+                        class="focus-ring text-[13px] font-semibold"
+                        style="color:var(--color-text)"
+                    >
+                        {{ __('Despesas') }}
+                    </a>
 
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
