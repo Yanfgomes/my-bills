@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LogoutController;
 use App\Livewire\Auth\LoginForm;
 use App\Livewire\Auth\RegistroForm;
+use App\Livewire\Renda\RendaManager;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/registro', RegistroForm::class)
@@ -24,6 +25,13 @@ Route::post('/logout', LogoutController::class)
 Route::get('/overview', function () {
     return view('overview-stub');
 })->middleware('auth')->name('overview');
+
+// RF-004 (Renda). Rota em dot notation por dominio (renda.index), conforme
+// arquitetura.padroes_tecnologias.convencoes.nomenclatura — diferente das rotas de auth
+// (registro/login/logout), que sao flat por decisao ja registrada em marcos anteriores.
+Route::get('/renda', RendaManager::class)
+    ->middleware('auth')
+    ->name('renda.index');
 
 Route::get('/', function () {
     return redirect()->route(auth()->check() ? 'overview' : 'registro');
