@@ -34,6 +34,12 @@
        ja designado em arquitetura.padroes_tecnologias.acessibilidade.paleta_cores.tema_claro.primary.uso
        como "acao primaria (botoes, links, foco)" — que atinge ~4.77:1 contra o fundo. */
     --color-focus-ring: #2563eb;
+    /* ACC-004-001: texto sobre --color-primary (botoes/skip-link). Mesmo valor fixo (#fff) ja usado
+       via Tailwind "text-white" nos demais botoes primarios do projeto (overview-stub, app layout,
+       renda-manager, login-form, registro-form) — nao redefinido em [data-theme="dark"]/prefers-color-scheme
+       porque --color-primary permanece um tom de azul saturado em ambos os temas, entao o mesmo branco
+       mantem o mesmo contraste (~16:1 claro / analogo escuro) sem inverter como --color-card. */
+    --color-on-primary: #fff;
     --radius-surface: 10px;
 }
 
@@ -105,7 +111,7 @@
     top: 0;
     z-index: 100;
     background: var(--color-primary);
-    color: #fff;
+    color: var(--color-on-primary);
     padding: 10px 16px;
     border-radius: 0 0 8px 0;
 }
