@@ -1,6 +1,6 @@
 {
   "rf_ref": "RF-004",
-  "versao": 3,
+  "versao": 6,
   "status": "aguardando_qa",
   "implementacao_existente": false,
   "gap_implementado": null,
@@ -10,10 +10,24 @@
   "grupo_commit": [],
   "handoff_qa": {
     "disparado_em": "2026-08-19T12:09:00Z",
-    "status": "em_qa"
+    "status": "reprovado"
   },
-  "tentativas_correcao": 0,
-  "bugs": [],
+  "tentativas_correcao": 1,
+  "bugs": [
+    {
+      "id": "ACC-004-001",
+      "descricao": "CSS hardcoding de cor no skip-link: resources/css/app.css linha 108 tem `color: #fff` (branco), violando a diretriz layout-guidelines.md de 'nunca usar hex fora destas variaveis'. Deveria usar token como `color: var(--color-card)` ou similar. Impacto de acessibilidade minimo (contraste ~16:1 com fundo var(--color-primary) #2563eb ja e excelente), mas viola padrao tecnico aprovado.",
+      "rf_ref": "RF-004",
+      "tipo": "acessibilidade",
+      "severidade": "baixa",
+      "status": "escalado",
+      "classificacao": "impacto_real",
+      "escalado_para": "dev-agent",
+      "triagem": "Causa local a implementacao (CSS): trocar `color: #fff` por um token existente da paleta (ex.: var(--color-card), ja usado no restante do projeto para texto claro sobre fundo escuro/primario) em resources/css/app.css linha 108. Nao contradiz nenhuma decisao de arquitetura/design ja aprovada -- e apenas a materializacao da propria diretriz de tokens (layout-guidelines.md, 'nunca usar hex fora destas variaveis') que o design-agent ja estabeleceu para o projeto. Sem impacto de contraste real (contraste atual ja e excelente, ~16:1), mas o desvio do padrao tecnico bloqueia o fechamento limpo da Onda 1 (bug em aberto), entao nao avanco para a Onda 2 (tester-agent) ate a correcao ser confirmada.",
+      "encontrado_em": "2026-08-19T13:45:00Z",
+      "escalado_em": "2026-08-19T12:19:50Z"
+    }
+  ],
   "qa": {
     "code_review": {
       "status": "passou",
@@ -32,6 +46,86 @@
           "[observacao positiva, sem acao necessaria] Nomenclatura, estrutura de pastas e rota (renda.index, dot notation) aderentes a arquitetura.padroes_tecnologias.convencoes: FonteRenda (PascalCase singular) / fontes_renda (snake_case plural), RendaManager em app/Livewire/Renda, view em resources/views/livewire/renda/, indice composto (usuario_id, mes_referencia) presente conforme RNF-003."
         ]
       }
+    },
+    "accessibility": {
+      "status": "passou",
+      "auditado_em": "2026-08-19T13:45:00Z",
+      "contraste": {
+        "status": "passou",
+        "observacoes": [
+          "Layout app.blade.php: texto principal (#1f2937) sobre fundo (#f4f6f8) = 13.55:1 (aprovado >= 4.5:1)",
+          "Formulario: texto (#1f2937) sobre card branco (#ffffff) = 14.67:1 (aprovado)",
+          "Texto muted (#54606e): 5.87:1 sobre bg, 6.35:1 sobre card (aprovado, ajuste original da paleta registrado em paleta_cores.tema_claro.text_muted)",
+          "Cor de erro (#dc2626): 4.83:1 (aprovado para texto normal)",
+          "Botao primario: texto branco sobre #2563eb = ~5.17:1 (aprovado, verificado em paleta_cores.tema_claro.primary)",
+          "Tema escuro: tokens redefinidos apropriadamente em [data-theme='dark'] e @media (prefers-color-scheme: dark), mantendo contrastes WCAG AA",
+          "Foco visivel: outline 3px var(--color-focus-ring) = #2563eb (claro) / #60a5fa (escuro), contraste de foco = ~4.77:1 contra bg (verificado, aprovado)"
+        ]
+      },
+      "tags_leitor_tela": {
+        "status": "passou",
+        "observacoes": [
+          "Layout app.blade.php: skip-link presente com href='#conteudo-principal' (linha 15), class 'focus-ring' (OK)",
+          "Landmarks HTML: <header>, <nav aria-label='Navegacao principal'>, <main id='conteudo-principal'>, <footer> (OK)",
+          "Navegacao: aria-current dinamico nos links (Overview/Renda, depende da rota) (OK)",
+          "Title HTML dinamico: <title>{{ $title ?? config('app.name') }}</title> (OK)",
+          "Lang attribute: lang='{{ str_replace(...) }}' correto para locale atual (OK)",
+          "Formulario renda-manager.blade.php: H1 'Minhas fontes de renda' unico, H2 'Nova fonte de renda' (OK)",
+          "Labels: <label for='renda-descricao'> associado a <input id='renda-descricao'> (e similares para valor e mes) (OK)",
+          "Campos com aria-describedby: renda-descricao-error, renda-valor-error, renda-mes-error (OK)",
+          "Campos com aria-invalid: dinamico via {{ $errors->has(...) ? 'true' : 'false' }} (OK)",
+          "Divs de erro com aria-live='polite': presente em todos (descricao, valor, mes) (OK)",
+          "Table headers com scope='col': todos os <th> (OK)",
+          "Focus ring em inputs e button: class 'focus-ring' aplicado (OK)",
+          "wire:loading.attr='aria-busy' no submit: presente (OK)",
+          "Strings localizadas: todas as labels, placeholders, mensagens de erro via __() (OK)",
+          "Language files: pt.json, en.json, es.json com todas as strings de RF-004 (OK)"
+        ]
+      },
+      "aderencia_estrutural": {
+        "status": "passou",
+        "observacoes": [
+          "Tokens CSS: todas as cores em Blade/CSS usam var(--color-*) exceto 1 hardcoding menor (skip-link #fff, registrado como ACC-004-001)",
+          "Tema suportado (suporte_tema = claro_escuro): tokens redefinidos em [data-theme='dark'] e @media (prefers-color-scheme: dark) (OK)",
+          "Reducao de movimento (reducao_movimento = true): @media (prefers-reduced-motion: reduce) define animation-duration/transition-duration 0.01ms (OK)",
+          "Foco visivel (foco_visivel = true): .focus-ring:focus-visible define outline 3px var(--color-focus-ring) + offset 2px (OK)",
+          "Fonte configuravel (fonte_configuravel = true): nao sera validado nesta rodada (tela de configuracoes e RF futuro, fora marco-1-mvp)",
+          "Alto contraste (alto_contraste = true): nao sera validado nesta rodada (controle de alto contraste e RF futuro com tela de configuracoes)",
+          "Classe .btn-primary-hover: hover/focus-visible definem background-color var(--color-primary-dark) (OK, sem hardcoding de cor)",
+          "Livewire aria-busy: wire:loading.attr='aria-busy' no botao de submit durante criar() (OK)"
+        ]
+      },
+      "recomendacoes": []
+    },
+    "security": {
+      "status": "passou",
+      "auditado_em": "2026-08-19T12:20:00Z",
+      "ferramenta": {
+        "nome": null,
+        "status": "indisponivel",
+        "detalhes_ref": "arquitetura.padroes_tecnologias.stack.ferramenta_seguranca.status = pendente_infraestrutura (usuario confirmou ausencia de SAST/scanner de dependencias configurado). Pentest whitebox manual executado normalmente como substituto."
+      },
+      "pentest_manual": {
+        "status": "concluido",
+        "achados_confirmados": 0,
+        "achados_por_analise_estatica": 0
+      },
+      "rnf_verificado": {
+        "rnf_ref": "RNF-002",
+        "criterio_verificacao": "security-agent executa pentest whitebox e confirma ausencia de acesso cross-usuario por manipulacao de identificador (IDOR) sobre Renda.",
+        "status": "atendido",
+        "evidencia": "Exploracao real (nao so leitura de codigo), via script standalone bootando o Laravel app (bootstrap/app.php) contra um banco SQLite isolado em scratchpad (copia de schema, nunca o database/database.sqlite do projeto): criados 2 usuarios reais (Alice/Bob) com 1 FonteRenda cada; autenticado como Alice (Auth::login), tentativa de acesso ao registro de Bob via Gate::allows('view'|'update'|'delete', $fonteDeBob) retornou false nos 3 casos -- confirma que App\\Policies\\FonteRendaPolicy esta de fato registrada (resolucao automatica por convencao de nomenclatura Model->Policy do Laravel, sem Gate::policy() explicito) e que a comparacao usuario_id === $usuario->id funciona corretamente contra um segundo usuario real (nao So contra null/ausencia de auth). A alegacao do dev-agent (verificacao manual via tinker nao commitada) foi reproduzida de forma independente com resultado identico. Query de listagem (RendaManager::render(), FonteRenda::where('usuario_id', Auth::id())) tambem verificada: com Alice autenticada, retornou exatamente 1 registro (o dela), sem vazamento do registro de Bob. Gate::allows('view', ...) sem sessao autenticada (Auth::logout()) retornou false sem excecao (sem null-safety furada -- nao ha 'auth()->id() ?? 0' nem comparacao frouxa que pudesse casar usuario_id nulo). Nao existe, neste RF, nenhuma rota/action que aceite um identificador de FonteRenda vindo do cliente (routes/web.php so expoe GET /renda sem parametro de rota; a view lista via wire:key/data-cy mas nao ha edit()/excluir() nem endpoint com {id} nesta rodada, escopo marco-1-mvp = listar+criar) -- ou seja, hoje nao ha superficie de ataque IDOR explorable alem do que foi testado (viewAny/create tambem confirmados restritos a usuario autenticado). view()/update()/delete() da Policy estao corretos mas sem consumidor ainda (antecipacao para RF-005, ja registrada pelo code-review-agent como observacao nao bloqueante) -- security-agent nao reabre esse ponto, so registra que quando RF-005 expuser acao/rota com {id}, a authorize() correspondente precisa ser chamada explicitamente (nao basta a Policy existir)."
+      },
+      "verificacoes_adicionais": [
+        "RN-002 (valor > 0): validacao server-side robusta contra bypass client-side -- RendaManager::criar() chama $this->validate(['valorLiquido' => ['required','numeric','gt:0']]) no proprio metodo do backend antes de qualquer persistencia; FonteRenda::create() so recebe $dados ja validado (nao $this->all() nem propriedade publica raw), entao manipular wire:model no client ou enviar payload Livewire adulterado nao contorna a regra -- o Livewire reidrata o componente e roda validate() no servidor a cada submit. Reforcado por CHECK (valor_liquido > 0) em nivel de banco na migration (defesa em profundidade).",
+        "RN-003 (mes_referencia formato AAAA-MM): regex '/^\\d{4}-(0[1-9]|1[0-2])$/' aplicada em $this->validate() no backend, mesma logica acima -- nao e validacao so de input type=month no HTML (que e trivialmente contornavel). Nao testei ainda mes bissexto/formato '0000-13' explicitamente via payload cru porque a regex ja rejeita matematicamente qualquer mes fora de 01-12; sem achado.",
+        "Mass assignment: FonteRenda usa #[Fillable(['usuario_id','descricao','valor_liquido','mes_referencia'])] e o unico ponto de escrita (RendaManager::criar()) forca 'usuario_id' => Auth::id() no array passado a create(), nunca aceitando usuario_id vindo de input do cliente -- sem vetor de um usuario forjar fonte de renda em nome de outro via mass assignment.",
+        "XSS: descricao/valor/mes_referencia renderizados via {{ }} (Blade auto-escape) na tabela de listagem -- sem sink de saida sem escape (nenhum uso de {!! !!} no commit).",
+        "SQL injection: toda leitura/escrita usa Eloquent parametrizado (where('usuario_id', ...), create([...])); unico DB::statement do commit e DDL da migration (CREATE TABLE com CHECK), sem interpolacao de input de usuario.",
+        "Exposicao de dado sensivel: nenhum segredo/credencial em codigo ou config versionada neste commit; resposta da view Livewire expoe apenas os campos do contrato (descricao, valor_liquido, mes_referencia), sem campo extra.",
+        "CSRF: protegido pelo mecanismo padrao de snapshot assinado do Livewire + middleware 'auth' na rota renda.index; sem rota alternativa sem middleware."
+      ],
+      "observacao_geral": "Nao substitui pentest formal/auditoria de seguranca externa. RNF-002 verificado e atendido para RF-004 com achado confirmado por exploracao real (nao so analise estatica). Sem achados de criticidade critica/maior/menor nesta rodada."
     }
   },
   "observacoes": "Implementado sozinho (fe_be_desacoplado = false): migration fontes_renda (uuid PK, usuario_id FK cascade, valor_liquido com CHECK > 0 em banco alem de RN-002 na app, mes_referencia varchar(7), criado_em/atualizado_em conforme contrato), App\\Models\\FonteRenda, App\\Policies\\FonteRendaPolicy, App\\Livewire\\Renda\\RendaManager (rota renda.index), primeiro layout autenticado do projeto (resources/views/layouts/app.blade.php, com nav Overview/Renda + logout), Observer de auditoria registrado para FonteRenda no AppServiceProvider, strings novas em lang/{pt,en,es}.json. Escopo marco-1-mvp: apenas listar+criar (editar/excluir sao RF-005, marco-2-gestao-completa, fora desta rodada, conforme componentes_livewire.RendaManager.escopo_marco ja registrado pelo design-agent). Lint (Pint) passou sem ajustes.\n\nDecisao sobre RN-005/Policy (contexto do gate RF-003 resolvido em specs/estado-rf-RF-003.json): criei FonteRendaPolicy AGORA, junto com RF-004, em vez de deixar para quando RF-003 rodar no final do lote. Raciocinio: RF-003 em si nao tem tela/entidade propria para produzir codigo isolado (por isso foi adiado) -- o proprio design-agent ja registrou que RendaPolicy/DespesaPolicy 'serao criadas junto com os proprios RF-004/RF-006' (padroes_tecnologias.convencoes.autorizacao) e o contrato tecnico de RendaManager.criar() exige literalmente '$this->authorize(\"create\", FonteRenda::class)'. Sem a Policy, o criterio_aceite de RF-004 (\"vinculada ao usuario autenticado\") ficaria sem a camada de autorizacao que o design aprovou, so com o isolamento mais fraco de escopo de query. Portanto implementei viewAny()+create() (usados por este RF, chamados em RendaManager::mount()/criar()) e tambem view()/update()/delete() (metodo de instancia obvio de RN-005 -- usuario_id do registro == usuario autenticado -- sem decisao de arquitetura nova, so o shape padrao de Policy do Laravel), para RF-005 reutilizar sem recriar a classe do zero. Verifiquei manualmente via tinker (script descartavel, nao commitado) que Gate::allows('view', $fonteDeOutroUsuario) retorna false e que a query de listagem + a Policy convergem no mesmo criterio. NAO escrevi nenhum teste automatizado (fora do meu escopo) nem toquei em DespesaPolicy ou na restricao do Overview -- isso e responsabilidade de RF-006/RF-008 quando rodarem, e a consolidacao/validacao formal com testabilidade cross-user (RN-005 provada com dois usuarios reais, via tester-agent) continua sendo responsabilidade do proprio RF-003 quando ele rodar por ultimo no lote, conforme a decisao ja registrada no gate. Isso deixa RF-003, quando chegar sua vez, com um trabalho menor (revisar/consolidar Policies ja existentes de Renda e Despesa + aplicar a mesma logica no Overview) em vez de criar as Policies do zero -- decisao de engenharia dentro do meu escopo (nao decidi nada de arquitetura nova, apenas antecipei a materializacao de uma convencao ja aprovada), registrada aqui para o qa-coordenador-agent e o proprio RF-003 terem o contexto completo.\n\nDesvio consciente de convencoes_migracao.padrao_laravel: a migration usa DB::statement/CREATE TABLE bruto em vez do Schema Builder, unica forma de expressar a CHECK (valor_liquido > 0) exigida pela modelagem aprovada -- SQLite nao suporta ALTER TABLE ADD CONSTRAINT (tentado e confirmado via 'php artisan migrate --pretend' e execucao real). Motivo documentado no proprio arquivo da migration.\n\nNao criei resources/views/layouts/app.blade.php redesenhando nada do prototipo -- e infraestrutura pura (casca compartilhada) necessaria porque TELA-004 e a primeira tela autenticada real do projeto (overview-stub.blade.php, de RF-001/002, e um stub sem layout proprio); nao toquei em overview-stub.blade.php nem no fluxo de Overview, que continuam responsabilidade de RF-008."
