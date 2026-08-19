@@ -45,8 +45,8 @@
                         <button
                             type="submit"
                             data-cy="logout-submit"
-                            class="focus-ring px-3 py-2 rounded-lg text-white text-[13px] font-semibold"
-                            style="background-color:var(--color-primary)"
+                            class="focus-ring px-3 py-2 rounded-lg text-[13px] font-semibold"
+                            style="background-color:var(--color-primary);color:var(--color-on-primary)"
                         >
                             {{ __('Sair') }}
                         </button>
