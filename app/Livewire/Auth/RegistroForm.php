@@ -94,7 +94,12 @@ class RegistroForm extends Component
             'senha' => Hash::make($dados['senha']),
         ]);
 
+        // BUG-007-SEC: sem regenerar a sessao apos Auth::login(), um session ID pre-existente
+        // (potencialmente fixado por um atacante antes da vitima se cadastrar) permanecia
+        // autenticado apos o cadastro (session fixation). Mesma correcao ja aplicada e aprovada
+        // em LoginForm::autenticar() (RF-002) -- regenera o ID de sessao logo apos autenticar.
         Auth::login($usuario);
+        session()->regenerate();
 
         $this->redirectRoute('overview', navigate: true);
     }
