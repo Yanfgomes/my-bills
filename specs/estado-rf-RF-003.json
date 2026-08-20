@@ -1,7 +1,7 @@
 {
   "rf_ref": "RF-003",
   "versao": 10,
-  "status": "aguardando_qa",
+  "status": "aprovado",
   "implementacao_existente": false,
   "gap_implementado": true,
   "branch_ref": "rf/RF-003",
@@ -15,14 +15,20 @@
   "tentativas_correcao": 0,
   "bugs": [],
   "decisao_pendente": {
-    "agente": "dev-agent",
-    "gate": "ordem_execucao_dependencia",
+    "agente": "qa-coordenador-agent",
+    "gate": "validacao_local",
     "rf_ref": "RF-003",
-    "resposta": "Adiar RF-003 para o final do lote (depois de RF-004, RF-006, RF-008)",
-    "respondido_em": "2026-08-19T11:56:47Z",
-    "detalhes_ref": "specs/relatorios/dev-agent-RF-003-decisao.md"
+    "pergunta": "RF-003 (isolamento de dados por usuario, RN-005) passou nas 3 ondas de QA (code-review, security, accessibility, tester - todos 'passou'). Validar localmente: aprovar merge/deploy?",
+    "opcoes": [
+      { "id": "aprovado", "descricao": "Isolamento confirmado por uso real (usuario A nao ve dados de usuario B em Renda/Despesas/Overview) - liberar merge/deploy." },
+      { "id": "reprovado", "descricao": "Algum problema encontrado na validacao local - registrar feedback e reabrir para dev-agent." }
+    ],
+    "contexto": "RF-003 e o ultimo RF pendente do marco-1-mvp (ultimo_rf_do_marco=true). E requisito transversal (RN-005), sem tela propria - aplicado nas telas de RF-004/006/008 (Renda, Despesas, Overview). Aprovacao aqui fecha o marco e segue para deploy do RF, depois consolidacao do marco-1-mvp.",
+    "resposta": "aprovado",
+    "respondido_em": "2026-08-20T12:20:00Z",
+    "detalhes_ref": "specs/relatorios/tester-RF-003.md"
   },
-  "observacoes": "Consolidacao RN-005 concluida (commit e596c4b) apos RF-004/006/008. Ultimo RF pendente do marco-1-mvp.",
+  "observacoes": "Consolidacao RN-005 concluida (commit e596c4b) apos RF-004/006/008. Ultimo RF pendente do marco-1-mvp. Triagem: ExampleTest.php (302 vs 200) pre-existente desde RF-001 (dbdae02), fora do escopo do diff RF-003/RN-005, nao e regressao - sem acao, nao bloqueia aprovacao.",
   "qa": {
     "code_review": {
       "status": "passou",
@@ -107,5 +113,13 @@
       ],
       "detalhes_ref": "specs/relatorios/tester-RF-003.md"
     }
+  },
+  "validacao_local": {
+    "status": "aprovado",
+    "como_subir": "composer run dev",
+    "o_que_testar": "Criar/logar com 2 usuarios distintos. Cadastrar Renda e Despesa com o usuario A. Logar como usuario B e confirmar que a listagem de Renda, Despesas e o Overview do mes NAO mostram nada do usuario A. Tentar editar/excluir um registro do usuario A logado como B (se houver forma de obter o ID pela URL) e confirmar erro de nao encontrado/nao autorizado, sem expor a existencia do registro.",
+    "rfs_cobertos": ["RF-003"],
+    "validado_em": "2026-08-20T12:20:00Z",
+    "observacoes": "Usuario aprovou via AskUserQuestion, sem ressalvas adicionais."
   }
 }
