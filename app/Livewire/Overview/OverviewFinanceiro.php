@@ -18,6 +18,14 @@ use Livewire\Component;
  * Overview nao tem model/Policy propria (nao ha entidade "Overview" a autorizar) — RN-005 e
  * aplicada aqui passando sempre Auth::id() ao servico, nunca um valor vindo de input do
  * cliente/wire:model (nao existe propriedade publica de usuario neste componente).
+ *
+ * RF-003 (consolidacao, ultimo RF do lote marco-1-mvp): validado com testabilidade cross-user
+ * real (dois usuarios, dados cruzados) em tests/Feature/Overview/OverviewFinanceiroTest.php e
+ * tests/Unit/Services/OverviewServiceTest.php — overview de um usuario nunca inclui renda/
+ * despesa de outro. mesSelecionado (#[Locked], PARAM-OVW-001) so e alterado por
+ * mesAnterior()/mesProximo() no servidor, nunca por payload do cliente, e sempre chega ao
+ * OverviewService::calcular() ja formatado (Y-m) — nenhum parametro de filtro chega a consulta
+ * como trecho de codigo (Eloquent where() com bind).
  */
 #[Layout('layouts.app')]
 class OverviewFinanceiro extends Component

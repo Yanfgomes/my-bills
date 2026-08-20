@@ -1,10 +1,10 @@
 {
   "rf_ref": "RF-003",
-  "versao": 2,
-  "status": "bloqueado",
+  "versao": 3,
+  "status": "em_desenvolvimento",
   "implementacao_existente": false,
-  "gap_implementado": null,
-  "branch_ref": null,
+  "gap_implementado": true,
+  "branch_ref": "rf/RF-003",
   "commit_ref": null,
   "commit_ref_testes": null,
   "grupo_commit": [],
@@ -18,25 +18,9 @@
     "agente": "dev-agent",
     "gate": "ordem_execucao_dependencia",
     "rf_ref": "RF-003",
-    "pergunta": "RF-003 (\"Isolamento de dados por usuario autenticado\") esta ordenado em desenvolvimento.ordem_execucao antes de RF-004 (Renda), RF-006 (Despesas) e RF-008 (Overview). O proprio RF-003, em documentacao.requisitos_funcionais, se descreve como 'requisito transversal ... sem tela propria (aplicado por RF-004 a RF-008)' e seu criterio_aceite fala exclusivamente de restringir leitura/escrita de Renda, Despesas e Overview -- nenhuma dessas entidades existe ainda no codigo (so ha migrations/models de users e logs_auditoria, criados por RF-001/RF-002). arquitetura.documentacao_tecnica tambem nao tem nenhuma rota/componente/servico/contrato proprio marcado para RF-003 -- so a convencao geral (padroes_tecnologias.convencoes.autorizacao) de que RendaPolicy/DespesaPolicy serao criadas junto com os proprios RF-004/RF-006. Nao ha o que isolar (nenhum registro de outro usuario a proteger) nem contra o que testar RN-005 hoje. Como devo proceder?",
-    "opcoes": [
-      {
-        "label": "Adiar RF-003 para o final do lote (depois de RF-004, RF-006, RF-008)",
-        "descricao": "Reordenar desenvolvimento.ordem_execucao (decisao do orquestrador/usuario, nao minha) para RF-003 rodar por ultimo. Nesse momento, com FonteRenda/Despesa/Overview ja existentes, implemento RF-003 criando/consolidando RendaPolicy, DespesaPolicy e a restricao de leitura do Overview a partir do usuario autenticado, com testabilidade real (tester-agent consegue provar RN-005 com dados de dois usuarios distintos)."
-      },
-      {
-        "label": "Manter a ordem aprovada e implementar agora so a infraestrutura generica de isolamento",
-        "descricao": "Construo agora um mecanismo reutilizavel (ex: trait de global scope Eloquent que filtra automaticamente por usuario_id = auth()->id() e/ou uma base de Policy) sem nenhum model concreto para aplica-lo ainda -- RF-004/RF-006/RF-008 apenas usarao o trait/base ja pronto quando criarem FonteRenda/Despesa. Risco: codigo sem consumidor e sem cobertura de teste possivel agora (o proprio code-review/tester podem sinalizar abstracao prematura/dead code), e pode nao bater exatamente com a decisao de autorizacao que o design-agent ja registrou (Policies por model, nao global scope) -- me obrigaria a decidir um detalhe de arquitetura que nao me cabe."
-      },
-      {
-        "label": "Tratar RF-003 como satisfeito por composicao, sem branch/commit proprio",
-        "descricao": "Registrar formalmente que RF-003 nao gera artefato de codigo isolado -- seu criterio_aceite sera verificado quando RF-004/RF-006/RF-008 aplicarem RendaPolicy/DespesaPolicy (e a restricao do Overview), e o qa-coordenador-agent avalia RN-005 nesses RFs, nao num RF-003 avulso. Eu sigo direto para RF-004 nesta mesma invocacao. Diverge do padrao 'todo RF tem branch e commit' do protocolo, entao exige decisao humana explicita antes de eu adotar essa excecao."
-      }
-    ],
-    "contexto": "planejamento.escopo.marcos[marco-1-mvp].rf_refs ja aprovou a ordem RF-001,RF-002,RF-003,RF-004,RF-006,RF-008 no gate aprovacao_escopo (analise-planejamento-agent). Nao tenho AskUserQuestion nem posso reordenar essa lista por conta propria -- so sinalizar. RF-001 e RF-002 ja estao aprovado/mergeado. Nenhum model de Renda/Despesa/Overview existe no codigo ainda (so users, logs_auditoria).",
-    "aberto_em": "2026-08-19T11:54:47Z",
     "resposta": "Adiar RF-003 para o final do lote (depois de RF-004, RF-006, RF-008)",
-    "respondido_em": "2026-08-19T11:56:47Z"
+    "respondido_em": "2026-08-19T11:56:47Z",
+    "detalhes_ref": "specs/relatorios/dev-agent-RF-003-decisao.md"
   },
-  "observacoes": "dev-agent parou antes de escrever qualquer codigo para RF-003: dependencia real entre RFs contradiz a ordem aprovada (ver decisao_pendente). Nao criei branch nem commit. Aguardando decisao do orquestrador/usuario sobre como proceder antes de prosseguir."
+  "observacoes": "Consolidacao RN-005 concluida (ver commit) apos RF-004/006/008."
 }
