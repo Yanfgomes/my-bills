@@ -1744,7 +1744,18 @@
     "cobertura_minima": 90,
     "cobertura_meta": 100,
     "fluxos": [],
-    "testes_sistema": {},
+    "testes_sistema": {
+      "itens": [
+        {
+          "fluxo_ref": "FLUXO-002",
+          "status": "passou",
+          "resumo": "Composicao renda->despesa->overview reflete indicadores; RN-007 (alerta) e RN-005 (2 usuarios reais nos 3 dominios) cobertos. 3 testes, 40 assercoes, sem falha.",
+          "commit_ref_testes": "4ff84a3",
+          "branch_ref": "test/fluxo-002-sistema",
+          "registrado_em": "2026-08-20T12:35:04Z"
+        }
+      ]
+    },
     "seguranca": {
       "itens": [
         {
