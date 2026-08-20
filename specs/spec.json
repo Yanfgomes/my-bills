@@ -12,7 +12,8 @@
       "modelos": [],
       "rotas_endpoints": []
     },
-    "observacoes": "Diretorio do projeto contem apenas README.md, .gitignore e specs/spec.json (commit inicial). Nenhum arquivo de dependencia/config (package.json, composer.json, go.mod etc.), migration, model ou rota encontrado. Tratado como projeto novo (greenfield) — Fases 1-4 partem de perguntas em branco, sem draft de engenharia reversa."
+    "observacoes": "Projeto novo (greenfield): apenas README/.gitignore/spec.json, nenhum config/migration/model/rota. Fases 1-4 sem draft reverso.",
+    "detalhes_ref": "specs/relatorios/requisitos-agent-orcamento.md"
   },
   "dominios": {
     "status": "aprovado",
@@ -49,9 +50,10 @@
     "historico_revisoes": [
       {
         "gate": "aprovacao_dominios",
-        "resposta": "Confirmar os 4 dominios como propostos",
+        "resposta": "Confirmados os 4 dominios propostos",
         "respondido_em": "2026-08-17T16:45:00Z",
-        "resultado": "Usuario confirmou os 4 dominios exatamente como propostos (DOM-001 Usuarios, DOM-002 Renda, DOM-003 Despesas, DOM-004 Overview Financeiro), sem ajustes. dominios.status marcado aprovado."
+        "resultado": "Aprovado sem ajustes. Ver detalhes_ref.",
+        "detalhes_ref": "specs/relatorios/requisitos-agent-orcamento.md"
       }
     ]
   },
@@ -321,16 +323,18 @@
       {
         "gate": "aprovacao_campos",
         "rodada": 1,
-        "resposta": "Decidir sobre historico/recorrencia mensal: usuario optou por 'Por mes/periodo (com historico)' — cada renda/despesa deve ter uma data ou mes de referencia; o usuario deve poder ver o overview de meses diferentes e o historico fica registrado mes a mes (navegacao por mes, comparacao entre periodos). Este requisito substitui o draft anterior de DOM-002/DOM-003 sem recorte temporal. As demais decisoes do draft original permanecem confirmadas: multiplas fontes de renda e multiplas despesas por usuario, e categoria opcional de texto livre em despesas.",
+        "resposta": "Optou por modelo mensal (mes_referencia obrigatorio).",
         "respondido_em": "2026-08-17T16:52:00Z",
-        "resultado": "Draft revisado: adicionados CAMPO-REN-007 (mes_referencia) e CAMPO-DESP-008 (mes_referencia), ambos obrigatorios, formato YYYY-MM. DOM-004 (Overview) passou a expor PARAM-OVW-001 (mes_selecionado, default mes corrente, navegavel) e todos os indicadores calculados (IND-OVW-001..004) agora filtram por mes_referencia == mes_selecionado. Prototipo (prototipo/index.html) atualizado com seletor de mes/navegacao no Overview e campo de mes/periodo nos formularios de Renda e Despesas. Multiplicidade de renda/despesas e categoria opcional de despesa mantidas sem alteracao. Novo gate aprovacao_campos reaberto para confirmacao do draft revisado — 1a rodada de ajuste, dentro do limite de 2."
+        "resultado": "Draft revisado; prototipo atualizado. Ver relatorio.",
+        "detalhes_ref": "specs/relatorios/requisitos-agent-orcamento.md"
       },
       {
         "gate": "aprovacao_campos",
         "rodada": 2,
         "resposta": "Confirmar campos e prototipo revisados",
         "respondido_em": "2026-08-17T16:59:00Z",
-        "resultado": "Usuario confirmou o draft revisado (modelo por mes/periodo com historico) sem nenhum ajuste adicional. campos.status marcado aprovado; todos os itens de campos.dominios.* passaram de 'proposto' para 'aprovado'. documentacao.prototipo.status marcado aprovado (pendente apenas da aplicacao das regras de negocio da Fase 3 sobre o mesmo prototipo, conforme previsto na opcao escolhida). Nenhuma pergunta aberta na resposta do usuario (ex: comportamento de edicao retroativa de mes_referencia) foi tratada como decidida implicitamente — permanece em aberto e sera levantada como regra de negocio na Fase 3."
+        "resultado": "Confirmado sem ajustes. Status aprovado. Ver relatorio.",
+        "detalhes_ref": "specs/relatorios/requisitos-agent-orcamento.md"
       }
     ]
   },
@@ -456,9 +460,10 @@
     "historico_revisoes": [
       {
         "gate": "aprovacao_regras",
-        "resposta": "Confirmar RN-001 a RN-007 como propostas. RN-008: Imutavel — mes_referencia nao pode ser alterado apos a criacao do lancamento; para mudar de mes, o usuario exclui e recria o lancamento no mes correto (campo mes_referencia somente leitura fora da criacao).",
+        "resposta": "RN-001 a RN-007 confirmadas; RN-008 mes_referencia imutavel.",
         "respondido_em": "2026-08-17T17:04:00Z",
-        "resultado": "Usuario confirmou as 7 regras propostas sem ajuste e decidiu RN-008 (mes_referencia imutavel apos a criacao). regras_negocio.status marcado aprovado; RN-001 a RN-007 passaram de 'proposto' para 'aprovado'; RN-008 registrado ja como 'aprovado'. Prototipo (prototipo/index.html) atualizado para refletir as 8 regras na interacao: validacao de valor>0 (RN-002) e de formato/obrigatoriedade de mes_referencia (RN-003) nos formularios de Renda/Despesas, com mensagens de erro dedicadas por campo; estado alternativo do Overview quando renda_total do mes selecionado = 0 (RN-001— indicador 'Sem renda cadastrada no periodo' no lugar do percentual, mes de demonstracao 2025-12 adicionado ao mock); alerta visual dedicado quando despesas_total > renda_total (RN-007 — banner de atencao e barra em vermelho, mes de demonstracao 2026-09 adicionado); campo mes/periodo tornado somente leitura ao editar um lancamento existente de Renda/Despesa, com nota explicativa e botoes Editar/Excluir funcionais (RN-008); unicidade de email (RN-004) e credenciais invalidas (RN-006) wireados nas telas de Registro/Login via valores reservados de demonstracao documentados na propria tela. Isolamento por usuario (RN-005) e uma regra de backend, sem representacao visual direta possivel num mock estatico — sera verificada pelo security-agent (RNF-002) e pelo dev-agent na implementacao real. Nenhum conflito identificado entre as 8 regras nem dependencia de campo inexistente. Seguindo para a Fase 4 (documentacao/RFs/RNFs)."
+        "resultado": "Aprovadas as 8 regras. Ver relatorio.",
+        "detalhes_ref": "specs/relatorios/requisitos-agent-orcamento.md"
       }
     ]
   },
@@ -801,9 +806,10 @@
     "historico_revisoes": [
       {
         "gate": "aprovacao_documentacao",
-        "resposta": "Confirmar draft — acessibilidade WCAG AA + leitor de tela + tema claro e escuro",
+        "resposta": "Confirmar draft de acessibilidade (WCAG AA)",
         "respondido_em": "2026-08-17T17:14:00Z",
-        "resultado": "Usuario confirmou os 8 RFs (RF-001 a RF-008) e os 6 RNFs propostos (RNF-001 a RNF-003, RNF-PADRAO-IDIOMA, RNF-PADRAO-ACESSIBILIDADE-CONFIG, RNF-PADRAO-LOG-AUDITORIA) sem ajuste, e decidiu o nivel de acessibilidade alvo do sistema: WCAG 2.2 AA em todas as telas, suporte funcional a leitor de tela (navegacao por teclado, landmarks/ARIA, testado com NVDA e VoiceOver), contraste minimo 4.5:1 (texto normal) e 3:1 (texto grande/componentes de UI), e tema claro e escuro selecionavel pelo usuario. Registrado RNF-004 (categoria acessibilidade, origem usuario, status aprovado, transversal — rf_refs vazio) com essa decisao. Todos os RFs e RNFs em documentacao.requisitos_funcionais/requisitos_nao_funcionais tiveram status atualizado de 'proposto' para 'aprovado'. documentacao.status marcado 'aprovado'. Nenhuma referencia orfa identificada: todo RF referencia dominio/campos/regras existentes e aprovados, toda tela de documentacao.prototipo.telas aponta rf_refs validos e nenhuma tela ficou com rf_refs vazio sem ser removida a chave (todas as 5 telas atendem pelo menos um RF). A implementacao concreta de RNF-004 (alternador de tema, ARIA/landmarks, foco de teclado) na interface real fica para o design-agent/dev-agent traduzirem o prototipo aprovado ao stack, conforme o principio de que nao ha fase de redesenho de tela adiante — nao bloqueia a conclusao desta fase, pois a decisao de negocio ja esta totalmente especificada no proprio RNF-004 (metrica_alvo e criterio_verificacao)."
+        "resultado": "Aprovados 8 RFs, 6 RNFs; RNF-004 definido. Ver relatorio.",
+        "detalhes_ref": "specs/relatorios/requisitos-agent-orcamento.md"
       }
     ]
   },
@@ -1216,8 +1222,18 @@
           "tela_ref": "TELA-001",
           "rf_ref": "RF-002",
           "propriedades_publicas": [
-            { "nome": "email", "tipo": "string", "wire_model": true, "campo_ref": "CAMPO-USU-003" },
-            { "nome": "senha", "tipo": "string", "wire_model": true, "campo_ref": "CAMPO-USU-004" }
+            {
+              "nome": "email",
+              "tipo": "string",
+              "wire_model": true,
+              "campo_ref": "CAMPO-USU-003"
+            },
+            {
+              "nome": "senha",
+              "tipo": "string",
+              "wire_model": true,
+              "campo_ref": "CAMPO-USU-004"
+            }
           ],
           "actions": [
             {
@@ -1227,7 +1243,9 @@
                 "email: required, formato de email valido",
                 "senha: required"
               ],
-              "regras_aplicadas": ["RN-006"],
+              "regras_aplicadas": [
+                "RN-006"
+              ],
               "fluxo": "Resolve o usuario por email; se nao existir ou Hash::check(senha, usuario.senha) falhar, dispara ValidationException com mensagem generica unica 'credenciais invalidas' anexada a ambos os campos email/senha (nunca indica qual esta incorreto, RN-006). Sucesso: Auth::login($usuario), regenera sessao, redirect para rota 'overview'.",
               "resposta_sucesso": "Redirect 'overview' (302), sessao autenticada iniciada.",
               "resposta_erro": "Erros de validacao renderizados inline no formulario (Livewire property bag $errors), sem reload de pagina; foco movido para a primeira mensagem de erro (padroes_aria)."
@@ -1239,10 +1257,30 @@
           "tela_ref": "TELA-002",
           "rf_ref": "RF-001",
           "propriedades_publicas": [
-            { "nome": "nome", "tipo": "string", "wire_model": true, "campo_ref": "CAMPO-USU-002" },
-            { "nome": "email", "tipo": "string", "wire_model": true, "campo_ref": "CAMPO-USU-003" },
-            { "nome": "senha", "tipo": "string", "wire_model": true, "campo_ref": "CAMPO-USU-004" },
-            { "nome": "senha_confirmation", "tipo": "string", "wire_model": true, "descricao": "confirmacao de senha, exigida pelo criterio de aceite de RF-001; nao persistida." }
+            {
+              "nome": "nome",
+              "tipo": "string",
+              "wire_model": true,
+              "campo_ref": "CAMPO-USU-002"
+            },
+            {
+              "nome": "email",
+              "tipo": "string",
+              "wire_model": true,
+              "campo_ref": "CAMPO-USU-003"
+            },
+            {
+              "nome": "senha",
+              "tipo": "string",
+              "wire_model": true,
+              "campo_ref": "CAMPO-USU-004"
+            },
+            {
+              "nome": "senha_confirmation",
+              "tipo": "string",
+              "wire_model": true,
+              "descricao": "confirmacao de senha, exigida pelo criterio de aceite de RF-001; nao persistida."
+            }
           ],
           "actions": [
             {
@@ -1253,7 +1291,9 @@
                 "email: required, formato de email valido, unique:users,email (RN-004, mensagem 'e-mail ja cadastrado')",
                 "senha: required, min:8, confirmed (compara com senha_confirmation)"
               ],
-              "regras_aplicadas": ["RN-004"],
+              "regras_aplicadas": [
+                "RN-004"
+              ],
               "fluxo": "Cria User (id uuid, nome, email, senha=Hash::make(senha)), dispara Observer de auditoria (acao=criacao, usuario_id=id do proprio usuario recem-criado, conforme padroes_tecnologias.log_auditoria.observacao_rf001), autentica automaticamente (Auth::login) e redireciona para 'overview'.",
               "resposta_sucesso": "Redirect 'overview' (302), usuario autenticado, registro em logs_auditoria criado.",
               "resposta_erro": "Erro de email duplicado (RN-004) ou validacao de campo renderizado inline, nada persistido."
@@ -1265,7 +1305,13 @@
           "tela_ref": "TELA-003",
           "rf_ref": "RF-003, RF-008",
           "propriedades_publicas": [
-            { "nome": "mesSelecionado", "tipo": "string(7) YYYY-MM", "wire_model": false, "campo_ref": "PARAM-OVW-001", "descricao": "Inicializado no mes corrente (mount()); alterado apenas pelas actions de navegacao, nunca por input direto do usuario." }
+            {
+              "nome": "mesSelecionado",
+              "tipo": "string(7) YYYY-MM",
+              "wire_model": false,
+              "campo_ref": "PARAM-OVW-001",
+              "descricao": "Inicializado no mes corrente (mount()); alterado apenas pelas actions de navegacao, nunca por input direto do usuario."
+            }
           ],
           "actions": [
             {
@@ -1281,8 +1327,17 @@
           ],
           "dados_exibidos": {
             "origem": "App\\Services\\OverviewService::calcular(usuario_id: auth()->id(), mesReferencia: mesSelecionado) — ver arquitetura.documentacao_tecnica.servicos.OverviewService",
-            "campos_ref": ["IND-OVW-001", "IND-OVW-002", "IND-OVW-003", "IND-OVW-004"],
-            "regras_aplicadas": ["RN-001", "RN-005", "RN-007"]
+            "campos_ref": [
+              "IND-OVW-001",
+              "IND-OVW-002",
+              "IND-OVW-003",
+              "IND-OVW-004"
+            ],
+            "regras_aplicadas": [
+              "RN-001",
+              "RN-005",
+              "RN-007"
+            ]
           }
         },
         {
@@ -1291,9 +1346,24 @@
           "rf_ref": "RF-003, RF-004",
           "escopo_marco": "marco-1-mvp implementa somente listagem (leitura) e criacao. Actions de edicao/exclusao (editar()/excluir()) fazem parte do contrato do componente na arquitetura (camadas_servicos) mas pertencem ao escopo de RF-005 (marco-2-gestao-completa) e NAO sao documentadas/implementadas nesta rodada.",
           "propriedades_publicas": [
-            { "nome": "descricao", "tipo": "string", "wire_model": true, "campo_ref": "CAMPO-REN-003" },
-            { "nome": "valorLiquido", "tipo": "decimal(12,2)", "wire_model": true, "campo_ref": "CAMPO-REN-004" },
-            { "nome": "mesReferencia", "tipo": "string(7) YYYY-MM", "wire_model": true, "campo_ref": "CAMPO-REN-007" }
+            {
+              "nome": "descricao",
+              "tipo": "string",
+              "wire_model": true,
+              "campo_ref": "CAMPO-REN-003"
+            },
+            {
+              "nome": "valorLiquido",
+              "tipo": "decimal(12,2)",
+              "wire_model": true,
+              "campo_ref": "CAMPO-REN-004"
+            },
+            {
+              "nome": "mesReferencia",
+              "tipo": "string(7) YYYY-MM",
+              "wire_model": true,
+              "campo_ref": "CAMPO-REN-007"
+            }
           ],
           "actions": [
             {
@@ -1304,7 +1374,11 @@
                 "valorLiquido: required, numeric, gt:0 (RN-002, mensagem 'o valor deve ser maior que zero')",
                 "mesReferencia: required, regex formato YYYY-MM, mes valido 01-12 (RN-003)"
               ],
-              "regras_aplicadas": ["RN-002", "RN-003", "RN-005"],
+              "regras_aplicadas": [
+                "RN-002",
+                "RN-003",
+                "RN-005"
+              ],
               "fluxo": "$this->authorize('create', FonteRenda::class) (RendaPolicy, RN-005). Cria FonteRenda vinculada a usuario_id=auth()->id(). Observer de auditoria grava acao=criacao. Reseta formulario e atualiza a listagem exibida no proprio componente (sem reload de pagina).",
               "resposta_sucesso": "Fonte de renda listada imediatamente no componente; refletida no Overview do mes correspondente (RF-008) na proxima visita/refresh daquela tela.",
               "resposta_erro": "Erros de validacao inline por campo (mensagens dedicadas RN-002/RN-003); nada persistido."
@@ -1312,7 +1386,11 @@
           ],
           "listagem": {
             "origem": "FonteRenda::where('usuario_id', auth()->id())->orderByDesc('mes_referencia')->orderByDesc('criado_em')->get() — RN-005 aplicado via escopo da query, reforcado por RendaPolicy em qualquer acao futura de edicao/exclusao.",
-            "campos_exibidos": ["CAMPO-REN-003 (descricao)", "CAMPO-REN-004 (valor_liquido)", "CAMPO-REN-007 (mes_referencia)"],
+            "campos_exibidos": [
+              "CAMPO-REN-003 (descricao)",
+              "CAMPO-REN-004 (valor_liquido)",
+              "CAMPO-REN-007 (mes_referencia)"
+            ],
             "estado_vazio": "Nenhuma fonte de renda cadastrada pelo usuario: mensagem orientando a cadastrar a primeira fonte de renda (mesmo padrao visual do prototipo aprovado)."
           }
         },
@@ -1322,10 +1400,30 @@
           "rf_ref": "RF-003, RF-006",
           "escopo_marco": "marco-1-mvp implementa somente listagem (leitura) e criacao. Actions de edicao/exclusao pertencem ao escopo de RF-007 (marco-2-gestao-completa) e NAO sao documentadas/implementadas nesta rodada.",
           "propriedades_publicas": [
-            { "nome": "descricao", "tipo": "string", "wire_model": true, "campo_ref": "CAMPO-DESP-003" },
-            { "nome": "valor", "tipo": "decimal(12,2)", "wire_model": true, "campo_ref": "CAMPO-DESP-004" },
-            { "nome": "categoria", "tipo": "string(60), nullable", "wire_model": true, "campo_ref": "CAMPO-DESP-005" },
-            { "nome": "mesReferencia", "tipo": "string(7) YYYY-MM", "wire_model": true, "campo_ref": "CAMPO-DESP-008" }
+            {
+              "nome": "descricao",
+              "tipo": "string",
+              "wire_model": true,
+              "campo_ref": "CAMPO-DESP-003"
+            },
+            {
+              "nome": "valor",
+              "tipo": "decimal(12,2)",
+              "wire_model": true,
+              "campo_ref": "CAMPO-DESP-004"
+            },
+            {
+              "nome": "categoria",
+              "tipo": "string(60), nullable",
+              "wire_model": true,
+              "campo_ref": "CAMPO-DESP-005"
+            },
+            {
+              "nome": "mesReferencia",
+              "tipo": "string(7) YYYY-MM",
+              "wire_model": true,
+              "campo_ref": "CAMPO-DESP-008"
+            }
           ],
           "actions": [
             {
@@ -1337,7 +1435,11 @@
                 "categoria: nullable, string, max:60",
                 "mesReferencia: required, regex formato YYYY-MM, mes valido 01-12 (RN-003)"
               ],
-              "regras_aplicadas": ["RN-002", "RN-003", "RN-005"],
+              "regras_aplicadas": [
+                "RN-002",
+                "RN-003",
+                "RN-005"
+              ],
               "fluxo": "$this->authorize('create', Despesa::class) (DespesaPolicy, RN-005). Cria Despesa vinculada a usuario_id=auth()->id(). Observer de auditoria grava acao=criacao. Reseta formulario e atualiza a listagem exibida no proprio componente.",
               "resposta_sucesso": "Despesa listada imediatamente no componente; refletida no Overview do mes correspondente (RF-008) na proxima visita/refresh daquela tela.",
               "resposta_erro": "Erros de validacao inline por campo (mensagens dedicadas RN-002/RN-003); nada persistido."
@@ -1345,7 +1447,12 @@
           ],
           "listagem": {
             "origem": "Despesa::where('usuario_id', auth()->id())->orderByDesc('mes_referencia')->orderByDesc('criado_em')->get() — RN-005 aplicado via escopo da query, reforcado por DespesaPolicy em qualquer acao futura de edicao/exclusao.",
-            "campos_exibidos": ["CAMPO-DESP-003 (descricao)", "CAMPO-DESP-004 (valor)", "CAMPO-DESP-005 (categoria, opcional)", "CAMPO-DESP-008 (mes_referencia)"],
+            "campos_exibidos": [
+              "CAMPO-DESP-003 (descricao)",
+              "CAMPO-DESP-004 (valor)",
+              "CAMPO-DESP-005 (categoria, opcional)",
+              "CAMPO-DESP-008 (mes_referencia)"
+            ],
             "estado_vazio": "Nenhuma despesa cadastrada pelo usuario: mensagem orientando a cadastrar a primeira despesa (mesmo padrao visual do prototipo aprovado)."
           }
         }
@@ -1366,7 +1473,11 @@
             "percentualComprometido": "decimal|null — IND-OVW-004 = (despesasTotal / rendaTotal) * 100; null quando rendaTotal == 0 (RN-001, evita divisao por zero — Overview exibe indicador alternativo em vez do numero)",
             "alertaComprometimento": "bool — true quando despesasTotal > rendaTotal (RN-007); sinaliza a UI a aplicar o destaque visual de alerta (percentual exibido sem teto em 100%)"
           },
-          "regras_aplicadas": ["RN-001", "RN-005", "RN-007"],
+          "regras_aplicadas": [
+            "RN-001",
+            "RN-005",
+            "RN-007"
+          ],
           "performance": "Consulta indexada por (usuario_id, mes_referencia) em fontes_renda e despesas (ver arquitetura.modelagem_dados.entidades[].indices), atendendo RNF-003 (p95 < 500ms ate 24 meses de historico) — duas agregacoes SUM() indexadas, sem N+1."
         }
       ],
@@ -1374,52 +1485,124 @@
         {
           "nome": "UsuarioRegistroInput",
           "rf_ref": "RF-001",
-          "campos": ["nome (CAMPO-USU-002)", "email (CAMPO-USU-003)", "senha (CAMPO-USU-004)", "senha_confirmation (nao persistido)"],
+          "campos": [
+            "nome (CAMPO-USU-002)",
+            "email (CAMPO-USU-003)",
+            "senha (CAMPO-USU-004)",
+            "senha_confirmation (nao persistido)"
+          ],
           "observacao": "senha nunca aparece em nenhum output/contrato de resposta (RNF-001)."
         },
         {
           "nome": "UsuarioLoginInput",
           "rf_ref": "RF-002",
-          "campos": ["email (CAMPO-USU-003)", "senha (CAMPO-USU-004)"]
+          "campos": [
+            "email (CAMPO-USU-003)",
+            "senha (CAMPO-USU-004)"
+          ]
         },
         {
           "nome": "FonteRendaInput",
           "rf_ref": "RF-004",
-          "campos": ["descricao (CAMPO-REN-003)", "valor_liquido (CAMPO-REN-004)", "mes_referencia (CAMPO-REN-007)"]
+          "campos": [
+            "descricao (CAMPO-REN-003)",
+            "valor_liquido (CAMPO-REN-004)",
+            "mes_referencia (CAMPO-REN-007)"
+          ]
         },
         {
           "nome": "FonteRendaOutput",
           "rf_ref": "RF-004, RF-008",
-          "campos": ["id (CAMPO-REN-001)", "descricao (CAMPO-REN-003)", "valor_liquido (CAMPO-REN-004)", "mes_referencia (CAMPO-REN-007)", "criado_em (CAMPO-REN-005)", "atualizado_em (CAMPO-REN-006)"]
+          "campos": [
+            "id (CAMPO-REN-001)",
+            "descricao (CAMPO-REN-003)",
+            "valor_liquido (CAMPO-REN-004)",
+            "mes_referencia (CAMPO-REN-007)",
+            "criado_em (CAMPO-REN-005)",
+            "atualizado_em (CAMPO-REN-006)"
+          ]
         },
         {
           "nome": "DespesaInput",
           "rf_ref": "RF-006",
-          "campos": ["descricao (CAMPO-DESP-003)", "valor (CAMPO-DESP-004)", "categoria (CAMPO-DESP-005, opcional)", "mes_referencia (CAMPO-DESP-008)"]
+          "campos": [
+            "descricao (CAMPO-DESP-003)",
+            "valor (CAMPO-DESP-004)",
+            "categoria (CAMPO-DESP-005, opcional)",
+            "mes_referencia (CAMPO-DESP-008)"
+          ]
         },
         {
           "nome": "DespesaOutput",
           "rf_ref": "RF-006, RF-008",
-          "campos": ["id (CAMPO-DESP-001)", "descricao (CAMPO-DESP-003)", "valor (CAMPO-DESP-004)", "categoria (CAMPO-DESP-005)", "mes_referencia (CAMPO-DESP-008)", "criado_em (CAMPO-DESP-006)", "atualizado_em (CAMPO-DESP-007)"]
+          "campos": [
+            "id (CAMPO-DESP-001)",
+            "descricao (CAMPO-DESP-003)",
+            "valor (CAMPO-DESP-004)",
+            "categoria (CAMPO-DESP-005)",
+            "mes_referencia (CAMPO-DESP-008)",
+            "criado_em (CAMPO-DESP-006)",
+            "atualizado_em (CAMPO-DESP-007)"
+          ]
         },
         {
           "nome": "OverviewOutput",
           "rf_ref": "RF-008",
-          "campos": ["mes_selecionado (PARAM-OVW-001)", "renda_total (IND-OVW-001)", "despesas_total (IND-OVW-002)", "saldo_disponivel (IND-OVW-003)", "percentual_comprometido (IND-OVW-004, nullable)", "alerta_comprometimento (derivado, RN-007)"]
+          "campos": [
+            "mes_selecionado (PARAM-OVW-001)",
+            "renda_total (IND-OVW-001)",
+            "despesas_total (IND-OVW-002)",
+            "saldo_disponivel (IND-OVW-003)",
+            "percentual_comprometido (IND-OVW-004, nullable)",
+            "alerta_comprometimento (derivado, RN-007)"
+          ]
         },
         {
           "nome": "AuditLogEntry",
           "rf_ref": "RF-001, RF-004, RF-006 (todo RF de escrita do marco)",
-          "campos": ["acao", "usuario_id", "tabela_afetada", "registro_id", "valor_anterior", "valor_novo", "criado_em"],
+          "campos": [
+            "acao",
+            "usuario_id",
+            "tabela_afetada",
+            "registro_id",
+            "valor_anterior",
+            "valor_novo",
+            "criado_em"
+          ],
           "observacao": "Contrato ja detalhado em arquitetura.modelagem_dados.entidades (tabela logs_auditoria) e padroes_tecnologias.log_auditoria; gravado automaticamente por Eloquent Observer a cada criar() dos componentes acima, sem acao explicita do usuario."
         }
       ],
       "cobertura_telas": [
-        { "tela_ref": "TELA-001", "rf_ref": "RF-002", "contrato": "componentes_livewire.LoginForm", "coberto": true },
-        { "tela_ref": "TELA-002", "rf_ref": "RF-001", "contrato": "componentes_livewire.RegistroForm", "coberto": true },
-        { "tela_ref": "TELA-003", "rf_ref": "RF-003, RF-008", "contrato": "componentes_livewire.OverviewFinanceiro + servicos.OverviewService", "coberto": true },
-        { "tela_ref": "TELA-004", "rf_ref": "RF-003, RF-004 (marco-1); RF-005 fora do escopo desta rodada", "contrato": "componentes_livewire.RendaManager (listar+criar)", "coberto": true },
-        { "tela_ref": "TELA-005", "rf_ref": "RF-003, RF-006 (marco-1); RF-007 fora do escopo desta rodada", "contrato": "componentes_livewire.DespesaManager (listar+criar)", "coberto": true }
+        {
+          "tela_ref": "TELA-001",
+          "rf_ref": "RF-002",
+          "contrato": "componentes_livewire.LoginForm",
+          "coberto": true
+        },
+        {
+          "tela_ref": "TELA-002",
+          "rf_ref": "RF-001",
+          "contrato": "componentes_livewire.RegistroForm",
+          "coberto": true
+        },
+        {
+          "tela_ref": "TELA-003",
+          "rf_ref": "RF-003, RF-008",
+          "contrato": "componentes_livewire.OverviewFinanceiro + servicos.OverviewService",
+          "coberto": true
+        },
+        {
+          "tela_ref": "TELA-004",
+          "rf_ref": "RF-003, RF-004 (marco-1); RF-005 fora do escopo desta rodada",
+          "contrato": "componentes_livewire.RendaManager (listar+criar)",
+          "coberto": true
+        },
+        {
+          "tela_ref": "TELA-005",
+          "rf_ref": "RF-003, RF-006 (marco-1); RF-007 fora do escopo desta rodada",
+          "contrato": "componentes_livewire.DespesaManager (listar+criar)",
+          "coberto": true
+        }
       ],
       "historico_revisoes": [
         {
