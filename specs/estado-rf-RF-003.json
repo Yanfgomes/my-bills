@@ -1,16 +1,16 @@
 {
   "rf_ref": "RF-003",
-  "versao": 3,
-  "status": "em_desenvolvimento",
+  "versao": 4,
+  "status": "aguardando_qa",
   "implementacao_existente": false,
   "gap_implementado": true,
   "branch_ref": "rf/RF-003",
-  "commit_ref": null,
+  "commit_ref": "e596c4b381a9aedda255f31137dbcd22549a77d6",
   "commit_ref_testes": null,
   "grupo_commit": [],
   "handoff_qa": {
-    "disparado_em": null,
-    "status": null
+    "disparado_em": "2026-08-20T11:49:20Z",
+    "status": "aguardando"
   },
   "tentativas_correcao": 0,
   "bugs": [],
@@ -22,5 +22,5 @@
     "respondido_em": "2026-08-19T11:56:47Z",
     "detalhes_ref": "specs/relatorios/dev-agent-RF-003-decisao.md"
   },
-  "observacoes": "Consolidacao RN-005 concluida (ver commit) apos RF-004/006/008."
+  "observacoes": "Consolidacao RN-005 concluida (commit e596c4b) apos RF-004/006/008. Ultimo RF pendente do marco-1-mvp."
 }
