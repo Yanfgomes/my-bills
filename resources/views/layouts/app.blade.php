@@ -8,69 +8,60 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 
+        {{--
+            Evita FOUC do tema: aplica o data-theme salvo (ou nada, deixando a media query
+            prefers-color-scheme de resources/css/app.css decidir) antes do primeiro paint —
+            precisa rodar antes do Alpine, que so inicializa depois do body.
+        --}}
+        <script>
+            (function () {
+                var saved = localStorage.getItem('app_theme');
+                if (saved === 'dark' || saved === 'light') {
+                    document.documentElement.setAttribute('data-theme', saved);
+                }
+            })();
+        </script>
+
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @livewireStyles
     </head>
-    <body class="min-h-screen font-sans antialiased" style="background-color:var(--color-bg);color:var(--color-text)">
+    <body
+        class="min-h-screen font-sans antialiased"
+        style="background-color:var(--color-bg);color:var(--color-text)"
+        x-data
+        x-init="
+            Alpine.store('sidebar', {
+                collapsed: localStorage.getItem('app_sidebar_collapsed') === 'true',
+                toggle() {
+                    this.collapsed = !this.collapsed;
+                    localStorage.setItem('app_sidebar_collapsed', String(this.collapsed));
+                },
+            });
+        "
+    >
         <a href="#conteudo-principal" class="skip-link focus-ring text-sm font-semibold">
             {{ __('Pular para o conteudo principal') }}
         </a>
 
-        <header style="background-color:var(--color-card);border-bottom:1px solid var(--color-border)">
-            <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-3">
-                <span class="text-[18px] font-semibold" style="color:var(--color-text)">my-bills</span>
+        {{--
+            Casca da aplicacao adaptada de reference/bioform-layout/app-shell.md (4.1
+            AppLayout.vue): sidebar colapsavel + topbar + main + footer. Store Pinia do
+            sidebar.js -> Alpine.store('sidebar') acima; AppSidebar/AppTopbar/AppFooter ->
+            partials/app-sidebar.blade.php, app-topbar.blade.php, app-footer.blade.php.
+        --}}
+        <div class="flex min-h-screen">
+            @include('layouts.partials.app-sidebar')
 
-                <nav aria-label="{{ __('Navegacao principal') }}" class="flex items-center gap-4 flex-wrap">
-                    <a
-                        href="{{ route('overview') }}"
-                        data-cy="nav-overview"
-                        aria-current="{{ request()->routeIs('overview') ? 'page' : 'false' }}"
-                        class="focus-ring text-[13px] font-semibold"
-                        style="color:var(--color-text)"
-                    >
-                        {{ __('Overview') }}
-                    </a>
-                    <a
-                        href="{{ route('renda.index') }}"
-                        data-cy="nav-renda"
-                        aria-current="{{ request()->routeIs('renda.index') ? 'page' : 'false' }}"
-                        class="focus-ring text-[13px] font-semibold"
-                        style="color:var(--color-text)"
-                    >
-                        {{ __('Renda') }}
-                    </a>
-                    <a
-                        href="{{ route('despesas.index') }}"
-                        data-cy="nav-despesas"
-                        aria-current="{{ request()->routeIs('despesas.index') ? 'page' : 'false' }}"
-                        class="focus-ring text-[13px] font-semibold"
-                        style="color:var(--color-text)"
-                    >
-                        {{ __('Despesas') }}
-                    </a>
+            <div class="flex flex-col flex-1 min-w-0">
+                @include('layouts.partials.app-topbar')
 
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button
-                            type="submit"
-                            data-cy="logout-submit"
-                            class="focus-ring px-3 py-2 rounded-lg text-[13px] font-semibold"
-                            style="background-color:var(--color-primary);color:var(--color-on-primary)"
-                        >
-                            {{ __('Sair') }}
-                        </button>
-                    </form>
-                </nav>
+                <main id="conteudo-principal" role="main" class="flex-1 px-4 py-6 md:px-7 md:py-7 max-w-5xl w-full mx-auto">
+                    {{ $slot }}
+                </main>
+
+                @include('layouts.partials.app-footer')
             </div>
-        </header>
-
-        <main id="conteudo-principal" class="max-w-5xl mx-auto px-4 py-8">
-            {{ $slot }}
-        </main>
-
-        <footer class="max-w-5xl mx-auto px-4 py-6 text-[12px]" style="color:var(--color-text-muted)">
-            &copy; {{ date('Y') }} my-bills
-        </footer>
+        </div>
 
         @livewireScripts
     </body>

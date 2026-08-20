@@ -37,6 +37,24 @@
     /* ACC-004-001 (corrigido por ACC-004-002, ver abaixo): texto sobre --color-primary (botoes/skip-link). */
     --color-on-primary: #fff;
     --radius-surface: 10px;
+    /* RESKIN-BIOFORM (reference/layout-guidelines.md): tokens derivados via color-mix() a partir
+       de cores ja aprovadas nesta paleta — nunca hex literal novo. Cada um acompanha a variavel
+       base automaticamente nos dois temas (claro aqui, escuro no bloco [data-theme='dark']
+       abaixo), sem precisar duplicar a formula. Uso: fundo suave de item ativo/hover do menu
+       lateral e listras de tabela (decorativo, nunca portador isolado de informacao — item ativo
+       tambem leva aria-current, ver layouts/partials/app-sidebar.blade.php). */
+    --color-primary-soft: color-mix(in srgb, var(--color-primary) 12%, transparent);
+    --color-surface-hover: color-mix(in srgb, var(--color-text) 6%, transparent);
+    /* RESKIN-BIOFORM: --color-success/--color-warn so existiam como cor de texto (saldo positivo,
+       aviso decorativo) — o AlertBanner (reference/bioform-layout/page-hero-and-cards.md §5.3)
+       precisa de par fundo/borda suaves, no mesmo padrao ja aprovado para
+       --color-danger-bg/--color-danger-border. emerald-50/emerald-200 sobre --color-success
+       (#157347): texto mede ~5.9:1 sobre #ecfdf5 (>= 4.5:1 AA). amber-50/amber-200 sobre
+       --color-warn (#92400e): ~7.2:1 (AA ok). */
+    --color-success-bg: #ecfdf5;
+    --color-success-border: #a7f3d0;
+    --color-warn-bg: #fffbeb;
+    --color-warn-border: #fde68a;
 }
 
 [data-theme='dark'] {
@@ -63,6 +81,15 @@
        calculo WCAG 2.1 relative luminance / contrast ratio, formula em www.w3.org/TR/WCAG21). Tema
        claro nao e afetado (--color-on-primary continua #fff, 5.17:1 contra #2563eb). */
     --color-on-primary: #0f172a;
+    /* RESKIN-BIOFORM: par fundo/borda suaves do AlertBanner para o tema escuro — mesmo padrao
+       ja usado em --color-danger-bg/border deste bloco (fundo bem escuro da propria familia de
+       cor, texto claro em --color-success/--color-warn ja aprovados por cima). green-950/green-800
+       sob green-400 (~11:1) e amber-950/amber-800 sob amber-400 (~9:1), ambos folgados acima do
+       minimo AA 4.5:1. */
+    --color-success-bg: #052e16;
+    --color-success-border: #14532d;
+    --color-warn-bg: #451a03;
+    --color-warn-border: #78350f;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -84,6 +111,11 @@
         /* ACC-004-002: mesmo ajuste do bloco [data-theme='dark'] acima, para o caso de tema
            seguindo a preferencia do SO sem escolha explicita salva. */
         --color-on-primary: #0f172a;
+        /* RESKIN-BIOFORM: mesmo par fundo/borda suaves do bloco [data-theme='dark'] acima. */
+        --color-success-bg: #052e16;
+        --color-success-border: #14532d;
+        --color-warn-bg: #451a03;
+        --color-warn-border: #78350f;
     }
 }
 
@@ -126,4 +158,58 @@
 
 .skip-link:focus {
     left: 0;
+}
+
+/*
+ * Classes estruturais do reskin BioForm-layout (reference/bioform-layout/*.md). Reusam os tokens
+ * ja declarados no :root acima (--color-primary-soft, --color-surface-hover) — nenhum token novo,
+ * nenhum hex fora deles.
+ */
+
+/* Superficie do menu lateral / topo — reusa --color-card e --color-border, sem cor nova. */
+.app-shell-sidebar {
+    background-color: var(--color-card);
+    border-color: var(--color-border);
+}
+
+.app-nav-item {
+    color: var(--color-text-muted);
+    border-left: 2px solid transparent;
+}
+
+.app-nav-item:hover {
+    background-color: var(--color-surface-hover);
+    color: var(--color-text);
+}
+
+.app-nav-item[aria-current='page'] {
+    color: var(--color-primary);
+    border-left-color: var(--color-primary);
+    background-color: var(--color-primary-soft);
+    font-weight: 600;
+}
+
+/* Hero de pagina (PageHero, reference/bioform-layout/page-hero-and-cards.md) — gradiente
+   derivado de --color-primary/--color-primary-dark, os dois unicos tons "de marca" aprovados
+   para acao primaria; sem brand-mid disponivel na paleta deste projeto, o gradiente usa 2 stops
+   em vez dos 3 do fragmento original. */
+.app-hero {
+    background: linear-gradient(to bottom right, var(--color-primary-dark), var(--color-primary));
+}
+
+/* Listagem estilo DataTable (reference/bioform-layout/data-table.md): linhas zebradas + hover,
+   ambos derivados de --color-primary via color-mix (nenhum hex novo). */
+.app-table tbody tr:nth-child(even) {
+    background-color: var(--color-surface-hover);
+}
+
+.app-table tbody tr:hover {
+    background-color: var(--color-primary-soft);
+}
+
+/* Transicao do menu lateral colapsavel — ja coberta pelo guard global de
+   prefers-reduced-motion acima (regra `*, *::before, *::after`), nenhum guard adicional
+   necessario aqui. */
+.app-sidebar-transition {
+    transition: width 150ms ease;
 }

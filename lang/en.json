@@ -63,5 +63,11 @@
     "% da renda comprometido (mes)": "% of income committed (month)",
     "Sem renda cadastrada no periodo": "No income registered for the period",
     "Atencao: as despesas superam a renda neste periodo.": "Warning: expenses exceed income for this period.",
-    "Nenhuma renda ou despesa cadastrada para este mes. Cadastre sua renda e suas despesas para ver o overview deste periodo.": "No income or expenses registered for this month. Add your income and expenses to see the overview for this period."
+    "Nenhuma renda ou despesa cadastrada para este mes. Cadastre sua renda e suas despesas para ver o overview deste periodo.": "No income or expenses registered for this month. Add your income and expenses to see the overview for this period.",
+    "Alternar menu": "Toggle menu",
+    "Trilha de navegacao": "Breadcrumb navigation",
+    "Alternar tema claro ou escuro": "Toggle light or dark theme",
+    "comprometido": "committed",
+    "Comprometido": "Committed",
+    "Disponivel": "Available"
 }
