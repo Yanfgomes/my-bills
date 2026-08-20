@@ -1,16 +1,16 @@
 {
   "rf_ref": "RF-003",
-  "versao": 4,
+  "versao": 10,
   "status": "aguardando_qa",
   "implementacao_existente": false,
   "gap_implementado": true,
   "branch_ref": "rf/RF-003",
   "commit_ref": "e596c4b381a9aedda255f31137dbcd22549a77d6",
-  "commit_ref_testes": null,
+  "commit_ref_testes": "601aeda",
   "grupo_commit": [],
   "handoff_qa": {
     "disparado_em": "2026-08-20T11:49:20Z",
-    "status": "aguardando"
+    "status": "em_qa"
   },
   "tentativas_correcao": 0,
   "bugs": [],
@@ -22,5 +22,90 @@
     "respondido_em": "2026-08-19T11:56:47Z",
     "detalhes_ref": "specs/relatorios/dev-agent-RF-003-decisao.md"
   },
-  "observacoes": "Consolidacao RN-005 concluida (commit e596c4b) apos RF-004/006/008. Ultimo RF pendente do marco-1-mvp."
+  "observacoes": "Consolidacao RN-005 concluida (commit e596c4b) apos RF-004/006/008. Ultimo RF pendente do marco-1-mvp.",
+  "qa": {
+    "code_review": {
+      "status": "passou",
+      "sonar": {
+        "gate_status": "indisponivel",
+        "detalhes_ref": "arquitetura.padroes_tecnologias.stack.ferramenta_qualidade_codigo = pendente_infraestrutura (nao configurada)"
+      },
+      "revisao_qualitativa": {
+        "status": "passou",
+        "observacoes": [
+          "Sem achado bloqueante: docblocks + Gate::policy(FonteRenda/Despesa) em AppServiceProvider::boot(), sem mudanca de comportamento.",
+          "Commit nao cria/altera/exclui dado de negocio; RNF-PADRAO-LOG-AUDITORIA nao se aplica a este diff especifico."
+        ]
+      }
+    },
+    "accessibility": {
+      "status": "passou",
+      "auditado_em": "2026-08-20T11:51:00Z",
+      "contraste": {
+        "status": "passou",
+        "observacoes": [
+          "Commit puramente backend (Policies, AppServiceProvider) — sem mudança em markup/paleta de cores. Telas associadas auditadas em RFs-004/006/008."
+        ]
+      },
+      "tags_leitor_tela": {
+        "status": "passou",
+        "observacoes": [
+          "Mudanças puramente backend (docblocks, Gate::policy). Nenhuma tag ARIA/label/role alterada. Padrões ARIA validados em RFs-004/006/008 das telas associadas."
+        ]
+      },
+      "aderencia_estrutural": {
+        "status": "passou",
+        "observacoes": [
+          "Mudanças backend não afetam estrutura visual/CSS. Telas associadas (RF-004/006/008) já validadas para foco visível, redução de movimento, conformidade de fonte."
+        ]
+      },
+      "recomendacoes": []
+    },
+    "security": {
+      "status": "passou",
+      "ferramenta": {
+        "nome": null,
+        "status": "indisponivel",
+        "detalhes_ref": ""
+      },
+      "criterios_declarados": {
+        "total": 2,
+        "atendidos": 2,
+        "nao_atendidos": 0,
+        "nao_verificaveis": 0
+      },
+      "pentest_manual": {
+        "status": "concluido",
+        "achados_confirmados": 0,
+        "achados_por_analise_estatica": 0
+      },
+      "observacoes": [
+        {
+          "texto": "Gate::policy explicito confirmado correto (FonteRenda->FonteRendaPolicy, Despesa->DespesaPolicy); suite RN-005 (8 testes cross-user, dois usuarios reais) rodada ao vivo em PHP 8.4, 100% verde."
+        },
+        {
+          "texto": "view/update/delete das Policies ainda sem UI/rota expondo ID (marco-1-mvp so lista+cria); superficie IDOR real hoje e nula. Reavaliar quando RF-005/RF-007 (marco-2) expuserem edicao/exclusao por ID."
+        }
+      ]
+    },
+    "tester": {
+      "status": "passou",
+      "testado_em": "2026-08-20T12:04:06Z",
+      "unitarios": {
+        "status": "passou",
+        "cobertura": 100,
+        "framework": "Pest"
+      },
+      "integracao": {
+        "status": "passou",
+        "cobertura": 100,
+        "framework": "Pest"
+      },
+      "observacoes": [
+        "5 testes novos (Policies + Gate::getPolicyFor), 100% cobertura nos 3 arquivos do diff. Detalhes em detalhes_ref.",
+        "ExampleTest.php falha (302 vs 200), pre-existente desde RF-001, fora do escopo do diff de RF-003 — nao bloqueia, sinalizado para triagem."
+      ],
+      "detalhes_ref": "specs/relatorios/tester-RF-003.md"
+    }
+  }
 }
