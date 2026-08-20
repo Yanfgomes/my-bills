@@ -13,8 +13,13 @@ use App\Models\User;
  * escopo marco-1-mvp (listar+criar); view/update/delete seguem o shape padrao de Policy do
  * Laravel (usuario_id do registro == usuario autenticado), sem decisao de arquitetura nova,
  * para RF-007 (marco-2-gestao-completa, edicao/exclusao) reutilizar sem recriar a classe.
- * Quando RF-003 rodar (ultimo do lote), sua responsabilidade e consolidar/validar esta Policy
- * (e a equivalente de Renda) com testabilidade cross-user real.
+ *
+ * RF-003 (consolidacao, ultimo RF do lote marco-1-mvp): validado com testabilidade cross-user
+ * real (dois usuarios, dados cruzados) em tests/Feature/Despesas/DespesaManagerTest.php —
+ * view/update/delete negados para o dono errado e concedidos para o dono certo, viewAny/create
+ * concedidos a qualquer usuario autenticado e negados sem sessao. Registro explicito em
+ * App\Providers\AppServiceProvider::boot() (Gate::policy) formaliza o mapeamento Model->Policy
+ * antes coberto so por convencao de nome.
  */
 class DespesaPolicy
 {

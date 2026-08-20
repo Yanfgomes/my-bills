@@ -1,42 +1,125 @@
 {
   "rf_ref": "RF-003",
-  "versao": 2,
-  "status": "bloqueado",
+  "versao": 10,
+  "status": "aprovado",
   "implementacao_existente": false,
-  "gap_implementado": null,
-  "branch_ref": null,
-  "commit_ref": null,
-  "commit_ref_testes": null,
+  "gap_implementado": true,
+  "branch_ref": "rf/RF-003",
+  "commit_ref": "e596c4b381a9aedda255f31137dbcd22549a77d6",
+  "commit_ref_testes": "601aeda",
   "grupo_commit": [],
   "handoff_qa": {
-    "disparado_em": null,
-    "status": null
+    "disparado_em": "2026-08-20T11:49:20Z",
+    "status": "em_qa"
   },
   "tentativas_correcao": 0,
   "bugs": [],
   "decisao_pendente": {
-    "agente": "dev-agent",
-    "gate": "ordem_execucao_dependencia",
+    "agente": "qa-coordenador-agent",
+    "gate": "validacao_local",
     "rf_ref": "RF-003",
-    "pergunta": "RF-003 (\"Isolamento de dados por usuario autenticado\") esta ordenado em desenvolvimento.ordem_execucao antes de RF-004 (Renda), RF-006 (Despesas) e RF-008 (Overview). O proprio RF-003, em documentacao.requisitos_funcionais, se descreve como 'requisito transversal ... sem tela propria (aplicado por RF-004 a RF-008)' e seu criterio_aceite fala exclusivamente de restringir leitura/escrita de Renda, Despesas e Overview -- nenhuma dessas entidades existe ainda no codigo (so ha migrations/models de users e logs_auditoria, criados por RF-001/RF-002). arquitetura.documentacao_tecnica tambem nao tem nenhuma rota/componente/servico/contrato proprio marcado para RF-003 -- so a convencao geral (padroes_tecnologias.convencoes.autorizacao) de que RendaPolicy/DespesaPolicy serao criadas junto com os proprios RF-004/RF-006. Nao ha o que isolar (nenhum registro de outro usuario a proteger) nem contra o que testar RN-005 hoje. Como devo proceder?",
+    "pergunta": "RF-003 (isolamento de dados por usuario, RN-005) passou nas 3 ondas de QA (code-review, security, accessibility, tester - todos 'passou'). Validar localmente: aprovar merge/deploy?",
     "opcoes": [
-      {
-        "label": "Adiar RF-003 para o final do lote (depois de RF-004, RF-006, RF-008)",
-        "descricao": "Reordenar desenvolvimento.ordem_execucao (decisao do orquestrador/usuario, nao minha) para RF-003 rodar por ultimo. Nesse momento, com FonteRenda/Despesa/Overview ja existentes, implemento RF-003 criando/consolidando RendaPolicy, DespesaPolicy e a restricao de leitura do Overview a partir do usuario autenticado, com testabilidade real (tester-agent consegue provar RN-005 com dados de dois usuarios distintos)."
-      },
-      {
-        "label": "Manter a ordem aprovada e implementar agora so a infraestrutura generica de isolamento",
-        "descricao": "Construo agora um mecanismo reutilizavel (ex: trait de global scope Eloquent que filtra automaticamente por usuario_id = auth()->id() e/ou uma base de Policy) sem nenhum model concreto para aplica-lo ainda -- RF-004/RF-006/RF-008 apenas usarao o trait/base ja pronto quando criarem FonteRenda/Despesa. Risco: codigo sem consumidor e sem cobertura de teste possivel agora (o proprio code-review/tester podem sinalizar abstracao prematura/dead code), e pode nao bater exatamente com a decisao de autorizacao que o design-agent ja registrou (Policies por model, nao global scope) -- me obrigaria a decidir um detalhe de arquitetura que nao me cabe."
-      },
-      {
-        "label": "Tratar RF-003 como satisfeito por composicao, sem branch/commit proprio",
-        "descricao": "Registrar formalmente que RF-003 nao gera artefato de codigo isolado -- seu criterio_aceite sera verificado quando RF-004/RF-006/RF-008 aplicarem RendaPolicy/DespesaPolicy (e a restricao do Overview), e o qa-coordenador-agent avalia RN-005 nesses RFs, nao num RF-003 avulso. Eu sigo direto para RF-004 nesta mesma invocacao. Diverge do padrao 'todo RF tem branch e commit' do protocolo, entao exige decisao humana explicita antes de eu adotar essa excecao."
-      }
+      { "id": "aprovado", "descricao": "Isolamento confirmado por uso real (usuario A nao ve dados de usuario B em Renda/Despesas/Overview) - liberar merge/deploy." },
+      { "id": "reprovado", "descricao": "Algum problema encontrado na validacao local - registrar feedback e reabrir para dev-agent." }
     ],
-    "contexto": "planejamento.escopo.marcos[marco-1-mvp].rf_refs ja aprovou a ordem RF-001,RF-002,RF-003,RF-004,RF-006,RF-008 no gate aprovacao_escopo (analise-planejamento-agent). Nao tenho AskUserQuestion nem posso reordenar essa lista por conta propria -- so sinalizar. RF-001 e RF-002 ja estao aprovado/mergeado. Nenhum model de Renda/Despesa/Overview existe no codigo ainda (so users, logs_auditoria).",
-    "aberto_em": "2026-08-19T11:54:47Z",
-    "resposta": "Adiar RF-003 para o final do lote (depois de RF-004, RF-006, RF-008)",
-    "respondido_em": "2026-08-19T11:56:47Z"
+    "contexto": "RF-003 e o ultimo RF pendente do marco-1-mvp (ultimo_rf_do_marco=true). E requisito transversal (RN-005), sem tela propria - aplicado nas telas de RF-004/006/008 (Renda, Despesas, Overview). Aprovacao aqui fecha o marco e segue para deploy do RF, depois consolidacao do marco-1-mvp.",
+    "resposta": "aprovado",
+    "respondido_em": "2026-08-20T12:20:00Z",
+    "detalhes_ref": "specs/relatorios/tester-RF-003.md"
   },
-  "observacoes": "dev-agent parou antes de escrever qualquer codigo para RF-003: dependencia real entre RFs contradiz a ordem aprovada (ver decisao_pendente). Nao criei branch nem commit. Aguardando decisao do orquestrador/usuario sobre como proceder antes de prosseguir."
+  "observacoes": "Consolidacao RN-005 concluida (commit e596c4b) apos RF-004/006/008. Ultimo RF pendente do marco-1-mvp. Triagem: ExampleTest.php (302 vs 200) pre-existente desde RF-001 (dbdae02), fora do escopo do diff RF-003/RN-005, nao e regressao - sem acao, nao bloqueia aprovacao.",
+  "qa": {
+    "code_review": {
+      "status": "passou",
+      "sonar": {
+        "gate_status": "indisponivel",
+        "detalhes_ref": "arquitetura.padroes_tecnologias.stack.ferramenta_qualidade_codigo = pendente_infraestrutura (nao configurada)"
+      },
+      "revisao_qualitativa": {
+        "status": "passou",
+        "observacoes": [
+          "Sem achado bloqueante: docblocks + Gate::policy(FonteRenda/Despesa) em AppServiceProvider::boot(), sem mudanca de comportamento.",
+          "Commit nao cria/altera/exclui dado de negocio; RNF-PADRAO-LOG-AUDITORIA nao se aplica a este diff especifico."
+        ]
+      }
+    },
+    "accessibility": {
+      "status": "passou",
+      "auditado_em": "2026-08-20T11:51:00Z",
+      "contraste": {
+        "status": "passou",
+        "observacoes": [
+          "Commit puramente backend (Policies, AppServiceProvider) — sem mudança em markup/paleta de cores. Telas associadas auditadas em RFs-004/006/008."
+        ]
+      },
+      "tags_leitor_tela": {
+        "status": "passou",
+        "observacoes": [
+          "Mudanças puramente backend (docblocks, Gate::policy). Nenhuma tag ARIA/label/role alterada. Padrões ARIA validados em RFs-004/006/008 das telas associadas."
+        ]
+      },
+      "aderencia_estrutural": {
+        "status": "passou",
+        "observacoes": [
+          "Mudanças backend não afetam estrutura visual/CSS. Telas associadas (RF-004/006/008) já validadas para foco visível, redução de movimento, conformidade de fonte."
+        ]
+      },
+      "recomendacoes": []
+    },
+    "security": {
+      "status": "passou",
+      "ferramenta": {
+        "nome": null,
+        "status": "indisponivel",
+        "detalhes_ref": ""
+      },
+      "criterios_declarados": {
+        "total": 2,
+        "atendidos": 2,
+        "nao_atendidos": 0,
+        "nao_verificaveis": 0
+      },
+      "pentest_manual": {
+        "status": "concluido",
+        "achados_confirmados": 0,
+        "achados_por_analise_estatica": 0
+      },
+      "observacoes": [
+        {
+          "texto": "Gate::policy explicito confirmado correto (FonteRenda->FonteRendaPolicy, Despesa->DespesaPolicy); suite RN-005 (8 testes cross-user, dois usuarios reais) rodada ao vivo em PHP 8.4, 100% verde."
+        },
+        {
+          "texto": "view/update/delete das Policies ainda sem UI/rota expondo ID (marco-1-mvp so lista+cria); superficie IDOR real hoje e nula. Reavaliar quando RF-005/RF-007 (marco-2) expuserem edicao/exclusao por ID."
+        }
+      ]
+    },
+    "tester": {
+      "status": "passou",
+      "testado_em": "2026-08-20T12:04:06Z",
+      "unitarios": {
+        "status": "passou",
+        "cobertura": 100,
+        "framework": "Pest"
+      },
+      "integracao": {
+        "status": "passou",
+        "cobertura": 100,
+        "framework": "Pest"
+      },
+      "observacoes": [
+        "5 testes novos (Policies + Gate::getPolicyFor), 100% cobertura nos 3 arquivos do diff. Detalhes em detalhes_ref.",
+        "ExampleTest.php falha (302 vs 200), pre-existente desde RF-001, fora do escopo do diff de RF-003 — nao bloqueia, sinalizado para triagem."
+      ],
+      "detalhes_ref": "specs/relatorios/tester-RF-003.md"
+    }
+  },
+  "validacao_local": {
+    "status": "aprovado",
+    "como_subir": "composer run dev",
+    "o_que_testar": "Criar/logar com 2 usuarios distintos. Cadastrar Renda e Despesa com o usuario A. Logar como usuario B e confirmar que a listagem de Renda, Despesas e o Overview do mes NAO mostram nada do usuario A. Tentar editar/excluir um registro do usuario A logado como B (se houver forma de obter o ID pela URL) e confirmar erro de nao encontrado/nao autorizado, sem expor a existencia do registro.",
+    "rfs_cobertos": ["RF-003"],
+    "validado_em": "2026-08-20T12:20:00Z",
+    "observacoes": "Usuario aprovou via AskUserQuestion, sem ressalvas adicionais."
+  }
 }
