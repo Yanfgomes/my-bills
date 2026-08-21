@@ -1326,12 +1326,67 @@
     "status": "pendente",
     "cobertura_minima": 90,
     "cobertura_meta": 100,
-    "fluxos": [],
+    "fluxos": [
+      {
+        "fluxo_ref": "FLUXO-003",
+        "rf_refs": ["RF-005"],
+        "status": "derivado",
+        "observacoes": "Corte: dominio_ref muda de DOM-002 p/ DOM-003 entre RF-005 e RF-007 em ordem_execucao. Fluxo unico-RF: edicao/exclusao de fonte de renda."
+      },
+      {
+        "fluxo_ref": "FLUXO-004",
+        "rf_refs": ["RF-007"],
+        "status": "derivado",
+        "observacoes": "Corte: dominio_ref muda de DOM-002 p/ DOM-003 entre RF-005 e RF-007 em ordem_execucao. Fluxo unico-RF: edicao/exclusao de despesa."
+      }
+    ],
     "testes_sistema": {
-      "itens": []
+      "itens": [
+        {
+          "fluxo_ref": "FLUXO-004",
+          "status": "passou",
+          "branch_ref": "test/fluxo-004-sistema",
+          "commit_ref": "500303871fcff08eb4b67bf3feba88793e4ef4d5"
+        },
+        {
+          "fluxo_ref": "FLUXO-003",
+          "status": "passou",
+          "branch_ref": "test/fluxo-003-sistema",
+          "commit_ref": "75063dab95c2d3275c8bddc1d64883048b0d139d"
+        }
+      ]
     },
     "seguranca": {
-      "itens": []
+      "itens": [
+        {
+          "fluxo_ref": "FLUXO-004",
+          "rnf_ref": "",
+          "verificacao": "Pentest de composicao (listar->editar->excluir despesa, RF-007): tentativa de IDOR forcando editandoId/id de despesa de outro usuario via propriedade publica Livewire manipulada; checagem de dupla-defesa (query escopada + Policy) em editar/atualizar/excluir; rotas /despesas atras de auth; logout invalida sessao e regenera token/CSRF.",
+          "criticidade": "nenhum",
+          "status": "atendido"
+        },
+        {
+          "fluxo_ref": "FLUXO-004",
+          "rnf_ref": "RNF-002",
+          "verificacao": "RNF-002 (IDOR sobre Renda/Despesas/Overview) verificado no nivel de fluxo para RF-007: editar()/atualizar()/excluir() re-consultam Despesa::where('usuario_id', Auth::id()) antes de qualquer authorize(), mesmo com editandoId/id forcado para registro de outro usuario -- ModelNotFoundException, sem vazar existencia do registro alheio.",
+          "criticidade": "nenhum",
+          "status": "atendido"
+        },
+        {
+          "fluxo_ref": "FLUXO-003",
+          "rnf_ref": "",
+          "verificacao": "Pentest de composicao (listar->editar->excluir renda, RF-005), analise estatica (php indisponivel no ambiente desta execucao): editandoId/campos publicos manipulaveis nao vazam dado de terceiro (form ja controlado pelo atacante); rota /renda atras de auth; Gate::policy/Observer registrados em AppServiceProvider; nenhuma rota edita/exclui logs_auditoria.",
+          "criticidade": "nenhum",
+          "status": "atendido"
+        },
+        {
+          "fluxo_ref": "FLUXO-003",
+          "rnf_ref": "RNF-002",
+          "verificacao": "RNF-002 (IDOR) verificado no nivel de fluxo para RF-005, por analise estatica: editar()/atualizar()/excluir() re-consultam FonteRenda::where('usuario_id', Auth::id()) antes de authorize(), mesmo com editandoId forcado para registro de outro usuario -- ModelNotFoundException (regressao ja coberta em RendaManagerTest.php). Nenhum achado novo de composicao alem do ja confirmado na Fase 1 (RF isolado).",
+          "criticidade": "nenhum",
+          "status": "atendido"
+        }
+      ]
     },
     "historico_revisoes": []
   },
