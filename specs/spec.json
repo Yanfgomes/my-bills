@@ -45,6 +45,20 @@
         "descricao": "Painel/dashboard que consolida Renda e Despesas do usuario autenticado e apresenta indicadores de saude financeira (ex: saldo disponivel, percentual da renda comprometido). Nao possui dado proprio alem dos indicadores calculados a partir dos outros dominios.",
         "origem": "usuario",
         "status": "aprovado"
+      },
+      {
+        "id": "DOM-005",
+        "nome": "Configuracoes do Sistema",
+        "descricao": "Preferencias do usuario autenticado sobre idioma, tema, tamanho de fonte, alto contraste e reducao de movimento — materializa RNF-PADRAO-IDIOMA e RNF-PADRAO-ACESSIBILIDADE-CONFIG (aprovados no marco-1 sem tela propria ate agora).",
+        "origem": "usuario",
+        "status": "aprovado"
+      },
+      {
+        "id": "DOM-006",
+        "nome": "Auditoria",
+        "descricao": "Consulta somente-leitura ao log de auditoria unico do sistema (tabela logs_auditoria, ja gravada pelo AuditoriaObserver para todo model de dado de negocio) — materializa RNF-PADRAO-LOG-AUDITORIA. Sem escrita: a gravacao e responsabilidade transversal do observer, nao deste dominio.",
+        "origem": "usuario",
+        "status": "aprovado"
       }
     ],
     "historico_revisoes": [
@@ -53,6 +67,14 @@
         "resposta": "Confirmados os 4 dominios propostos",
         "respondido_em": "2026-08-17T16:45:00Z",
         "resultado": "Aprovado sem ajustes. Ver detalhes_ref.",
+        "detalhes_ref": "specs/relatorios/requisitos-agent-orcamento.md"
+      },
+      {
+        "gate": "aprovacao_dominios",
+        "rodada": 2,
+        "resposta": "Confirmar 2 dominios",
+        "respondido_em": "2026-08-21T15:20:00Z",
+        "resultado": "DOM-005/DOM-006 confirmados sem ajuste. Ver relatorio.",
         "detalhes_ref": "specs/relatorios/requisitos-agent-orcamento.md"
       }
     ]
@@ -317,6 +339,170 @@
             "formula": "(despesas_total / renda_total) * 100, para o mes_selecionado — regra de negocio da Fase 3 define o comportamento quando renda_total = 0"
           }
         ]
+      },
+      "DOM-005": {
+        "nome": "Configuracoes do Sistema",
+        "itens": [
+          {
+            "id": "CAMPO-CFG-001",
+            "nome": "id",
+            "tipo": "uuid",
+            "obrigatorio": true,
+            "descricao": "Identificador unico do registro de preferencias.",
+            "origem": "sistema",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-CFG-002",
+            "nome": "usuario_id",
+            "tipo": "uuid (FK -> DOM-001)",
+            "obrigatorio": true,
+            "descricao": "Usuario dono das preferencias — cada usuario autenticado tem seu proprio conjunto de configuracoes.",
+            "origem": "sistema",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-CFG-003",
+            "nome": "idioma",
+            "tipo": "enum (pt, en, es)",
+            "obrigatorio": true,
+            "descricao": "Idioma de exibicao da interface escolhido pelo usuario (RNF-PADRAO-IDIOMA). Default: pt. Hoje o mecanismo existente (SetLocale middleware) le de sessao, sem persistencia por usuario — este campo propoe a persistencia por usuario; storage exato e decisao do design-agent.",
+            "constraints": ["pt | en | es"],
+            "origem": "usuario",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-CFG-004",
+            "nome": "tema",
+            "tipo": "enum (claro, escuro)",
+            "obrigatorio": true,
+            "descricao": "Tema visual escolhido pelo usuario. Default: claro. Hoje ja existe alternador no topbar (app-topbar.blade.php) persistido em localStorage do navegador, sem vinculo com o usuario autenticado; este campo propoe trazer a mesma preferencia tambem para a tela de configuracoes, vinculada ao usuario.",
+            "constraints": ["claro | escuro"],
+            "origem": "usuario",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-CFG-005",
+            "nome": "tamanho_fonte",
+            "tipo": "enum (pequeno, medio, grande)",
+            "obrigatorio": true,
+            "descricao": "Tamanho de fonte da interface escolhido pelo usuario (RNF-PADRAO-ACESSIBILIDADE-CONFIG). Default: medio.",
+            "constraints": ["pequeno | medio | grande"],
+            "origem": "usuario",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-CFG-006",
+            "nome": "alto_contraste",
+            "tipo": "boolean",
+            "obrigatorio": true,
+            "descricao": "Ativa a variante de alto contraste da paleta (RNF-PADRAO-ACESSIBILIDADE-CONFIG). Default: false.",
+            "origem": "usuario",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-CFG-007",
+            "nome": "reducao_movimento",
+            "tipo": "boolean",
+            "obrigatorio": true,
+            "descricao": "Desativa/reduz animacoes e transicoes nao essenciais (RNF-PADRAO-ACESSIBILIDADE-CONFIG). Valor inicial deve refletir prefers-reduced-motion do sistema operacional; usuario pode sobrepor explicitamente nesta tela.",
+            "origem": "usuario",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-CFG-008",
+            "nome": "atualizado_em",
+            "tipo": "datetime",
+            "obrigatorio": true,
+            "descricao": "Data/hora da ultima atualizacao das preferencias.",
+            "origem": "sistema",
+            "status": "aprovado"
+          }
+        ],
+        "observacao": "Foco visivel (RNF-PADRAO-ACESSIBILIDADE-CONFIG) e comportamento estrutural sempre ativo da interface (padroes_tecnologias.acessibilidade.foco_visivel) — nao e um campo configuravel pelo usuario, por isso nao tem CAMPO-CFG correspondente. Aprovado (gate aprovacao_campos, rodada 3)."
+      },
+      "DOM-006": {
+        "nome": "Auditoria",
+        "itens": [
+          {
+            "id": "CAMPO-AUD-001",
+            "nome": "id",
+            "tipo": "bigint",
+            "obrigatorio": true,
+            "descricao": "Identificador unico do registro de log.",
+            "origem": "sistema",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-AUD-002",
+            "nome": "acao",
+            "tipo": "enum (criacao, alteracao, exclusao)",
+            "obrigatorio": true,
+            "descricao": "Tipo de operacao registrada.",
+            "origem": "sistema",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-AUD-003",
+            "nome": "usuario_id",
+            "tipo": "uuid (FK -> DOM-001)",
+            "obrigatorio": true,
+            "descricao": "Usuario autenticado que executou a operacao.",
+            "origem": "sistema",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-AUD-004",
+            "nome": "tabela_afetada",
+            "tipo": "string",
+            "obrigatorio": true,
+            "descricao": "Tabela/entidade que teve o registro criado, alterado ou excluido.",
+            "origem": "sistema",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-AUD-005",
+            "nome": "registro_id",
+            "tipo": "string",
+            "obrigatorio": true,
+            "descricao": "Identificador do registro afetado na tabela/entidade.",
+            "origem": "sistema",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-AUD-006",
+            "nome": "valor_anterior",
+            "tipo": "json",
+            "obrigatorio": false,
+            "descricao": "Valores antes da alteracao (De). Nulo em criacao.",
+            "origem": "sistema",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-AUD-007",
+            "nome": "valor_novo",
+            "tipo": "json",
+            "obrigatorio": false,
+            "descricao": "Valores depois da alteracao (Para). Nulo em exclusao.",
+            "origem": "sistema",
+            "status": "aprovado"
+          },
+          {
+            "id": "CAMPO-AUD-008",
+            "nome": "criado_em",
+            "tipo": "datetime",
+            "obrigatorio": true,
+            "descricao": "Data/hora da operacao registrada.",
+            "origem": "sistema",
+            "status": "aprovado"
+          }
+        ],
+        "parametros_consulta": [
+          { "id": "PARAM-AUD-002", "nome": "tabela_afetada", "tipo": "string", "descricao": "Filtro por tabela/entidade afetada." },
+          { "id": "PARAM-AUD-003", "nome": "acao", "tipo": "enum (criacao, alteracao, exclusao)", "descricao": "Filtro por tipo de operacao." },
+          { "id": "PARAM-AUD-004", "nome": "periodo_inicio / periodo_fim", "tipo": "date", "descricao": "Filtro por intervalo de data/hora da operacao (criado_em)." }
+        ],
+        "observacao": "Todos os 8 campos ja existem e sao gravados hoje pelo AuditoriaObserver — evidencia: app/Models/LogAuditoria.php, app/Observers/AuditoriaObserver.php, migration database/migrations/2026_08_18_135525_create_logs_auditoria_table.php (origem reverso_codebase para o dado ja existente). Nenhum campo novo de escrita e proposto; a novidade deste dominio e o RF de consulta somente-leitura (Fase 4). Aprovado (gate aprovacao_campos, rodada 3)."
       }
     },
     "historico_revisoes": [
@@ -334,6 +520,14 @@
         "resposta": "Confirmar campos e prototipo revisados",
         "respondido_em": "2026-08-17T16:59:00Z",
         "resultado": "Confirmado sem ajustes. Status aprovado. Ver relatorio.",
+        "detalhes_ref": "specs/relatorios/requisitos-agent-orcamento.md"
+      },
+      {
+        "gate": "aprovacao_campos",
+        "rodada": 3,
+        "resposta": "Confirmar campos e telas propostos",
+        "respondido_em": "2026-08-21T15:40:00Z",
+        "resultado": "CAMPO-CFG-001..008 e CAMPO-AUD-001..008 aprovados sem ajuste. Ver relatorio.",
         "detalhes_ref": "specs/relatorios/requisitos-agent-orcamento.md"
       }
     ]
@@ -455,6 +649,30 @@
         "acao": "sistema nao permite a alteracao de mes_referencia na edicao (campo tratado como somente leitura fora da criacao do lancamento); para mover o lancamento para outro mes, o usuario deve excluir o lancamento existente e recria-lo com o mes_referencia correto",
         "origem": "usuario",
         "status": "aprovado"
+      },
+      {
+        "id": "RN-009",
+        "nome": "Isolamento de configuracoes por usuario autenticado",
+        "dominio_ref": "DOM-005",
+        "campos_ref": [
+          "CAMPO-CFG-002"
+        ],
+        "condicao": "qualquer leitura ou edicao de Configuracoes do Sistema",
+        "acao": "sistema restringe a operacao ao registro de configuracoes cujo usuario_id == usuario autenticado; se nao existir ainda, sistema cria um registro com valores default na primeira leitura",
+        "origem": "usuario",
+        "status": "aprovado"
+      },
+      {
+        "id": "RN-010",
+        "nome": "Escopo de visibilidade do relatorio de log de auditoria",
+        "dominio_ref": "DOM-006",
+        "campos_ref": [
+          "CAMPO-AUD-003"
+        ],
+        "condicao": "usuario autenticado consulta o relatorio de log de auditoria",
+        "acao": "escopo self-audit: sistema restringe a consulta aos registros cujo usuario_id == usuario autenticado; tentativa de acessar log de outro usuario (inclusive por manipulacao de parametro) e negada. Filtro por usuario (PARAM-AUD-001) removido da tela/relatorio por ser redundante nesse escopo.",
+        "origem": "usuario",
+        "status": "aprovado"
       }
     ],
     "historico_revisoes": [
@@ -464,11 +682,19 @@
         "respondido_em": "2026-08-17T17:04:00Z",
         "resultado": "Aprovadas as 8 regras. Ver relatorio.",
         "detalhes_ref": "specs/relatorios/requisitos-agent-orcamento.md"
+      },
+      {
+        "gate": "aprovacao_regras",
+        "rodada": 2,
+        "resposta": "RN-010 self-audit",
+        "respondido_em": "2026-08-21T15:50:00Z",
+        "resultado": "Aprovadas; filtro usuario removido de TELA-007.",
+        "detalhes_ref": "specs/relatorios/requisitos-agent-orcamento.md"
       }
     ]
   },
   "documentacao": {
-    "status": "revisao_pendente",
+    "status": "aprovado",
     "requisitos_funcionais": [
       {
         "id": "RF-001",
@@ -661,6 +887,87 @@
         "status": "aprovado",
         "implementacao_existente": false,
         "evidencia_codigo": []
+      },
+      {
+        "id": "RF-PADRAO-CONFIGURACOES",
+        "titulo": "Configuracoes do sistema (idioma, tema, acessibilidade)",
+        "descricao": "Tela de preferencias do usuario autenticado: idioma de exibicao (PT/EN/ES), tema (claro/escuro), tamanho de fonte, alto contraste e reducao de movimento. Materializa RNF-PADRAO-IDIOMA, RNF-PADRAO-ACESSIBILIDADE-CONFIG e o alternador de tema de RNF-004. Cada usuario tem seu proprio conjunto de preferencias (RN-009); registro e criado com defaults na primeira leitura, se ainda nao existir.",
+        "dominio_ref": "DOM-005",
+        "campos_ref": [
+          "CAMPO-CFG-003",
+          "CAMPO-CFG-004",
+          "CAMPO-CFG-005",
+          "CAMPO-CFG-006",
+          "CAMPO-CFG-007"
+        ],
+        "regras_ref": ["RN-009"],
+        "criterio_aceite": [
+          "Tela exibe e permite alterar idioma (PT/EN/ES), tema (claro/escuro), tamanho de fonte (pequeno/medio/grande), alto contraste (on/off) e reducao de movimento (on/off) do usuario autenticado.",
+          "Leitura da tela para um usuario sem registro de preferencias ainda cria um registro com os defaults (pt, claro, medio, false, false) antes de exibir (RN-009).",
+          "Alteracao de qualquer preferencia e restrita ao registro cujo usuario_id == usuario autenticado (RN-009); nao ha forma de ler ou alterar preferencia de outro usuario.",
+          "Reducao de movimento tem como valor inicial o prefers-reduced-motion do sistema operacional, sobreposto quando o usuario define explicitamente o controle nesta tela.",
+          "Salvar exibe confirmacao visual de sucesso; alteracao efetivamente aplicada nas telas do sistema sem exigir novo login."
+        ],
+        "criterio_aceite_seguranca": [
+          "Operacao so executa para usuario autenticado; sem sessao valida, retorna a resposta padrao de nao autenticado.",
+          "Leitura e escrita de preferencias sao restritas ao registro cujo usuario_id == usuario autenticado (RN-009); requisicao apontando id de configuracao de outro usuario e negada com a mesma resposta usada para registro inexistente.",
+          "Servidor valida idioma, tema, tamanho_fonte contra os valores enumerados permitidos, e alto_contraste/reducao_movimento como booleano; valor fora do enum e rejeitado sem gravar dado parcial.",
+          "Resposta da leitura/escrita devolve somente os campos de Configuracoes do Sistema do proprio usuario; nenhum campo de outro dominio ou de outro usuario e incluido.",
+          "Campo fora do contrato (ex: usuario_id, atualizado_em) enviado na requisicao de salvar e ignorado, nunca sobrescrito pelo valor recebido.",
+          "Toda alteracao de preferencias gera o registro correspondente na tabela de log unica (RNF-PADRAO-LOG-AUDITORIA), e nenhum caminho deste RF edita ou remove esse registro."
+        ],
+        "criterio_aceite_acessibilidade": [
+          "Confirmacao de salvamento das preferencias e anunciada a quem usa leitor de tela, nao apenas exibida visualmente, com texto indicando que a operacao foi concluida.",
+          "Seletor de tema, alternador de alto contraste e alternador de reducao de movimento sao operaveis inteiramente por teclado, com o estado atual (selecionado/ativado) perceptivel sem depender da cor ou do destaque visual.",
+          "Miniatura/indicador de cada opcao de tema tem rotulo textual identificando o tema, nao depende só da cor da miniatura para diferenciacao."
+        ],
+        "rnf_refs": ["RNF-PADRAO-IDIOMA", "RNF-PADRAO-ACESSIBILIDADE-CONFIG", "RNF-004"],
+        "origem": "padrao_pipeline",
+        "status": "aprovado",
+        "implementacao_existente": false,
+        "evidencia_codigo": []
+      },
+      {
+        "id": "RF-PADRAO-LOG-AUDITORIA",
+        "titulo": "Relatorio de consulta ao log de auditoria (self-audit)",
+        "descricao": "Relatorio somente-leitura sobre a tabela de log unica (logs_auditoria, ja gravada pelo AuditoriaObserver), com filtros por tabela/entidade, acao e periodo, e detalhe De/Para por registro. Escopo self-audit (RN-010): cada usuario consulta apenas as proprias acoes; sem filtro por usuario, redundante nesse escopo.",
+        "dominio_ref": "DOM-006",
+        "campos_ref": [
+          "CAMPO-AUD-002",
+          "CAMPO-AUD-003",
+          "CAMPO-AUD-004",
+          "CAMPO-AUD-005",
+          "CAMPO-AUD-006",
+          "CAMPO-AUD-007",
+          "CAMPO-AUD-008",
+          "PARAM-AUD-002",
+          "PARAM-AUD-003",
+          "PARAM-AUD-004"
+        ],
+        "regras_ref": ["RN-010"],
+        "criterio_aceite": [
+          "Relatorio lista, para o usuario autenticado, os registros de log com acao, tabela/entidade e data/hora, filtraveis por tabela/entidade (PARAM-AUD-002), acao (PARAM-AUD-003) e periodo (PARAM-AUD-004).",
+          "Selecionar um registro abre o detalhe De/Para (valor_anterior e valor_novo).",
+          "Filtro sem resultado exibe estado vazio orientando o usuario a ajustar os filtros.",
+          "Nenhum controle de edicao ou exclusao esta disponivel para nenhum registro de log."
+        ],
+        "criterio_aceite_seguranca": [
+          "Operacao so executa para usuario autenticado; sem sessao valida, retorna a resposta padrao de nao autenticado.",
+          "Consulta e restrita aos registros de log cujo usuario_id == usuario autenticado (RN-010); tentativa de acessar log de outro usuario, inclusive por manipulacao de parametro/id na requisicao, e negada sem revelar a existencia do registro.",
+          "Filtros de tabela/entidade e acao aceitam somente os valores previstos (enum de acao, lista de tabelas auditadas); periodo e validado como intervalo de data; nenhum parametro chega a consulta como trecho de codigo (SQL) ou altera o escopo self-audit.",
+          "Resposta da consulta devolve somente os 8 campos de log do proprio usuario; nenhum registro de outro usuario e retornado em nenhuma pagina/paginacao.",
+          "Rota e somente leitura: nenhum caminho deste RF edita, atualiza ou exclui um registro da tabela de log de auditoria."
+        ],
+        "criterio_aceite_acessibilidade": [
+          "Tabela de log tem cabecalhos (Acao, Tabela/entidade, Data/hora) associados programaticamente as celulas correspondentes, perceptivel por leitor de tela linha a linha.",
+          "Modal de detalhe De/Para prende o foco enquanto aberto, Esc fecha, e o foco retorna ao botao 'Ver De/Para' que o abriu.",
+          "Ao aplicar os filtros, o resultado (nova listagem ou o estado de nenhum registro encontrado) e anunciado a quem usa leitor de tela, nao so atualizado visualmente."
+        ],
+        "rnf_refs": ["RNF-PADRAO-LOG-AUDITORIA"],
+        "origem": "padrao_pipeline",
+        "status": "aprovado",
+        "implementacao_existente": false,
+        "evidencia_codigo": []
       }
     ],
     "requisitos_nao_funcionais": [
@@ -712,7 +1019,7 @@
         "descricao": "O sistema deve oferecer suporte multi-idioma, com toda a interface (textos, labels, mensagens de validacao/erro) disponivel em Portugues, Ingles e Espanhol, permitindo a troca de idioma pelo proprio usuario nas configuracoes do sistema.",
         "metrica_alvo": "100% das strings de interface (textos estaticos, labels, mensagens de validacao/erro) resolvidas via mecanismo de i18n nos 3 idiomas — nenhuma string de UI hardcoded fora dele; idioma trocavel em runtime, sem exigir novo deploy.",
         "criterio_verificacao": "Alternar o idioma no controle de configuracoes do sistema e confirmar, em cada tela do escopo aprovado, que todo texto (incluindo mensagens de validacao/erro) reflete o idioma selecionado, sem string remanescente do idioma anterior.",
-        "rf_refs": [],
+        "rf_refs": ["RF-PADRAO-CONFIGURACOES"],
         "status": "aprovado",
         "origem": "padrao_pipeline"
       },
@@ -722,7 +1029,7 @@
         "descricao": "As configuracoes do sistema devem sempre oferecer, de forma visivel e acessivel ao usuario: configuracao de tamanho de fonte, foco visivel em todo elemento interativo, modo de alto contraste e opcao de reducao de movimento (permitindo desativar/reduzir animacoes e transicoes nao essenciais).",
         "metrica_alvo": "4 controles presentes e funcionais na tela de configuracoes do sistema (tamanho de fonte, foco visivel, alto contraste, reducao de movimento); indicador de foco com razao de contraste minima 3:1 contra o fundo adjacente (WCAG 2.2 SC 2.4.11); reducao de movimento honra prefers-reduced-motion do sistema operacional como valor inicial do controle.",
         "criterio_verificacao": "accessibility-agent confirma, na tela de configuracoes do sistema, a presenca e o funcionamento dos 4 controles, o contraste do indicador de foco em elementos interativos-chave, e que a opcao de reducao de movimento efetivamente desativa/reduz animacoes e transicoes nao essenciais.",
-        "rf_refs": [],
+        "rf_refs": ["RF-PADRAO-CONFIGURACOES"],
         "status": "aprovado",
         "origem": "padrao_pipeline"
       },
@@ -730,9 +1037,9 @@
         "id": "RNF-PADRAO-LOG-AUDITORIA",
         "categoria": "auditoria",
         "descricao": "O sistema deve manter uma unica tabela de log de auditoria para todo o sistema (nunca uma tabela de log por entidade/modulo), registrando toda operacao de criacao, alteracao e exclusao de dados de negocio: a acao realizada (criacao/alteracao/exclusao), o usuario autenticado que a executou, o valor anterior e o valor novo dos dados alterados (De/Para), a tabela/entidade que teve o registro incluido ou alterado, e a data/hora da operacao. O sistema deve oferecer tambem um relatorio especifico e padrao para consulta a esses dados de log.",
-        "metrica_alvo": "100% das operacoes de criacao/alteracao/exclusao de dados de negocio geram um registro na tabela de log unica, com os 5 campos obrigatorios preenchidos (acao, usuario, De/Para, tabela/entidade afetada, data/hora); relatorio padrao de consulta ao log disponivel, com filtro por usuario, tabela/entidade, acao e periodo.",
-        "criterio_verificacao": "Para uma amostra de RFs com operacao de escrita (criar/editar/excluir — RF-001, RF-004 a RF-007), confirmar que cada operacao gerou exatamente um registro correspondente na tabela de log unica, com os 5 campos corretos, e que o relatorio de consulta localiza esse registro pelos filtros padrao (usuario, tabela/entidade, acao, periodo).",
-        "rf_refs": [],
+        "metrica_alvo": "100% das operacoes de criacao/alteracao/exclusao de dados de negocio geram um registro na tabela de log unica, com os 5 campos obrigatorios preenchidos (acao, usuario, De/Para, tabela/entidade afetada, data/hora); relatorio padrao de consulta ao log disponivel, em escopo self-audit (RN-010), com filtro por tabela/entidade, acao e periodo.",
+        "criterio_verificacao": "Para uma amostra de RFs com operacao de escrita (criar/editar/excluir — RF-001, RF-004 a RF-007), confirmar que cada operacao gerou exatamente um registro correspondente na tabela de log unica, com os 5 campos corretos, e que o relatorio de consulta localiza esse registro pelos filtros padrao (tabela/entidade, acao, periodo) em escopo self-audit (RN-010).",
+        "rf_refs": ["RF-PADRAO-LOG-AUDITORIA"],
         "status": "aprovado",
         "origem": "padrao_pipeline"
       },
@@ -742,7 +1049,7 @@
         "descricao": "O sistema deve atender ao nivel de conformidade WCAG 2.2 AA em todas as telas do escopo aprovado, com suporte funcional a leitor de tela (navegacao completa por teclado, landmarks/regioes e atributos ARIA corretos) e oferecer tema claro e escuro selecionavel pelo usuario, alem dos 4 controles ja garantidos por RNF-PADRAO-ACESSIBILIDADE-CONFIG. Decisao explicita do usuario no gate aprovacao_documentacao (ver documentacao.historico_revisoes).",
         "metrica_alvo": "100% das telas de documentacao.prototipo.telas conformes a WCAG 2.2 nivel AA; contraste minimo 4.5:1 para texto normal e 3:1 para texto grande (>=18pt, ou >=14pt em negrito)/componentes de UI, em ambos os temas; navegacao completa por teclado sem armadilha de foco e leitura correta via NVDA (Windows) e VoiceOver (macOS/iOS) nos fluxos criticos (RF-001, RF-002, RF-004 a RF-008); tema claro e tema escuro disponiveis e selecionaveis pelo usuario, cada um atendendo aos mesmos criterios de contraste.",
         "criterio_verificacao": "accessibility-agent audita cada tela de documentacao.prototipo.telas com ferramenta automatizada de WCAG 2.2 AA mais checagem manual de navegacao por teclado, landmarks/ARIA e leitura por NVDA/VoiceOver nos fluxos criticos; confirma a existencia, o funcionamento do alternador de tema claro/escuro e o contraste de ambos os temas.",
-        "rf_refs": [],
+        "rf_refs": ["RF-PADRAO-CONFIGURACOES"],
         "status": "aprovado",
         "origem": "usuario"
       }
@@ -800,6 +1107,20 @@
             "RF-007"
           ],
           "descricao": "Listagem das despesas do usuario (descricao, valor, categoria, mes/periodo, editar/excluir funcionais) e formulario de cadastro/edicao de despesa (categoria opcional). Estados cobertos: lista vazia (via botao de demo), erro de valor invalido RN-002, erro de mes/periodo invalido ou ausente RN-003, e modo de edicao com mes/periodo somente leitura RN-008 (nota explicativa exibida)."
+        },
+        {
+          "id": "TELA-006",
+          "nome": "Configuracoes do Sistema",
+          "dominio_ref": "DOM-005",
+          "rf_refs": ["RF-PADRAO-CONFIGURACOES"],
+          "descricao": "Preferencias do usuario autenticado (RN-009): seletor de idioma (PT/EN/ES), seletor de tema (claro/escuro), tamanho de fonte, alternador de alto contraste e alternador de reducao de movimento, com botao salvar e confirmacao visual anunciada a leitor de tela. Nota explicando que foco visivel e garantia estrutural, sem controle separado nesta tela."
+        },
+        {
+          "id": "TELA-007",
+          "nome": "Relatorio de Log/Auditoria",
+          "dominio_ref": "DOM-006",
+          "rf_refs": ["RF-PADRAO-LOG-AUDITORIA"],
+          "descricao": "Consulta somente-leitura ao log de auditoria em escopo self-audit (RN-010): filtros por tabela/entidade, acao e periodo (inicio/fim) — sem filtro por usuario, redundante nesse escopo; listagem com acao/tabela/data-hora; modal de detalhe De/Para por registro, com foco preso e retorno ao botao de origem. Estado vazio quando o filtro nao encontra registro. Nenhum controle de edicao/exclusao."
         }
       ]
     },
@@ -809,6 +1130,14 @@
         "resposta": "Confirmar draft de acessibilidade (WCAG AA)",
         "respondido_em": "2026-08-17T17:14:00Z",
         "resultado": "Aprovados 8 RFs, 6 RNFs; RNF-004 definido. Ver relatorio.",
+        "detalhes_ref": "specs/relatorios/requisitos-agent-orcamento.md"
+      },
+      {
+        "gate": "aprovacao_documentacao",
+        "rodada": 2,
+        "resposta": "Aprovar como proposto",
+        "respondido_em": "2026-08-21T18:05:00Z",
+        "resultado": "RF-PADRAO-CONFIGURACOES/LOG-AUDITORIA fechados; TELA-006/007 aprovadas. Ver relatorio.",
         "detalhes_ref": "specs/relatorios/requisitos-agent-orcamento.md"
       }
     ]
@@ -907,6 +1236,18 @@
           "tipo": "RNF",
           "classificacao": "viavel",
           "justificativa": "Tabela unica de log de auditoria com De/Para e relatorio de consulta e padrao arquitetural comum, sem dependencia de infraestrutura especial."
+        },
+        {
+          "id": "RF-PADRAO-CONFIGURACOES",
+          "tipo": "RF",
+          "classificacao": "viavel",
+          "justificativa": "Tela de preferencias reusa mecanismos ja existentes de locale (SetLocale middleware) e alternador de tema; persistencia por usuario e CRUD simples de um registro 1:1 com Usuario, sem dependencia externa."
+        },
+        {
+          "id": "RF-PADRAO-LOG-AUDITORIA",
+          "tipo": "RF",
+          "classificacao": "viavel",
+          "justificativa": "Log de auditoria ja e gravado hoje pelo AuditoriaObserver (evidencia em app/Observers/AuditoriaObserver.php e migration existente); falta apenas o relatorio de consulta somente-leitura em escopo self-audit, sem complexidade tecnica incomum."
         }
       ],
       "observacao": "Nenhum item classificado inviavel ou viavel_com_ressalva. O stack ainda nao existe neste ponto do pipeline (decidido na Fase 1 do design-agent) — esta classificacao e um filtro grosso sobre a especificacao aprovada, nao um veredito tecnico definitivo; inviabilidade nao percebida aqui pode ainda ser revelada pelo design-agent, que aciona retorno controlado se identificar algo."
@@ -925,6 +1266,11 @@
             "RF-006",
             "RF-008"
           ],
+          "rnf_refs": [
+            "RNF-001",
+            "RNF-002",
+            "RNF-003"
+          ],
           "ordem": 1,
           "status": "concluido"
         },
@@ -937,9 +1283,25 @@
           ],
           "ordem": 2,
           "status": "concluido"
+        },
+        {
+          "id": "marco-3-padroes-pipeline",
+          "nome": "Padroes do pipeline (configuracoes e auditoria)",
+          "rf_refs": [
+            "RF-PADRAO-CONFIGURACOES",
+            "RF-PADRAO-LOG-AUDITORIA"
+          ],
+          "rnf_refs": [
+            "RNF-PADRAO-IDIOMA",
+            "RNF-PADRAO-ACESSIBILIDADE-CONFIG",
+            "RNF-004",
+            "RNF-PADRAO-LOG-AUDITORIA"
+          ],
+          "ordem": 3,
+          "status": "aprovado"
         }
       ],
-      "racional": "Marco 1 (MVP) entrega o fluxo de uso completo e minimo que realiza a proposta de valor do sistema: cadastro (RF-001) -> login (RF-002) -> isolamento de dados, transversal a partir daqui (RF-003) -> lancar renda (RF-004) -> lancar despesa (RF-006) -> ver overview de saude financeira (RF-008). Marco 2 adiciona a capacidade de corrigir/remover lancamentos ja feitos (RF-005 edicao/exclusao de renda, RF-007 edicao/exclusao de despesa), na mesma ordem de dominio (renda antes de despesa) usada no Marco 1. Nenhum RF foi classificado inviavel; nenhum backlog futuro foi identificado alem dos 8 RFs aprovados — todos pertencem a um dos dois marcos."
+      "racional": "Marco 1 (MVP) entrega o fluxo de uso completo e minimo que realiza a proposta de valor do sistema: cadastro (RF-001) -> login (RF-002) -> isolamento de dados, transversal a partir daqui (RF-003) -> lancar renda (RF-004) -> lancar despesa (RF-006) -> ver overview de saude financeira (RF-008). Marco 2 adiciona a capacidade de corrigir/remover lancamentos ja feitos (RF-005 edicao/exclusao de renda, RF-007 edicao/exclusao de despesa), na mesma ordem de dominio (renda antes de despesa) usada no Marco 1. Marco 3 (ordem 3) aloca os 2 RFs padrao do pipeline (RF-PADRAO-CONFIGURACOES antes de RF-PADRAO-LOG-AUDITORIA, seguindo o fluxo de uso: usuario ajusta preferencias antes de consultar o log) e os RNFs padrao/transversais que so foram fechados apos marco-1/marco-2 estarem concluidos, portanto nao puderam entrar neles (RNF-PADRAO-IDIOMA, RNF-PADRAO-ACESSIBILIDADE-CONFIG, RNF-004, RNF-PADRAO-LOG-AUDITORIA). Backfill de marco-1.rnf_refs (RNF-001, RNF-002, RNF-003) e documentacao retroativa dos RNFs ja implementados nesse marco, sem reabrir trabalho concluido. Nenhum RF foi classificado inviavel; todo RF e RNF aprovado pertence a um dos tres marcos."
     },
     "recursos": {
       "status": "aprovado",
@@ -952,6 +1314,13 @@
         "resposta": "Confirmar 2 marcos como proposto",
         "respondido_em": "2026-08-17T17:20:00Z",
         "resultado": "2 marcos aprovados sem ajuste: marco-1-mvp (RF-001,002,003,004,006,008), marco-2 (RF-005,007)."
+      },
+      {
+        "gate": "aprovacao_escopo",
+        "rodada": 2,
+        "resposta": "Aprovar como proposto",
+        "respondido_em": "2026-08-21T18:20:00Z",
+        "resultado": "marco-3-padroes-pipeline criado (RF-PADRAO-CONFIGURACOES, RF-PADRAO-LOG-AUDITORIA; RNF-PADRAO-IDIOMA, RNF-PADRAO-ACESSIBILIDADE-CONFIG, RNF-004, RNF-PADRAO-LOG-AUDITORIA). Backfill marco-1.rnf_refs=[RNF-001,002,003]."
       }
     ]
   },
@@ -1395,17 +1764,17 @@
     "consultoria": {},
     "validacao": {}
   },
+  "decisao_pendente": null,
   "controle_reabertura": {
     "contadores": {
       "marco-1-mvp": 1
     },
     "limite_por_elemento": 2
   },
-  "decisao_pendente": null,
   "conclusao_agente": {
-    "agente": "qa-coordenador-agent",
+    "agente": "analise-planejamento-agent",
     "criterios_saida_atendidos": true,
-    "observacoes": "Marco-2: RF-005 e RF-007 aprovados, mergeados (PR #11/#12), deploy RETIDO (pendente_infraestrutura, nada em producao). 2 fluxos derivados (FLUXO-003/FLUXO-004, corte por dominio_ref) testados: sistema passou, pentest de composicao 0 achados (RNF-002 verificado). Testes mergeados em main via PR #13/#14. Nenhum achado pendente.",
-    "concluido_em": "2026-08-21T14:54:42Z"
+    "observacoes": "3 marcos, 10 RFs e 9 RNFs alocados (marco-3-padroes-pipeline criado com os 2 RFs padrao e 4 RNFs; backfill de RNF-001/002/003 em marco-1). Ressalvas de viabilidade: 0. Gate aprovado como proposto.",
+    "concluido_em": "2026-08-21T18:35:00Z"
   }
 }
