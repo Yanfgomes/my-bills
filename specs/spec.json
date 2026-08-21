@@ -1369,7 +1369,7 @@
   },
   "arquitetura": {
     "marco_ref": "marco-3-padroes-pipeline",
-    "status": "pendente",
+    "status": "aprovado",
     "padroes_tecnologias": {
       "status": "aprovado",
       "observacao": "Gate 'escolha_stack' resolvido (ver historico_revisoes) — usuario escolheu 'Outra combinacao': PHP 8.3 + Laravel 13 full-stack acoplado (Blade + Livewire/Alpine.js), SQLite, Pest. Decisao de projeto inteiro (nao redecidida por marco), herdada por marco-2-gestao-completa e quaisquer marcos futuros. Fase 1 do design-agent (marco-2): stack ja definido/aprovado no marco-1 -- herdado sem re-perguntar nesta invocacao, nenhum gate reaberto; verificada compatibilidade com RF-005/RF-007 (mesmos dominios/RNFs de RF-004/RF-006, ja cobertos) -- sem incompatibilidade nova.",
@@ -1563,7 +1563,7 @@
         "mecanismo_captura": "interceptor_aplicacao",
         "mecanismo_captura_detalhe": "Eloquent Model Observers (app/Observers), registrados no AppServiceProvider para todo model de dado de negocio (User, FonteRenda, Despesa e qualquer novo model de dominio adicionado em marcos futuros), escutando os eventos created/updated/deleted e gravando o registro correspondente em logs_auditoria. Escolhido em vez de trigger_banco porque todo acesso a dados desta stack passa por Eloquent (sem uso planejado de queries SQL cruas/DB::table() fora do ORM); qualquer ponto de escrita que no futuro precise contornar o Eloquent (ex: bulk insert direto) e responsabilidade de quem implementa garantir que tambem grava no log, ja que o Observer nao intercepta esse caminho.",
         "observacao_rf001": "RF-001 (cadastro/registro aberto) cria um usuario sem que exista sessao autenticada no momento da operacao. Convencao adotada: usuario_id do registro de auditoria = id do proprio usuario recem-criado (acao autoatribuida), unico caso do sistema em que o 'usuario autenticado que executou' e o proprio registro afetado.",
-        "relatorio_consulta": "Nenhum RF do escopo aprovado (RF-001 a RF-008, marcos 1 e 2) implementa a tela de relatorio de consulta ao log exigida por RNF-PADRAO-LOG-AUDITORIA. Mecanismo de captura fica pronto desde RF-001 (arquitetural, conforme exigido) e cobre tambem as escritas de RF-005/RF-007 (update/delete de FonteRenda/Despesa via AuditoriaObserver ja registrado, sem trabalho adicional). Decisao tomada pelo orquestrador (fora do fluxo normal de gate, questao de escopo levantada pelo design-agent no marco-1): a tela de consulta ao log fica adiada para um marco futuro, ainda nao escopado -- nao e responsabilidade de marco-2-gestao-completa. Nenhum RF foi criado por este agente para materializa-la (fora do escopo do design-agent); retorno controlado ao analise-planejamento-agent/requisitos-agent permanece o caminho quando esse marco futuro for planejado."
+        "relatorio_consulta": "RF-PADRAO-LOG-AUDITORIA (marco-3-padroes-pipeline, TELA-007), implementado por App\\Livewire\\Auditoria\\LogAuditoriaRelatorio — ver arquitetura.camadas_servicos/documentacao_tecnica deste marco. Mecanismo de captura ja rodava desde RF-001 (marco-1) e cobriu RF-004/006/005/007 sem trabalho adicional; este marco entrega a tela de consulta que faltava, em escopo self-audit (RN-010)."
       },
       "historico_revisoes": [
         {
@@ -1575,13 +1575,127 @@
       ]
     },
     "camadas_servicos": {
-      "status": "pendente"
+      "status": "aprovado",
+      "descricao": "2 componentes Livewire de tela (ConfiguracaoManager/TELA-006, LogAuditoriaRelatorio/TELA-007) mais 1 componente compartilhado (TemaToggleTopbar, substitui o toggle Alpine-only ja existente em app-topbar.blade.php). Nenhum App\\Services novo: config e um upsert 1:1 por usuario, auditoria e leitura filtrada com paginacao -- mesmo padrao ja usado em RF-005/RF-007 (Eloquent direto no componente, sem calculo/agregacao que justifique Service).",
+      "mecanismo_locale_substituido": "SetLocale (existente) fixava o locale so por sessao, sem persistencia por usuario -- RN-009/CAMPO-CFG-003 exigem persistencia por usuario. Novo middleware App\\Http\\Middleware\\AplicarConfiguracaoUsuario, registrado em bootstrap/app.php logo apos SetLocale no grupo 'web': para requisicao autenticada, ConfiguracaoUsuario::firstOrCreate(['usuario_id'=>Auth::id()], defaults pt/claro/medio/false/false -- RN-009), app()->setLocale($config->idioma) (fonte passa a ser o registro do usuario, nao mais so a sessao), e View::share('configuracaoUsuario', $config) para o layout renderizar tema/fonte/alto-contraste/reducao-movimento server-side. SetLocale continua ativo e inalterado para rotas guest (login/registro), onde ainda nao ha ConfiguracaoUsuario.",
+      "mecanismo_tema_substituido": "Alternador de tema em app-topbar.blade.php (Alpine + localStorage puro, sem vinculo a usuario) e substituido por App\\Livewire\\Layout\\TemaToggleTopbar: alternar() persiste em ConfiguracaoUsuario.tema e dispara evento de navegador ($dispatch) que o <html> escuta para atualizar data-theme sem reload. layouts/app.blade.php passa a renderizar data-theme/tamanho-fonte/alto-contraste/reducao-movimento diretamente de $configuracaoUsuario (compartilhado pelo middleware acima) no primeiro paint, eliminando o flash de tema errado que o localStorage-only tinha.",
+      "componentes_novos": [
+        {
+          "componente": "App\\Livewire\\Configuracoes\\ConfiguracaoManager",
+          "rf_ref": "RF-PADRAO-CONFIGURACOES",
+          "tela_ref": "TELA-006",
+          "metodos": [
+            "mount(): ConfiguracaoUsuario::firstOrCreate(['usuario_id'=>Auth::id()], defaults) (RN-009); authorize('view', $configuracao); popula idioma/tema/tamanhoFonte/altoContraste/reducaoMovimento; se wasRecentlyCreated, expõe flag para a view disparar deteccao client-side de prefers-reduced-motion.",
+            "aplicarPreferenciaSistema(bool $reduzir): metodo de disparo unico, chamado pelo x-init da view so quando o registro acabou de ser criado nesta requisicao; persiste reducaoMovimento com o valor detectado no navegador antes de qualquer interacao do usuario (RNF-PADRAO-ACESSIBILIDADE-CONFIG).",
+            "salvar(): valida idioma in:pt,en,es; tema in:claro,escuro; tamanhoFonte in:pequeno,medio,grande; altoContraste/reducaoMovimento boolean; authorize('update', $configuracao); persiste as 5 colunas; app()->setLocale()+session(['locale'=>...]) para efeito imediato sem novo login; dispara evento de tema (ver mecanismo_tema_substituido); seta flag de confirmacao anunciada via aria-live (criterio_aceite_acessibilidade)."
+          ]
+        },
+        {
+          "componente": "App\\Livewire\\Layout\\TemaToggleTopbar",
+          "rf_ref": "RF-PADRAO-CONFIGURACOES",
+          "tela_ref": "todas as telas autenticadas (montado em layouts/app.blade.php, nao so TELA-006)",
+          "metodos": [
+            "mount(): le ConfiguracaoUsuario compartilhada pelo middleware, sem query propria.",
+            "alternar(): flip claro/escuro; ConfiguracaoUsuario::update(['tema'=>...]); dispara evento de navegador para <html data-theme>."
+          ]
+        },
+        {
+          "componente": "App\\Livewire\\Auditoria\\LogAuditoriaRelatorio",
+          "rf_ref": "RF-PADRAO-LOG-AUDITORIA",
+          "tela_ref": "TELA-007",
+          "metodos": [
+            "mount(): authorize('viewAny', LogAuditoria::class).",
+            "render(): LogAuditoria::where('usuario_id', Auth::id()) (RN-010, escopo self-audit) + filtros opcionais tabelaAfetada/acao/periodoInicio/periodoFim; orderByDesc('criado_em'); paginate() (WithPagination) -- volume cresce com toda escrita de dado de negocio, diferente de fontes_renda/despesas por usuario, por isso pagina aqui e nao em RendaManager/DespesaManager.",
+            "verDetalhe(int $id): findOrFail escopado por usuario_id (RN-010/RNF equivalente a RNF-002 para este dominio); authorize('view', $log); abre modal De/Para com foco preso (criterio_aceite_acessibilidade).",
+            "fecharDetalhe(): reseta o registro em foco; foco do teclado retorna ao botao 'Ver De/Para' que abriu o modal."
+          ]
+        }
+      ],
+      "policies_novas": [
+        {
+          "policy": "App\\Policies\\ConfiguracaoUsuarioPolicy",
+          "regras": "view/update: $configuracao->usuario_id === $usuario->id (RN-009). Mesmo padrao de defesa em profundidade de FonteRendaPolicy/DespesaPolicy: query ja escopada por usuario_id + Policy reforcando."
+        },
+        {
+          "policy": "App\\Policies\\LogAuditoriaPolicy",
+          "regras": "viewAny: true (qualquer autenticado consulta o proprio log). view: $log->usuario_id === $usuario->id (RN-010, self-audit). Sem update/delete -- tabela imutavel, nenhum metodo de escrita na Policy."
+        }
+      ],
+      "gate_policy_registro": "Gate::policy(ConfiguracaoUsuario::class, ConfiguracaoUsuarioPolicy::class) e Gate::policy(LogAuditoria::class, LogAuditoriaPolicy::class) adicionados ao bloco ja existente em AppServiceProvider::boot(), mesmo ponto unico de RendaPolicy/DespesaPolicy.",
+      "auditoria_transversal": "ConfiguracaoUsuario::observe(AuditoriaObserver::class) adicionado a AppServiceProvider::boot() (criterio_aceite_seguranca de RF-PADRAO-CONFIGURACOES exige log de toda alteracao de preferencia) -- Observer generico ja existente cobre created/updated sem alteracao de codigo. LogAuditoria (a propria tabela de log) NAO e observada -- auto-referencia sem sentido, e a tabela ja e imutavel por nenhum endpoint expor update/delete (RNF-PADRAO-LOG-AUDITORIA).",
+      "rotas_novas": "GET /configuracoes (configuracoes.show, ConfiguracaoManager, middleware auth) e GET /auditoria (auditoria.index, LogAuditoriaRelatorio, middleware auth), routes/web.php, mesma convencao dot-notation de renda.index/despesas.index. AppSidebar (resources/views/layouts/partials/app-sidebar.blade.php) recebe as 2 entradas correspondentes (data-cy nav-config/nav-auditoria, conforme prototipo)."
     },
     "modelagem_dados": {
-      "status": "pendente"
+      "status": "aprovado",
+      "descricao": "1 tabela nova (configuracoes_usuario, DOM-005). logs_auditoria (DOM-006) e pre-existente, sem alteracao de schema -- este marco so adiciona leitura (RF-PADRAO-LOG-AUDITORIA) e uma nova origem de escrita (ConfiguracaoUsuario via Observer, ja coberta pelo mecanismo generico).",
+      "cruzamento_com_migrations_existentes": "logs_auditoria (database/migrations/2026_08_18_135525_create_logs_auditoria_table.php) conferida nesta invocacao: colunas batem exatamente com CAMPO-AUD-001..008 aprovados, sem divergencia -- nada a levar ao gate.",
+      "entidades": [
+        {
+          "tabela": "configuracoes_usuario",
+          "dominio_ref": "DOM-005",
+          "status": "nova, a criar pelo dev-agent",
+          "colunas": "id (uuid, PK), usuario_id (uuid, FK -> users, cascade, UNIQUE -- reforca 1:1 de RN-009), idioma (enum pt|en|es, default pt), tema (enum claro|escuro, default claro), tamanho_fonte (enum pequeno|medio|grande, default medio), alto_contraste (boolean, default false), reducao_movimento (boolean, default false), atualizado_em (datetime).",
+          "observacao": "CAMPO-CFG-001..008 aprovados nao incluem criado_em -- model usa const CREATED_AT = null; const UPDATED_AT = 'atualizado_em' (mesma convencao de nomenclatura pt-BR ja usada em FonteRenda/Despesa/LogAuditoria)."
+        },
+        {
+          "tabela": "logs_auditoria",
+          "dominio_ref": "DOM-006",
+          "status": "pre-existente (marco-1), sem alteracao neste marco",
+          "colunas": "id (bigint, PK), acao (enum criacao|alteracao|exclusao), usuario_id (FK -> users), tabela_afetada, registro_id, valor_anterior (json, nullable), valor_novo (json, nullable), criado_em.",
+          "operacoes_marco_3": "SELECT (RF-PADRAO-LOG-AUDITORIA, escopado por usuario_id == Auth::id(), RN-010) -- nenhum INSERT/UPDATE/DELETE via este RF; passa a tambem receber INSERT automatico de configuracoes_usuario via AuditoriaObserver (RF-PADRAO-CONFIGURACOES)."
+        }
+      ]
     },
     "documentacao_tecnica": {
-      "status": "pendente"
+      "status": "aprovado",
+      "descricao": "fe_be_desacoplado = false: contrato = assinatura publica de metodo Livewire (payload = propriedades sincronizadas via wire:model, response = re-render Blade), mesmo formato ja usado nos marcos anteriores, cada um referenciando o RF que implementa (rf_ref).",
+      "contratos": [
+        {
+          "componente": "App\\Livewire\\Configuracoes\\ConfiguracaoManager",
+          "acao": "mount()",
+          "rf_ref": "RF-PADRAO-CONFIGURACOES",
+          "tela_ref": "TELA-006",
+          "efeito": "firstOrCreate ConfiguracaoUsuario com defaults (RN-009); popula os 5 campos; se recem-criado, view dispara x-init detectando prefers-reduced-motion do SO e chama aplicarPreferenciaSistema()."
+        },
+        {
+          "componente": "App\\Livewire\\Configuracoes\\ConfiguracaoManager",
+          "acao": "salvar()",
+          "rf_ref": "RF-PADRAO-CONFIGURACOES",
+          "tela_ref": "TELA-006",
+          "trigger": "wire:submit=\"salvar\" no botao 'Salvar preferencias'",
+          "payload": "idioma (in:pt,en,es), tema (in:claro,escuro), tamanhoFonte (in:pequeno,medio,grande), altoContraste (boolean), reducaoMovimento (boolean)",
+          "autorizacao": "authorize('update', $configuracao), ConfiguracaoUsuarioPolicy (RN-009)",
+          "efeito_sucesso": "ConfiguracaoUsuario::update() com as 5 colunas -- gera 1 registro em logs_auditoria (acao=alteracao) via AuditoriaObserver; app()->setLocale()+session(['locale']) aplicam idioma sem novo login; evento de tema disparado para <html>; confirmacao visual anunciada via aria-live (criterio_aceite_acessibilidade).",
+          "efeito_erro": "Valor fora do enum e rejeitado sem gravar dado parcial (criterio_aceite_seguranca)."
+        },
+        {
+          "componente": "App\\Livewire\\Layout\\TemaToggleTopbar",
+          "acao": "alternar()",
+          "rf_ref": "RF-PADRAO-CONFIGURACOES",
+          "tela_ref": "todas as telas autenticadas (topbar)",
+          "trigger": "wire:click no botao de tema do topbar",
+          "efeito_sucesso": "ConfiguracaoUsuario.tema flip -- gera 1 registro em logs_auditoria via AuditoriaObserver; <html data-theme> atualizado via evento, sem reload."
+        },
+        {
+          "componente": "App\\Livewire\\Auditoria\\LogAuditoriaRelatorio",
+          "acao": "render() com filtros",
+          "rf_ref": "RF-PADRAO-LOG-AUDITORIA",
+          "tela_ref": "TELA-007",
+          "payload": "tabelaAfetada (nullable, in lista de tabelas auditadas), acao (nullable, in:criacao,alteracao,exclusao), periodoInicio/periodoFim (nullable date)",
+          "autorizacao": "query sempre where usuario_id == Auth::id() (RN-010) antes de qualquer filtro do usuario",
+          "efeito": "Lista paginada (acao, tabela_afetada, criado_em); filtro sem resultado exibe estado vazio (criterio_aceite)."
+        },
+        {
+          "componente": "App\\Livewire\\Auditoria\\LogAuditoriaRelatorio",
+          "acao": "verDetalhe(int $id) / fecharDetalhe()",
+          "rf_ref": "RF-PADRAO-LOG-AUDITORIA",
+          "tela_ref": "TELA-007",
+          "trigger": "wire:click no botao 'Ver De/Para' de cada linha / botao 'Fechar' do modal",
+          "autorizacao": "findOrFail escopado por usuario_id + authorize('view', $log), LogAuditoriaPolicy (RN-010)",
+          "efeito": "Abre modal com valor_anterior/valor_novo, foco preso, Esc fecha; fecharDetalhe() devolve o foco ao botao de origem (criterio_aceite_acessibilidade). Nenhum caminho edita/exclui o registro."
+        }
+      ],
+      "cobertura_telas": "TELA-006 (RF-PADRAO-CONFIGURACOES): ConfiguracaoManager cobre idioma/tema/fonte/alto-contraste/reducao-movimento/salvar/confirmacao; TemaToggleTopbar cobre o alternador rapido do topbar, presente em toda tela autenticada (nao exclusivo de TELA-006). TELA-007 (RF-PADRAO-LOG-AUDITORIA): LogAuditoriaRelatorio cobre filtros, listagem paginada e modal De/Para. Nenhuma tela nova alem de TELA-006/007, ja aprovadas."
     }
   },
   "desenvolvimento": {
@@ -1622,9 +1736,9 @@
     "limite_por_elemento": 2
   },
   "conclusao_agente": {
-    "agente": "analise-planejamento-agent",
+    "agente": "design-agent",
     "criterios_saida_atendidos": true,
-    "observacoes": "3 marcos, 10 RFs e 9 RNFs alocados (marco-3-padroes-pipeline criado com os 2 RFs padrao e 4 RNFs; backfill de RNF-001/002/003 em marco-1). Ressalvas de viabilidade: 0. Gate aprovado como proposto.",
-    "concluido_em": "2026-08-21T18:35:00Z"
+    "observacoes": "Marco marco-3-padroes-pipeline: stack herdado sem re-perguntar (PHP8.3+Laravel13, fe_be_desacoplado=false), 5 contratos de API (ConfiguracaoManager x2, TemaToggleTopbar, LogAuditoriaRelatorio x2). 1 tabela nova (configuracoes_usuario). SetLocale/tema-toggle antigos evoluem p/ persistencia por usuario, sem quebrar rotas guest.",
+    "concluido_em": "2026-08-21T18:26:56Z"
   }
 }
