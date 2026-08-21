@@ -79,9 +79,33 @@ class LogAuditoriaRelatorio extends Component
     }
 
     /**
+     * SEC-RF-PADRAO-LOG-AUDITORIA-01 (achado do security-agent): wire:model sincroniza a prop
+     * a cada request do Livewire, nao so no clique em "Filtrar" -- sem este hook, render() usa
+     * o valor bruto em where() antes de qualquer validacao (nao ha SQLi, o Eloquent parametriza,
+     * mas viola o criterio_aceite_seguranca "filtros aceitam somente valores previstos antes de
+     * aplicar a consulta"). validateOnly() lanca ValidationException quando o valor sincronizado
+     * nao esta no enum previsto, o que aborta a requisicao antes do Livewire chamar render() --
+     * a prop invalida nunca chega a ser usada na query.
+     */
+    public function updatedTabelaAfetada(): void
+    {
+        $this->validateOnly('tabelaAfetada', [
+            'tabelaAfetada' => ['nullable', 'string', 'in:'.implode(',', self::TABELAS_AUDITADAS)],
+        ]);
+    }
+
+    public function updatedAcao(): void
+    {
+        $this->validateOnly('acao', [
+            'acao' => ['nullable', 'string', 'in:'.implode(',', self::ACOES_AUDITADAS)],
+        ]);
+    }
+
+    /**
      * Contrato/botao "Filtrar" do prototipo (TELA-007): valida os filtros contra os enums
      * previstos antes de aplicar (criterio_aceite_seguranca) -- render() so usa propriedades
-     * ja validadas aqui.
+     * ja validadas aqui (e, para tabelaAfetada/acao, ja validadas tambem a cada sync pelos
+     * hooks updatedTabelaAfetada()/updatedAcao() acima).
      */
     public function filtrar(): void
     {
