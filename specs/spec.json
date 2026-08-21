@@ -2,8 +2,8 @@
   "projeto": {
     "nome": "my-bills",
     "descricao": "Sistema de gerenciamento de contas pessoais com registro aberto, login e senha. Cada usuário só visualiza suas próprias contas. Usuário cadastra o valor líquido recebido e suas despesas, e o sistema apresenta um overview da saúde financeira.",
-    "status_geral": "concluido",
-    "marco_atual": "marco-2-gestao-completa"
+    "status_geral": "em_andamento",
+    "marco_atual": "marco-3-padroes-pipeline"
   },
   "codebase_existente": {
     "detectado": false,
@@ -367,7 +367,9 @@
             "tipo": "enum (pt, en, es)",
             "obrigatorio": true,
             "descricao": "Idioma de exibicao da interface escolhido pelo usuario (RNF-PADRAO-IDIOMA). Default: pt. Hoje o mecanismo existente (SetLocale middleware) le de sessao, sem persistencia por usuario — este campo propoe a persistencia por usuario; storage exato e decisao do design-agent.",
-            "constraints": ["pt | en | es"],
+            "constraints": [
+              "pt | en | es"
+            ],
             "origem": "usuario",
             "status": "aprovado"
           },
@@ -377,7 +379,9 @@
             "tipo": "enum (claro, escuro)",
             "obrigatorio": true,
             "descricao": "Tema visual escolhido pelo usuario. Default: claro. Hoje ja existe alternador no topbar (app-topbar.blade.php) persistido em localStorage do navegador, sem vinculo com o usuario autenticado; este campo propoe trazer a mesma preferencia tambem para a tela de configuracoes, vinculada ao usuario.",
-            "constraints": ["claro | escuro"],
+            "constraints": [
+              "claro | escuro"
+            ],
             "origem": "usuario",
             "status": "aprovado"
           },
@@ -387,7 +391,9 @@
             "tipo": "enum (pequeno, medio, grande)",
             "obrigatorio": true,
             "descricao": "Tamanho de fonte da interface escolhido pelo usuario (RNF-PADRAO-ACESSIBILIDADE-CONFIG). Default: medio.",
-            "constraints": ["pequeno | medio | grande"],
+            "constraints": [
+              "pequeno | medio | grande"
+            ],
             "origem": "usuario",
             "status": "aprovado"
           },
@@ -498,9 +504,24 @@
           }
         ],
         "parametros_consulta": [
-          { "id": "PARAM-AUD-002", "nome": "tabela_afetada", "tipo": "string", "descricao": "Filtro por tabela/entidade afetada." },
-          { "id": "PARAM-AUD-003", "nome": "acao", "tipo": "enum (criacao, alteracao, exclusao)", "descricao": "Filtro por tipo de operacao." },
-          { "id": "PARAM-AUD-004", "nome": "periodo_inicio / periodo_fim", "tipo": "date", "descricao": "Filtro por intervalo de data/hora da operacao (criado_em)." }
+          {
+            "id": "PARAM-AUD-002",
+            "nome": "tabela_afetada",
+            "tipo": "string",
+            "descricao": "Filtro por tabela/entidade afetada."
+          },
+          {
+            "id": "PARAM-AUD-003",
+            "nome": "acao",
+            "tipo": "enum (criacao, alteracao, exclusao)",
+            "descricao": "Filtro por tipo de operacao."
+          },
+          {
+            "id": "PARAM-AUD-004",
+            "nome": "periodo_inicio / periodo_fim",
+            "tipo": "date",
+            "descricao": "Filtro por intervalo de data/hora da operacao (criado_em)."
+          }
         ],
         "observacao": "Todos os 8 campos ja existem e sao gravados hoje pelo AuditoriaObserver — evidencia: app/Models/LogAuditoria.php, app/Observers/AuditoriaObserver.php, migration database/migrations/2026_08_18_135525_create_logs_auditoria_table.php (origem reverso_codebase para o dado ja existente). Nenhum campo novo de escrita e proposto; a novidade deste dominio e o RF de consulta somente-leitura (Fase 4). Aprovado (gate aprovacao_campos, rodada 3)."
       }
@@ -900,7 +921,9 @@
           "CAMPO-CFG-006",
           "CAMPO-CFG-007"
         ],
-        "regras_ref": ["RN-009"],
+        "regras_ref": [
+          "RN-009"
+        ],
         "criterio_aceite": [
           "Tela exibe e permite alterar idioma (PT/EN/ES), tema (claro/escuro), tamanho de fonte (pequeno/medio/grande), alto contraste (on/off) e reducao de movimento (on/off) do usuario autenticado.",
           "Leitura da tela para um usuario sem registro de preferencias ainda cria um registro com os defaults (pt, claro, medio, false, false) antes de exibir (RN-009).",
@@ -921,7 +944,11 @@
           "Seletor de tema, alternador de alto contraste e alternador de reducao de movimento sao operaveis inteiramente por teclado, com o estado atual (selecionado/ativado) perceptivel sem depender da cor ou do destaque visual.",
           "Miniatura/indicador de cada opcao de tema tem rotulo textual identificando o tema, nao depende só da cor da miniatura para diferenciacao."
         ],
-        "rnf_refs": ["RNF-PADRAO-IDIOMA", "RNF-PADRAO-ACESSIBILIDADE-CONFIG", "RNF-004"],
+        "rnf_refs": [
+          "RNF-PADRAO-IDIOMA",
+          "RNF-PADRAO-ACESSIBILIDADE-CONFIG",
+          "RNF-004"
+        ],
         "origem": "padrao_pipeline",
         "status": "aprovado",
         "implementacao_existente": false,
@@ -944,7 +971,9 @@
           "PARAM-AUD-003",
           "PARAM-AUD-004"
         ],
-        "regras_ref": ["RN-010"],
+        "regras_ref": [
+          "RN-010"
+        ],
         "criterio_aceite": [
           "Relatorio lista, para o usuario autenticado, os registros de log com acao, tabela/entidade e data/hora, filtraveis por tabela/entidade (PARAM-AUD-002), acao (PARAM-AUD-003) e periodo (PARAM-AUD-004).",
           "Selecionar um registro abre o detalhe De/Para (valor_anterior e valor_novo).",
@@ -963,7 +992,9 @@
           "Modal de detalhe De/Para prende o foco enquanto aberto, Esc fecha, e o foco retorna ao botao 'Ver De/Para' que o abriu.",
           "Ao aplicar os filtros, o resultado (nova listagem ou o estado de nenhum registro encontrado) e anunciado a quem usa leitor de tela, nao so atualizado visualmente."
         ],
-        "rnf_refs": ["RNF-PADRAO-LOG-AUDITORIA"],
+        "rnf_refs": [
+          "RNF-PADRAO-LOG-AUDITORIA"
+        ],
         "origem": "padrao_pipeline",
         "status": "aprovado",
         "implementacao_existente": false,
@@ -1019,7 +1050,9 @@
         "descricao": "O sistema deve oferecer suporte multi-idioma, com toda a interface (textos, labels, mensagens de validacao/erro) disponivel em Portugues, Ingles e Espanhol, permitindo a troca de idioma pelo proprio usuario nas configuracoes do sistema.",
         "metrica_alvo": "100% das strings de interface (textos estaticos, labels, mensagens de validacao/erro) resolvidas via mecanismo de i18n nos 3 idiomas — nenhuma string de UI hardcoded fora dele; idioma trocavel em runtime, sem exigir novo deploy.",
         "criterio_verificacao": "Alternar o idioma no controle de configuracoes do sistema e confirmar, em cada tela do escopo aprovado, que todo texto (incluindo mensagens de validacao/erro) reflete o idioma selecionado, sem string remanescente do idioma anterior.",
-        "rf_refs": ["RF-PADRAO-CONFIGURACOES"],
+        "rf_refs": [
+          "RF-PADRAO-CONFIGURACOES"
+        ],
         "status": "aprovado",
         "origem": "padrao_pipeline"
       },
@@ -1029,7 +1062,9 @@
         "descricao": "As configuracoes do sistema devem sempre oferecer, de forma visivel e acessivel ao usuario: configuracao de tamanho de fonte, foco visivel em todo elemento interativo, modo de alto contraste e opcao de reducao de movimento (permitindo desativar/reduzir animacoes e transicoes nao essenciais).",
         "metrica_alvo": "4 controles presentes e funcionais na tela de configuracoes do sistema (tamanho de fonte, foco visivel, alto contraste, reducao de movimento); indicador de foco com razao de contraste minima 3:1 contra o fundo adjacente (WCAG 2.2 SC 2.4.11); reducao de movimento honra prefers-reduced-motion do sistema operacional como valor inicial do controle.",
         "criterio_verificacao": "accessibility-agent confirma, na tela de configuracoes do sistema, a presenca e o funcionamento dos 4 controles, o contraste do indicador de foco em elementos interativos-chave, e que a opcao de reducao de movimento efetivamente desativa/reduz animacoes e transicoes nao essenciais.",
-        "rf_refs": ["RF-PADRAO-CONFIGURACOES"],
+        "rf_refs": [
+          "RF-PADRAO-CONFIGURACOES"
+        ],
         "status": "aprovado",
         "origem": "padrao_pipeline"
       },
@@ -1039,7 +1074,9 @@
         "descricao": "O sistema deve manter uma unica tabela de log de auditoria para todo o sistema (nunca uma tabela de log por entidade/modulo), registrando toda operacao de criacao, alteracao e exclusao de dados de negocio: a acao realizada (criacao/alteracao/exclusao), o usuario autenticado que a executou, o valor anterior e o valor novo dos dados alterados (De/Para), a tabela/entidade que teve o registro incluido ou alterado, e a data/hora da operacao. O sistema deve oferecer tambem um relatorio especifico e padrao para consulta a esses dados de log.",
         "metrica_alvo": "100% das operacoes de criacao/alteracao/exclusao de dados de negocio geram um registro na tabela de log unica, com os 5 campos obrigatorios preenchidos (acao, usuario, De/Para, tabela/entidade afetada, data/hora); relatorio padrao de consulta ao log disponivel, em escopo self-audit (RN-010), com filtro por tabela/entidade, acao e periodo.",
         "criterio_verificacao": "Para uma amostra de RFs com operacao de escrita (criar/editar/excluir — RF-001, RF-004 a RF-007), confirmar que cada operacao gerou exatamente um registro correspondente na tabela de log unica, com os 5 campos corretos, e que o relatorio de consulta localiza esse registro pelos filtros padrao (tabela/entidade, acao, periodo) em escopo self-audit (RN-010).",
-        "rf_refs": ["RF-PADRAO-LOG-AUDITORIA"],
+        "rf_refs": [
+          "RF-PADRAO-LOG-AUDITORIA"
+        ],
         "status": "aprovado",
         "origem": "padrao_pipeline"
       },
@@ -1049,7 +1086,9 @@
         "descricao": "O sistema deve atender ao nivel de conformidade WCAG 2.2 AA em todas as telas do escopo aprovado, com suporte funcional a leitor de tela (navegacao completa por teclado, landmarks/regioes e atributos ARIA corretos) e oferecer tema claro e escuro selecionavel pelo usuario, alem dos 4 controles ja garantidos por RNF-PADRAO-ACESSIBILIDADE-CONFIG. Decisao explicita do usuario no gate aprovacao_documentacao (ver documentacao.historico_revisoes).",
         "metrica_alvo": "100% das telas de documentacao.prototipo.telas conformes a WCAG 2.2 nivel AA; contraste minimo 4.5:1 para texto normal e 3:1 para texto grande (>=18pt, ou >=14pt em negrito)/componentes de UI, em ambos os temas; navegacao completa por teclado sem armadilha de foco e leitura correta via NVDA (Windows) e VoiceOver (macOS/iOS) nos fluxos criticos (RF-001, RF-002, RF-004 a RF-008); tema claro e tema escuro disponiveis e selecionaveis pelo usuario, cada um atendendo aos mesmos criterios de contraste.",
         "criterio_verificacao": "accessibility-agent audita cada tela de documentacao.prototipo.telas com ferramenta automatizada de WCAG 2.2 AA mais checagem manual de navegacao por teclado, landmarks/ARIA e leitura por NVDA/VoiceOver nos fluxos criticos; confirma a existencia, o funcionamento do alternador de tema claro/escuro e o contraste de ambos os temas.",
-        "rf_refs": ["RF-PADRAO-CONFIGURACOES"],
+        "rf_refs": [
+          "RF-PADRAO-CONFIGURACOES"
+        ],
         "status": "aprovado",
         "origem": "usuario"
       }
@@ -1112,14 +1151,18 @@
           "id": "TELA-006",
           "nome": "Configuracoes do Sistema",
           "dominio_ref": "DOM-005",
-          "rf_refs": ["RF-PADRAO-CONFIGURACOES"],
+          "rf_refs": [
+            "RF-PADRAO-CONFIGURACOES"
+          ],
           "descricao": "Preferencias do usuario autenticado (RN-009): seletor de idioma (PT/EN/ES), seletor de tema (claro/escuro), tamanho de fonte, alternador de alto contraste e alternador de reducao de movimento, com botao salvar e confirmacao visual anunciada a leitor de tela. Nota explicando que foco visivel e garantia estrutural, sem controle separado nesta tela."
         },
         {
           "id": "TELA-007",
           "nome": "Relatorio de Log/Auditoria",
           "dominio_ref": "DOM-006",
-          "rf_refs": ["RF-PADRAO-LOG-AUDITORIA"],
+          "rf_refs": [
+            "RF-PADRAO-LOG-AUDITORIA"
+          ],
           "descricao": "Consulta somente-leitura ao log de auditoria em escopo self-audit (RN-010): filtros por tabela/entidade, acao e periodo (inicio/fim) — sem filtro por usuario, redundante nesse escopo; listagem com acao/tabela/data-hora; modal de detalhe De/Para por registro, com foco preso e retorno ao botao de origem. Estado vazio quando o filtro nao encontra registro. Nenhum controle de edicao/exclusao."
         }
       ]
@@ -1320,13 +1363,13 @@
         "rodada": 2,
         "resposta": "Aprovar como proposto",
         "respondido_em": "2026-08-21T18:20:00Z",
-        "resultado": "marco-3-padroes-pipeline criado (RF-PADRAO-CONFIGURACOES, RF-PADRAO-LOG-AUDITORIA; RNF-PADRAO-IDIOMA, RNF-PADRAO-ACESSIBILIDADE-CONFIG, RNF-004, RNF-PADRAO-LOG-AUDITORIA). Backfill marco-1.rnf_refs=[RNF-001,002,003]."
+        "resultado": "marco-3-padroes-pipeline criado (RFs/RNFs padrao + RNF-004). Backfill marco-1.rnf_refs=[RNF-001,002,003]."
       }
     ]
   },
   "arquitetura": {
-    "marco_ref": "marco-2-gestao-completa",
-    "status": "aprovado",
+    "marco_ref": "marco-3-padroes-pipeline",
+    "status": "pendente",
     "padroes_tecnologias": {
       "status": "aprovado",
       "observacao": "Gate 'escolha_stack' resolvido (ver historico_revisoes) — usuario escolheu 'Outra combinacao': PHP 8.3 + Laravel 13 full-stack acoplado (Blade + Livewire/Alpine.js), SQLite, Pest. Decisao de projeto inteiro (nao redecidida por marco), herdada por marco-2-gestao-completa e quaisquer marcos futuros. Fase 1 do design-agent (marco-2): stack ja definido/aprovado no marco-1 -- herdado sem re-perguntar nesta invocacao, nenhum gate reaberto; verificada compatibilidade com RF-005/RF-007 (mesmos dominios/RNFs de RF-004/RF-006, ja cobertos) -- sem incompatibilidade nova.",
@@ -1532,230 +1575,37 @@
       ]
     },
     "camadas_servicos": {
-      "status": "aprovado",
-      "descricao": "Marco-2 nao introduz camada nova. Reaproveita integralmente a arquitetura em camadas ja aprovada e implementada no marco-1 (Livewire component = controller+view-model / Eloquent Model / Laravel Policy de autorizacao / Eloquent Model Observer transversal de auditoria), estendendo os dois componentes existentes App\\Livewire\\Renda\\RendaManager e App\\Livewire\\Despesas\\DespesaManager com as acoes de edicao/exclusao ja previstas desde a criacao deles no marco-1 (ver docblocks 'Escopo marco-1-mvp: ... Acoes de editar()/excluir() pertencem a RF-005/RF-007' nos dois componentes, e os metodos view/update/delete ja presentes e nao usados em FonteRendaPolicy/DespesaPolicy desde entao). Nenhuma rota nova: RF-005 reusa GET /renda (renda.index), RF-007 reusa GET /despesas (despesas.index) -- edicao/exclusao sao acoes do mesmo componente Livewire ja montado na pagina de listagem, nao telas separadas.",
-      "servicos_novos": "Nenhum App\\Services novo. RF-005/RF-007 sao update/delete simples sobre uma unica entidade do usuario autenticado, sem calculo/agregacao que justifique extrair logica para fora do componente Livewire -- diferente de RF-008/OverviewService (agrega FonteRenda+Despesa). Mesmo padrao ja usado em RendaManager::criar()/DespesaManager::criar() (marco-1): validacao + Eloquent direto no metodo do componente.",
-      "componentes_estendidos": [
-        {
-          "componente": "App\\Livewire\\Renda\\RendaManager",
-          "rf_ref": "RF-005",
-          "estado_novo": "public ?string $editandoId = null;",
-          "metodos_novos": [
-            "editar(string $id): void -- authorize('update', $fonteRenda) (FonteRendaPolicy::update, ja existente); carrega descricao/valorLiquido/mesReferencia da FonteRenda encontrada (findOrFail escopado por usuario_id == Auth::id(), 404 sem vazar existencia de registro de terceiro, RN-005/RNF-002); seta editandoId; view muda para modo edicao (label/botao 'Salvar alteracoes', botao 'Cancelar' visivel).",
-            "atualizar(): void -- authorize('update', $fonteRenda); valida apenas descricao (required|string|max:120) e valorLiquido (required|numeric|gt:0, RN-002) -- mesReferencia deliberadamente fora do payload de validacao/update (RN-008: campo somente leitura na edicao, nunca escrito pelo metodo de update, reforcando em servidor o que a UI ja desabilita); persiste via $fonteRenda->update([...]) (2 colunas apenas); reseta o formulario para o modo criacao.",
-            "cancelarEdicao(): void -- reseta editandoId e os campos do formulario para o modo criacao, sem persistir nada (equivalente a cancelarEdicaoRenda() do prototipo).",
-            "excluir(string $id): void -- authorize('delete', $fonteRenda) (FonteRendaPolicy::delete, ja existente); $fonteRenda->delete() direto, sem modal de confirmacao -- replica o protototipo aprovado (TELA-004, excluirRenda() nao usa confirm()); se o item excluido era o que estava em edicao, reseta o formulario tambem (equivalente ao 'if (tr.dataset.id === editandoId) resetForm()' do prototipo)."
-          ]
-        },
-        {
-          "componente": "App\\Livewire\\Despesas\\DespesaManager",
-          "rf_ref": "RF-007",
-          "estado_novo": "public ?string $editandoId = null;",
-          "metodos_novos": [
-            "editar(string $id): void -- authorize('update', $despesa) (DespesaPolicy::update, ja existente); carrega descricao/valor/categoria/mesReferencia da Despesa encontrada (findOrFail escopado por usuario_id == Auth::id(), RN-005/RNF-002); seta editandoId; view muda para modo edicao.",
-            "atualizar(): void -- authorize('update', $despesa); valida descricao (required|string|max:120), valor (required|numeric|gt:0, RN-002) e categoria (nullable|string|max:60) -- mesReferencia fora do payload de update (RN-008, mesma logica de RendaManager); persiste via $despesa->update([...]) (3 colunas); reseta o formulario.",
-            "cancelarEdicao(): void -- mesmo padrao de RendaManager, equivalente a cancelarEdicaoDespesa() do prototipo.",
-            "excluir(string $id): void -- authorize('delete', $despesa) (DespesaPolicy::delete, ja existente); $despesa->delete() direto, sem modal de confirmacao -- replica o prototipo aprovado (TELA-005, excluirDespesa())."
-          ]
-        }
-      ],
-      "seguranca_por_camada": "RN-005/RNF-002 (isolamento, IDOR) garantido em 2 camadas independentes por acao de escrita, mesmo padrao ja usado em criar(): (1) a query que localiza o registro (findOrFail) e sempre escopada por usuario_id == Auth::id() -- tentativa de editar/excluir id de outro usuario retorna 404 antes mesmo da Policy rodar; (2) authorize('update'|'delete', $model) via FonteRendaPolicy/DespesaPolicy reforca a mesma restricao (defesa em profundidade, convencoes.autorizacao) -- nenhuma Policy nova, os 2 metodos ja existiam desde o marco-1 sem uso ate agora.",
-      "auditoria_transversal": "Nenhum trabalho adicional necessario: AuditoriaObserver (app/Observers/AuditoriaObserver.php) ja esta registrado no AppServiceProvider para todo model de dado de negocio e escuta updated/deleted genericamente -- FonteRenda::update() e FonteRenda::delete() (assim como Despesa) disparam automaticamente o registro em logs_auditoria com De/Para (RNF-PADRAO-LOG-AUDITORIA), sem qualquer chamada explicita nos novos metodos atualizar()/excluir().",
-      "debito_acessibilidade_transversal_a_corrigir": "ACC-RF-008-01 (accessibility-agent, RF-008/marco-1) registrou achado bloqueante de fonte nao configuravel (classes Tailwind text-[**px] em vez de unidades relativas, violando arquitetura.padroes_tecnologias.acessibilidade.fonte_configuravel=true) e documentou observacao_transversal explicita de que resources/views/livewire/renda/renda-manager.blade.php e resources/views/livewire/despesas/despesa-manager.blade.php (RF-004/RF-006, ja mergeados) tem o mesmo padrao (34 ocorrencias de text-[**px] confirmadas nos 2 arquivos nesta invocacao) e nao foram corrigidos por exceder o escopo daquele RF. Como RF-005/RF-007 editam exatamente esses 2 arquivos (para adicionar os controles de editar/excluir), o dev-agent deve converter toda ocorrencia de text-[**px] para a unidade rem equivalente (mesma formula ja aplicada em overview-financeiro.blade.php: valor_px / 16) nesses 2 arquivos como parte da implementacao de RF-005/RF-007 -- nao um RF/tarefa separada, e nao redesenho de tela (mesmo tamanho visual, so a unidade), apenas quitacao do debito ja identificado nos arquivos que este marco esta tocando de qualquer forma."
+      "status": "pendente"
     },
     "modelagem_dados": {
-      "status": "aprovado",
-      "descricao": "Marco-2 nao introduz entidade nem coluna nova. RF-005 (edicao/exclusao de fonte de renda) e RF-007 (edicao/exclusao de despesa) operam sobre as mesmas tabelas ja criadas e aprovadas no marco-1 (fontes_renda, despesas), sem alteracao de schema -- apenas update/delete de linhas ja existentes.",
-      "cruzamento_com_migrations_existentes": "Migrations reais conferidas nesta invocacao (database/migrations/2026_08_19_140000_create_fontes_renda_table.php, database/migrations/2026_08_19_150000_create_despesas_table.php, database/migrations/2026_08_18_135525_create_logs_auditoria_table.php): colunas e constraints batem exatamente com campos.dominios.DOM-002/DOM-003 aprovados (CHECK valor > 0 em banco para valor_liquido/valor, RN-002 reforcada em SQL; indice composto (usuario_id, mes_referencia) para RNF-003; FK usuario_id -> users ON DELETE CASCADE). Nenhuma divergencia encontrada -- nada a levar ao gate.",
-      "entidades": [
-        {
-          "tabela": "fontes_renda",
-          "dominio_ref": "DOM-002",
-          "status": "pre-existente, sem alteracao neste marco",
-          "colunas": "id (uuid, PK), usuario_id (uuid, FK -> users, cascade), descricao (varchar 120), valor_liquido (decimal 12,2, CHECK > 0), mes_referencia (varchar 7, YYYY-MM), criado_em, atualizado_em",
-          "operacoes_marco_2": "UPDATE (descricao, valor_liquido, atualizado_em -- mes_referencia nunca escrito na edicao, RN-008) e DELETE, ambos restritos a usuario_id == Auth::id() (RN-005)."
-        },
-        {
-          "tabela": "despesas",
-          "dominio_ref": "DOM-003",
-          "status": "pre-existente, sem alteracao neste marco",
-          "colunas": "id (uuid, PK), usuario_id (uuid, FK -> users, cascade), descricao (varchar 120), valor (decimal 12,2, CHECK > 0), categoria (varchar 60, nullable), mes_referencia (varchar 7, YYYY-MM), criado_em, atualizado_em",
-          "operacoes_marco_2": "UPDATE (descricao, valor, categoria, atualizado_em -- mes_referencia nunca escrito na edicao, RN-008) e DELETE, ambos restritos a usuario_id == Auth::id() (RN-005)."
-        },
-        {
-          "tabela": "logs_auditoria",
-          "dominio_ref": "transversal (RNF-PADRAO-LOG-AUDITORIA, sem dominio_ref proprio -- entidade unica de projeto inteiro, nao por modulo)",
-          "status": "pre-existente (marco-1), passa a receber tambem os registros de UPDATE/DELETE de fontes_renda/despesas gerados por RF-005/RF-007 via AuditoriaObserver ja registrado -- nenhuma alteracao de schema ou de mecanismo necessaria.",
-          "colunas": "acao (enum criacao|alteracao|exclusao), usuario_id (FK -> users), tabela_afetada, registro_id, valor_anterior (json, nullable), valor_novo (json, nullable), criado_em."
-        }
-      ]
+      "status": "pendente"
     },
     "documentacao_tecnica": {
-      "status": "aprovado",
-      "descricao": "fe_be_desacoplado = false (Blade+Livewire acoplado): nao ha contrato de API REST/GraphQL separado. O 'contrato' de cada acao e a assinatura publica do metodo do componente Livewire (payload = propriedades publicas do componente sincronizadas via wire:model, response = re-render do template Blade), documentado abaixo por metodo, com validacao e efeito, cada um referenciando o RF que implementa (rf_ref) -- mesmo formato ja usado para RF-004/RF-006/RF-008 nesta stack.",
-      "contratos": [
-        {
-          "componente": "App\\Livewire\\Renda\\RendaManager",
-          "acao": "editar(string $id)",
-          "rf_ref": "RF-005",
-          "tela_ref": "TELA-004",
-          "trigger": "wire:click=\"editar($fonte->id)\" no botao 'Editar' de cada linha da listagem",
-          "payload": "id: uuid da FonteRenda (vem do atributo da linha renderizada, nunca de input livre do usuario)",
-          "autorizacao": "authorize('update', $fonteRenda) apos findOrFail escopado por usuario_id == Auth::id() -- 404 sem authorize rodar se o registro nao pertencer ao usuario (RN-005/RNF-002)",
-          "efeito": "Popula $descricao/$valorLiquido/$mesReferencia com os dados atuais do registro; seta $editandoId; view alterna para modo edicao com mes_referencia desabilitado (RN-008, nota explicativa visivel, conforme TELA-004 ja aprovada) e botao 'Cancelar' visivel."
-        },
-        {
-          "componente": "App\\Livewire\\Renda\\RendaManager",
-          "acao": "atualizar()",
-          "rf_ref": "RF-005",
-          "tela_ref": "TELA-004",
-          "trigger": "wire:submit=\"atualizar\" no formulario, quando $editandoId != null",
-          "payload": "descricao: string (required, max 120); valorLiquido: numeric (required, gt:0 -- RN-002); mesReferencia: NAO faz parte do payload de update (somente leitura, RN-008)",
-          "validacao": "Mesmas mensagens de erro ja aprovadas em criar() ('o valor deve ser maior que zero' para valorLiquido<=0, RN-002)",
-          "autorizacao": "authorize('update', $fonteRenda), mesma FonteRendaPolicy",
-          "efeito_sucesso": "FonteRenda::update(['descricao' => ..., 'valor_liquido' => ...]) -- gera automaticamente 1 registro em logs_auditoria (acao=alteracao, De/Para das 2 colunas) via AuditoriaObserver; formulario reseta para modo criacao; listagem re-renderiza com o valor novo; indicadores do Overview (RF-008) do mes correspondente refletem a mudanca na proxima consulta (RF-008 sempre calcula em tempo real a partir de fontes_renda/despesas, sem cache).",
-          "efeito_erro": "Mensagens de validacao exibidas inline (mesmo padrao ja aprovado em criar()); nada persistido."
-        },
-        {
-          "componente": "App\\Livewire\\Renda\\RendaManager",
-          "acao": "cancelarEdicao()",
-          "rf_ref": "RF-005",
-          "tela_ref": "TELA-004",
-          "trigger": "wire:click=\"cancelarEdicao\" no botao 'Cancelar', visivel apenas em modo edicao",
-          "payload": "nenhum",
-          "efeito": "Reseta $editandoId e os campos do formulario para o estado de criacao, sem persistir nada."
-        },
-        {
-          "componente": "App\\Livewire\\Renda\\RendaManager",
-          "acao": "excluir(string $id)",
-          "rf_ref": "RF-005",
-          "tela_ref": "TELA-004",
-          "trigger": "wire:click=\"excluir($fonte->id)\" no botao 'Excluir' de cada linha -- sem modal de confirmacao, conforme prototipo aprovado (TELA-004/excluirRenda() nao usa confirm())",
-          "payload": "id: uuid da FonteRenda",
-          "autorizacao": "authorize('delete', $fonteRenda) apos findOrFail escopado por usuario_id == Auth::id()",
-          "efeito_sucesso": "FonteRenda::delete() -- gera automaticamente 1 registro em logs_auditoria (acao=exclusao, valor_anterior=snapshot) via AuditoriaObserver; se o item excluido era o que estava em edicao, formulario tambem reseta; listagem re-renderiza sem a linha; se a listagem ficar vazia, estado vazio e exibido (mesmo componente/markup do estado vazio ja usado em criar()); indicadores do Overview (RF-008) do mes correspondente deixam de contar esse valor na proxima consulta."
-        },
-        {
-          "componente": "App\\Livewire\\Despesas\\DespesaManager",
-          "acao": "editar(string $id)",
-          "rf_ref": "RF-007",
-          "tela_ref": "TELA-005",
-          "trigger": "wire:click=\"editar($despesa->id)\" no botao 'Editar' de cada linha da listagem",
-          "payload": "id: uuid da Despesa",
-          "autorizacao": "authorize('update', $despesa) apos findOrFail escopado por usuario_id == Auth::id() (RN-005/RNF-002)",
-          "efeito": "Popula $descricao/$valor/$categoria/$mesReferencia com os dados atuais; seta $editandoId; view alterna para modo edicao com mes_referencia desabilitado (RN-008, conforme TELA-005 ja aprovada)."
-        },
-        {
-          "componente": "App\\Livewire\\Despesas\\DespesaManager",
-          "acao": "atualizar()",
-          "rf_ref": "RF-007",
-          "tela_ref": "TELA-005",
-          "trigger": "wire:submit=\"atualizar\" no formulario, quando $editandoId != null",
-          "payload": "descricao: string (required, max 120); valor: numeric (required, gt:0 -- RN-002); categoria: string opcional (nullable, max 60); mesReferencia: NAO faz parte do payload de update (RN-008)",
-          "autorizacao": "authorize('update', $despesa), mesma DespesaPolicy",
-          "efeito_sucesso": "Despesa::update(['descricao' => ..., 'valor' => ..., 'categoria' => ...]) -- gera 1 registro em logs_auditoria (acao=alteracao) via AuditoriaObserver; formulario reseta; Overview reflete na proxima consulta.",
-          "efeito_erro": "Mensagens de validacao inline, mesmo padrao de criar(); nada persistido."
-        },
-        {
-          "componente": "App\\Livewire\\Despesas\\DespesaManager",
-          "acao": "cancelarEdicao()",
-          "rf_ref": "RF-007",
-          "tela_ref": "TELA-005",
-          "trigger": "wire:click=\"cancelarEdicao\" no botao 'Cancelar'",
-          "payload": "nenhum",
-          "efeito": "Reseta $editandoId e os campos do formulario, sem persistir nada."
-        },
-        {
-          "componente": "App\\Livewire\\Despesas\\DespesaManager",
-          "acao": "excluir(string $id)",
-          "rf_ref": "RF-007",
-          "tela_ref": "TELA-005",
-          "trigger": "wire:click=\"excluir($despesa->id)\" no botao 'Excluir' de cada linha -- sem modal de confirmacao, conforme prototipo aprovado (TELA-005/excluirDespesa())",
-          "payload": "id: uuid da Despesa",
-          "autorizacao": "authorize('delete', $despesa) apos findOrFail escopado por usuario_id == Auth::id()",
-          "efeito_sucesso": "Despesa::delete() -- gera 1 registro em logs_auditoria (acao=exclusao) via AuditoriaObserver; formulario reseta se aplicavel; listagem re-renderiza; estado vazio exibido se aplicavel; Overview reflete na proxima consulta."
-        }
-      ],
-      "cobertura_telas": "TELA-004 (Renda, rf_refs RF-003/RF-004/RF-005) e TELA-005 (Despesas, rf_refs RF-003/RF-006/RF-007) -- ambas ja descrevem 'editar/excluir funcionais' e o modo de edicao com mes/periodo somente leitura (RN-008, nota explicativa) em documentacao.prototipo.telas; os 8 contratos acima cobrem integralmente os dados/acoes de RF-005 e RF-007 nessas 2 telas. Nenhuma tela nova necessaria neste marco."
+      "status": "pendente"
     }
   },
   "desenvolvimento": {
-    "marco_ref": "marco-2-gestao-completa",
-    "status": "em_andamento",
+    "marco_ref": "marco-3-padroes-pipeline",
+    "status": "pendente",
     "pausado": false,
     "ordem_execucao": [
-      "RF-005",
-      "RF-007"
+      "RF-PADRAO-CONFIGURACOES",
+      "RF-PADRAO-LOG-AUDITORIA"
     ],
     "checkpoint_lote": {},
     "historico_revisoes": []
   },
   "testes": {
-    "marco_ref": "marco-2-gestao-completa",
-    "status": "concluido",
+    "marco_ref": "marco-3-padroes-pipeline",
+    "status": "pendente",
     "cobertura_minima": 90,
     "cobertura_meta": 100,
-    "fluxos": [
-      {
-        "fluxo_ref": "FLUXO-003",
-        "rf_refs": ["RF-005"],
-        "status": "testado",
-        "observacoes": "Corte: dominio_ref muda de DOM-002 p/ DOM-003 entre RF-005 e RF-007 em ordem_execucao. Fluxo unico-RF: edicao/exclusao de fonte de renda."
-      },
-      {
-        "fluxo_ref": "FLUXO-004",
-        "rf_refs": ["RF-007"],
-        "status": "testado",
-        "observacoes": "Corte: dominio_ref muda de DOM-002 p/ DOM-003 entre RF-005 e RF-007 em ordem_execucao. Fluxo unico-RF: edicao/exclusao de despesa."
-      }
-    ],
+    "fluxos": [],
     "testes_sistema": {
-      "itens": [
-        {
-          "fluxo_ref": "FLUXO-004",
-          "status": "passou",
-          "branch_ref": "test/fluxo-004-sistema",
-          "commit_ref": "500303871fcff08eb4b67bf3feba88793e4ef4d5"
-        },
-        {
-          "fluxo_ref": "FLUXO-003",
-          "status": "passou",
-          "branch_ref": "test/fluxo-003-sistema",
-          "commit_ref": "75063dab95c2d3275c8bddc1d64883048b0d139d"
-        }
-      ]
+      "itens": []
     },
     "seguranca": {
-      "itens": [
-        {
-          "fluxo_ref": "FLUXO-004",
-          "rnf_ref": "",
-          "verificacao": "Pentest de composicao (listar->editar->excluir despesa, RF-007): tentativa de IDOR forcando editandoId/id de despesa de outro usuario via propriedade publica Livewire manipulada; checagem de dupla-defesa (query escopada + Policy) em editar/atualizar/excluir; rotas /despesas atras de auth; logout invalida sessao e regenera token/CSRF.",
-          "criticidade": "nenhum",
-          "status": "atendido"
-        },
-        {
-          "fluxo_ref": "FLUXO-004",
-          "rnf_ref": "RNF-002",
-          "verificacao": "RNF-002 (IDOR sobre Renda/Despesas/Overview) verificado no nivel de fluxo para RF-007: editar()/atualizar()/excluir() re-consultam Despesa::where('usuario_id', Auth::id()) antes de qualquer authorize(), mesmo com editandoId/id forcado para registro de outro usuario -- ModelNotFoundException, sem vazar existencia do registro alheio.",
-          "criticidade": "nenhum",
-          "status": "atendido"
-        },
-        {
-          "fluxo_ref": "FLUXO-003",
-          "rnf_ref": "",
-          "verificacao": "Pentest de composicao (listar->editar->excluir renda, RF-005), analise estatica (php indisponivel no ambiente desta execucao): editandoId/campos publicos manipulaveis nao vazam dado de terceiro (form ja controlado pelo atacante); rota /renda atras de auth; Gate::policy/Observer registrados em AppServiceProvider; nenhuma rota edita/exclui logs_auditoria.",
-          "criticidade": "nenhum",
-          "status": "atendido"
-        },
-        {
-          "fluxo_ref": "FLUXO-003",
-          "rnf_ref": "RNF-002",
-          "verificacao": "RNF-002 (IDOR) verificado no nivel de fluxo para RF-005, por analise estatica: editar()/atualizar()/excluir() re-consultam FonteRenda::where('usuario_id', Auth::id()) antes de authorize(), mesmo com editandoId forcado para registro de outro usuario -- ModelNotFoundException (regressao ja coberta em RendaManagerTest.php). Nenhum achado novo de composicao alem do ja confirmado na Fase 1 (RF isolado).",
-          "criticidade": "nenhum",
-          "status": "atendido"
-        }
-      ]
+      "itens": []
     },
     "historico_revisoes": []
   },
