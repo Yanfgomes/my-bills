@@ -2,7 +2,7 @@
   "projeto": {
     "nome": "my-bills",
     "descricao": "Sistema de gerenciamento de contas pessoais com registro aberto, login e senha. Cada usuário só visualiza suas próprias contas. Usuário cadastra o valor líquido recebido e suas despesas, e o sistema apresenta um overview da saúde financeira.",
-    "status_geral": "em_andamento",
+    "status_geral": "concluido",
     "marco_atual": "marco-2-gestao-completa"
   },
   "codebase_existente": {
@@ -936,7 +936,7 @@
             "RF-007"
           ],
           "ordem": 2,
-          "status": "em_andamento"
+          "status": "concluido"
         }
       ],
       "racional": "Marco 1 (MVP) entrega o fluxo de uso completo e minimo que realiza a proposta de valor do sistema: cadastro (RF-001) -> login (RF-002) -> isolamento de dados, transversal a partir daqui (RF-003) -> lancar renda (RF-004) -> lancar despesa (RF-006) -> ver overview de saude financeira (RF-008). Marco 2 adiciona a capacidade de corrigir/remover lancamentos ja feitos (RF-005 edicao/exclusao de renda, RF-007 edicao/exclusao de despesa), na mesma ordem de dominio (renda antes de despesa) usada no Marco 1. Nenhum RF foi classificado inviavel; nenhum backlog futuro foi identificado alem dos 8 RFs aprovados — todos pertencem a um dos dois marcos."
