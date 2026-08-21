@@ -5,11 +5,13 @@ namespace App\Providers;
 use App\Models\ConfiguracaoUsuario;
 use App\Models\Despesa;
 use App\Models\FonteRenda;
+use App\Models\LogAuditoria;
 use App\Models\User;
 use App\Observers\AuditoriaObserver;
 use App\Policies\ConfiguracaoUsuarioPolicy;
 use App\Policies\DespesaPolicy;
 use App\Policies\FonteRendaPolicy;
+use App\Policies\LogAuditoriaPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -51,5 +53,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(FonteRenda::class, FonteRendaPolicy::class);
         Gate::policy(Despesa::class, DespesaPolicy::class);
         Gate::policy(ConfiguracaoUsuario::class, ConfiguracaoUsuarioPolicy::class);
+        // RF-PADRAO-LOG-AUDITORIA/RN-010 (escopo self-audit).
+        Gate::policy(LogAuditoria::class, LogAuditoriaPolicy::class);
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LogoutController;
+use App\Livewire\Auditoria\LogAuditoriaRelatorio;
 use App\Livewire\Auth\LoginForm;
 use App\Livewire\Auth\RegistroForm;
 use App\Livewire\Configuracoes\ConfiguracaoManager;
@@ -46,6 +47,12 @@ Route::get('/despesas', DespesaManager::class)
 Route::get('/configuracoes', ConfiguracaoManager::class)
     ->middleware('auth')
     ->name('configuracoes.show');
+
+// RF-PADRAO-LOG-AUDITORIA (marco-3-padroes-pipeline). Mesma convencao de nomenclatura de
+// renda.index/despesas.index (dot notation por dominio).
+Route::get('/auditoria', LogAuditoriaRelatorio::class)
+    ->middleware('auth')
+    ->name('auditoria.index');
 
 Route::get('/', function () {
     return redirect()->route(auth()->check() ? 'overview' : 'registro');
