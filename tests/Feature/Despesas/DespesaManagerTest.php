@@ -16,7 +16,11 @@ use Livewire\Livewire;
  * RN-005 (isolamento por usuario, Policy + escopo de query), incluindo defesa em
  * profundidade (CHECK de banco e authorize() em cada acao).
  *
- * Escopo marco-1-mvp: apenas listar+criar (editar/excluir sao RF-007, fora deste RF).
+ * Blocos "RF-007:" abaixo cobrem editar()/atualizar()/cancelarEdicao()/excluir() -- regressao
+ * automatizada do que o security-agent ja confirmou manualmente (pentest) no ciclo de QA deste
+ * RF: isolamento por usuario (IDOR) em editar/atualizar/excluir, imutabilidade do mes/periodo em
+ * edicao (RN-008) e rejeicao de valor invalido em atualizar() (RN-002). Espelha o padrao ja
+ * aprovado e testado em RF-005 (App\Livewire\Renda\RendaManager).
  */
 uses(RefreshDatabase::class);
 
@@ -385,4 +389,366 @@ it('ordena a listagem por mes_referencia desc, depois criado_em desc', function 
         $recenteMaisAntiga->id,
         $antiga->id,
     ]);
+});
+
+// RF-007 -----------------------------------------------------------------------------------
+
+it('RF-007: editar() popula o formulario e entra em modo edicao', function () {
+    $usuario = User::factory()->create();
+    $this->actingAs($usuario);
+
+    $despesa = Despesa::create([
+        'usuario_id' => $usuario->id,
+        'descricao' => 'Aluguel',
+        'valor' => 1500,
+        'categoria' => 'Moradia',
+        'mes_referencia' => '2026-08',
+    ]);
+
+    Livewire::test(DespesaManager::class)
+        ->call('editar', $despesa->id)
+        ->assertSet('descricao', 'Aluguel')
+        ->assertSet('valor', '1500.00')
+        ->assertSet('categoria', 'Moradia')
+        ->assertSet('mesReferencia', '2026-08')
+        ->assertSet('editandoId', $despesa->id)
+        ->assertSeeHtml('despesa-mes-nota');
+});
+
+it('RF-007: atualizar() altera descricao, valor e categoria, reflete na listagem e registra log de auditoria', function () {
+    $usuario = User::factory()->create();
+    $this->actingAs($usuario);
+
+    $despesa = Despesa::create([
+        'usuario_id' => $usuario->id,
+        'descricao' => 'Aluguel',
+        'valor' => 1500,
+        'categoria' => 'Moradia',
+        'mes_referencia' => '2026-08',
+    ]);
+
+    Livewire::test(DespesaManager::class)
+        ->call('editar', $despesa->id)
+        ->set('descricao', 'Aluguel reajustado')
+        ->set('valor', '1650.90')
+        ->set('categoria', 'Casa')
+        ->call('atualizar')
+        ->assertHasNoErrors()
+        ->assertSet('editandoId', null)
+        ->assertSee('Aluguel reajustado');
+
+    $despesa->refresh();
+
+    expect($despesa->descricao)->toBe('Aluguel reajustado')
+        ->and((float) $despesa->valor)->toBe(1650.90)
+        ->and($despesa->categoria)->toBe('Casa');
+
+    $log = LogAuditoria::where('tabela_afetada', 'despesas')
+        ->where('registro_id', $despesa->id)
+        ->where('acao', 'alteracao')
+        ->first();
+
+    expect($log)->not->toBeNull()
+        ->and($log->usuario_id)->toBe($usuario->id)
+        ->and($log->valor_novo['descricao'])->toBe('Aluguel reajustado');
+});
+
+it('RF-007: atualizar() permite limpar categoria (torna-se nula)', function () {
+    $usuario = User::factory()->create();
+    $this->actingAs($usuario);
+
+    $despesa = Despesa::create([
+        'usuario_id' => $usuario->id,
+        'descricao' => 'Aluguel',
+        'valor' => 1500,
+        'categoria' => 'Moradia',
+        'mes_referencia' => '2026-08',
+    ]);
+
+    Livewire::test(DespesaManager::class)
+        ->call('editar', $despesa->id)
+        ->set('categoria', '')
+        ->call('atualizar')
+        ->assertHasNoErrors();
+
+    expect($despesa->refresh()->categoria)->toBeNull();
+});
+
+it('RF-007/RN-008: atualizar() ignora tentativa de alterar mesReferencia via payload manipulado, mantendo o mes original', function () {
+    $usuario = User::factory()->create();
+    $this->actingAs($usuario);
+
+    $despesa = Despesa::create([
+        'usuario_id' => $usuario->id,
+        'descricao' => 'Aluguel',
+        'valor' => 1500,
+        'mes_referencia' => '2026-08',
+    ]);
+
+    Livewire::test(DespesaManager::class)
+        ->call('editar', $despesa->id)
+        ->set('mesReferencia', '2026-12') // manipulacao direta da propriedade publica, campo e somente leitura na view (disabled)
+        ->set('descricao', 'Aluguel ajustado')
+        ->set('valor', '1600')
+        ->call('atualizar')
+        ->assertHasNoErrors();
+
+    $despesa->refresh();
+
+    expect($despesa->mes_referencia)->toBe('2026-08')
+        ->and($despesa->descricao)->toBe('Aluguel ajustado');
+});
+
+it('RF-007/RN-002: atualizar() rejeita valor igual a zero, sem persistir alteracao', function () {
+    $usuario = User::factory()->create();
+    $this->actingAs($usuario);
+
+    $despesa = Despesa::create([
+        'usuario_id' => $usuario->id,
+        'descricao' => 'Aluguel',
+        'valor' => 1500,
+        'mes_referencia' => '2026-08',
+    ]);
+
+    Livewire::test(DespesaManager::class)
+        ->call('editar', $despesa->id)
+        ->set('valor', '0')
+        ->call('atualizar')
+        ->assertHasErrors(['valor'])
+        ->assertSee('o valor deve ser maior que zero');
+
+    expect((float) $despesa->refresh()->valor)->toBe(1500.0);
+});
+
+it('RF-007/RN-002: atualizar() rejeita valor negativo, sem persistir alteracao', function () {
+    $usuario = User::factory()->create();
+    $this->actingAs($usuario);
+
+    $despesa = Despesa::create([
+        'usuario_id' => $usuario->id,
+        'descricao' => 'Aluguel',
+        'valor' => 1500,
+        'mes_referencia' => '2026-08',
+    ]);
+
+    Livewire::test(DespesaManager::class)
+        ->call('editar', $despesa->id)
+        ->set('valor', '-10')
+        ->call('atualizar')
+        ->assertHasErrors(['valor']);
+
+    expect((float) $despesa->refresh()->valor)->toBe(1500.0);
+});
+
+it('RF-007: atualizar() rejeita descricao ausente, sem persistir alteracao', function () {
+    $usuario = User::factory()->create();
+    $this->actingAs($usuario);
+
+    $despesa = Despesa::create([
+        'usuario_id' => $usuario->id,
+        'descricao' => 'Aluguel',
+        'valor' => 1500,
+        'mes_referencia' => '2026-08',
+    ]);
+
+    Livewire::test(DespesaManager::class)
+        ->call('editar', $despesa->id)
+        ->set('descricao', '')
+        ->call('atualizar')
+        ->assertHasErrors(['descricao']);
+
+    expect($despesa->refresh()->descricao)->toBe('Aluguel');
+});
+
+it('RF-007: atualizar() e um no-op seguro quando chamado sem estar em modo edicao (editandoId nulo)', function () {
+    $usuario = User::factory()->create();
+    $this->actingAs($usuario);
+
+    $despesa = Despesa::create([
+        'usuario_id' => $usuario->id,
+        'descricao' => 'Aluguel',
+        'valor' => 1500,
+        'mes_referencia' => '2026-08',
+    ]);
+
+    Livewire::test(DespesaManager::class)
+        ->assertSet('editandoId', null)
+        ->call('atualizar')
+        ->assertHasNoErrors();
+
+    expect($despesa->refresh()->descricao)->toBe('Aluguel');
+});
+
+it('RF-007: cancelarEdicao() reseta o formulario para o estado de criacao sem persistir nada', function () {
+    $usuario = User::factory()->create();
+    $this->actingAs($usuario);
+
+    $despesa = Despesa::create([
+        'usuario_id' => $usuario->id,
+        'descricao' => 'Aluguel',
+        'valor' => 1500,
+        'mes_referencia' => '2026-08',
+    ]);
+
+    Livewire::test(DespesaManager::class)
+        ->call('editar', $despesa->id)
+        ->set('descricao', 'Rascunho nao salvo')
+        ->call('cancelarEdicao')
+        ->assertSet('descricao', '')
+        ->assertSet('valor', '')
+        ->assertSet('categoria', '')
+        ->assertSet('mesReferencia', '')
+        ->assertSet('editandoId', null)
+        ->assertHasNoErrors();
+
+    expect($despesa->refresh()->descricao)->toBe('Aluguel');
+});
+
+it('RF-007: excluir() remove a despesa, tira ela da listagem e registra log de auditoria', function () {
+    $usuario = User::factory()->create();
+    $this->actingAs($usuario);
+
+    $despesa = Despesa::create([
+        'usuario_id' => $usuario->id,
+        'descricao' => 'Aluguel',
+        'valor' => 1500,
+        'mes_referencia' => '2026-08',
+    ]);
+
+    Livewire::test(DespesaManager::class)
+        ->call('excluir', $despesa->id)
+        ->assertDontSeeHtml('data-cy="despesa-linha-'.$despesa->id.'"')
+        ->assertSeeHtml('data-cy="despesa-vazio"');
+
+    expect(Despesa::find($despesa->id))->toBeNull();
+
+    $log = LogAuditoria::where('tabela_afetada', 'despesas')
+        ->where('registro_id', $despesa->id)
+        ->where('acao', 'exclusao')
+        ->first();
+
+    expect($log)->not->toBeNull()
+        ->and($log->usuario_id)->toBe($usuario->id)
+        ->and($log->valor_anterior['descricao'])->toBe('Aluguel');
+});
+
+it('RF-007: excluir() reseta o formulario quando o item excluido era o que estava em edicao', function () {
+    $usuario = User::factory()->create();
+    $this->actingAs($usuario);
+
+    $despesa = Despesa::create([
+        'usuario_id' => $usuario->id,
+        'descricao' => 'Aluguel',
+        'valor' => 1500,
+        'mes_referencia' => '2026-08',
+    ]);
+
+    Livewire::test(DespesaManager::class)
+        ->call('editar', $despesa->id)
+        ->assertSet('editandoId', $despesa->id)
+        ->call('excluir', $despesa->id)
+        ->assertSet('editandoId', null)
+        ->assertSet('descricao', '')
+        ->assertSet('valor', '')
+        ->assertSet('categoria', '')
+        ->assertSet('mesReferencia', '');
+});
+
+it('RF-007: excluir() nao reseta o formulario quando o item excluido nao era o que estava em edicao', function () {
+    $usuario = User::factory()->create();
+    $this->actingAs($usuario);
+
+    $despesaEmEdicao = Despesa::create([
+        'usuario_id' => $usuario->id,
+        'descricao' => 'Aluguel',
+        'valor' => 1500,
+        'mes_referencia' => '2026-08',
+    ]);
+    $outraDespesa = Despesa::create([
+        'usuario_id' => $usuario->id,
+        'descricao' => 'Mercado',
+        'valor' => 400,
+        'mes_referencia' => '2026-08',
+    ]);
+
+    Livewire::test(DespesaManager::class)
+        ->call('editar', $despesaEmEdicao->id)
+        ->call('excluir', $outraDespesa->id)
+        ->assertSet('editandoId', $despesaEmEdicao->id)
+        ->assertSet('descricao', 'Aluguel');
+
+    expect(Despesa::find($outraDespesa->id))->toBeNull()
+        ->and(Despesa::find($despesaEmEdicao->id))->not->toBeNull();
+});
+
+it('RF-007/RN-005: editar() de despesa de outro usuario lanca ModelNotFoundException (nao vaza existencia do registro)', function () {
+    $alice = User::factory()->create();
+    $bob = User::factory()->create();
+
+    $despesaDeBob = Despesa::create([
+        'usuario_id' => $bob->id,
+        'descricao' => 'Aluguel do Bob',
+        'valor' => 1200,
+        'mes_referencia' => '2026-08',
+    ]);
+
+    $this->actingAs($alice);
+
+    expect(fn () => Livewire::test(DespesaManager::class)->call('editar', $despesaDeBob->id))
+        ->toThrow(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
+});
+
+it('RF-007/RN-005: atualizar() nao permite editar despesa de outro usuario mesmo forcando editandoId', function () {
+    $alice = User::factory()->create();
+    $bob = User::factory()->create();
+
+    $despesaDeBob = Despesa::create([
+        'usuario_id' => $bob->id,
+        'descricao' => 'Aluguel do Bob',
+        'valor' => 1200,
+        'mes_referencia' => '2026-08',
+    ]);
+
+    $this->actingAs($alice);
+
+    expect(fn () => Livewire::test(DespesaManager::class)
+        ->set('editandoId', $despesaDeBob->id)
+        ->set('descricao', 'Sequestrado pela Alice')
+        ->set('valor', '1')
+        ->call('atualizar'))
+        ->toThrow(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
+
+    expect($despesaDeBob->refresh()->descricao)->toBe('Aluguel do Bob');
+});
+
+it('RF-007/RN-005: excluir() de despesa de outro usuario lanca ModelNotFoundException, sem apagar o registro', function () {
+    $alice = User::factory()->create();
+    $bob = User::factory()->create();
+
+    $despesaDeBob = Despesa::create([
+        'usuario_id' => $bob->id,
+        'descricao' => 'Aluguel do Bob',
+        'valor' => 1200,
+        'mes_referencia' => '2026-08',
+    ]);
+
+    $this->actingAs($alice);
+
+    expect(fn () => Livewire::test(DespesaManager::class)->call('excluir', $despesaDeBob->id))
+        ->toThrow(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
+
+    expect(Despesa::find($despesaDeBob->id))->not->toBeNull();
+});
+
+it('RF-007: editar()/atualizar()/excluir() de id inexistente lanca ModelNotFoundException, mesmo comportamento de id de outro usuario', function () {
+    $usuario = User::factory()->create();
+    $this->actingAs($usuario);
+
+    $idInexistente = (string) \Illuminate\Support\Str::uuid();
+
+    expect(fn () => Livewire::test(DespesaManager::class)->call('editar', $idInexistente))
+        ->toThrow(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
+
+    expect(fn () => Livewire::test(DespesaManager::class)->call('excluir', $idInexistente))
+        ->toThrow(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
 });
