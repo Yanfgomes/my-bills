@@ -3,7 +3,7 @@
     "nome": "my-bills",
     "descricao": "Sistema de gerenciamento de contas pessoais com registro aberto, login e senha. Cada usuário só visualiza suas próprias contas. Usuário cadastra o valor líquido recebido e suas despesas, e o sistema apresenta um overview da saúde financeira.",
     "status_geral": "em_andamento",
-    "marco_atual": "marco-1-mvp"
+    "marco_atual": "marco-2-gestao-completa"
   },
   "codebase_existente": {
     "detectado": false,
@@ -926,7 +926,7 @@
             "RF-008"
           ],
           "ordem": 1,
-          "status": "em_andamento"
+          "status": "concluido"
         },
         {
           "id": "marco-2-gestao-completa",
@@ -936,7 +936,7 @@
             "RF-007"
           ],
           "ordem": 2,
-          "status": "aprovado"
+          "status": "em_andamento"
         }
       ],
       "racional": "Marco 1 (MVP) entrega o fluxo de uso completo e minimo que realiza a proposta de valor do sistema: cadastro (RF-001) -> login (RF-002) -> isolamento de dados, transversal a partir daqui (RF-003) -> lancar renda (RF-004) -> lancar despesa (RF-006) -> ver overview de saude financeira (RF-008). Marco 2 adiciona a capacidade de corrigir/remover lancamentos ja feitos (RF-005 edicao/exclusao de renda, RF-007 edicao/exclusao de despesa), na mesma ordem de dominio (renda antes de despesa) usada no Marco 1. Nenhum RF foi classificado inviavel; nenhum backlog futuro foi identificado alem dos 8 RFs aprovados — todos pertencem a um dos dois marcos."
@@ -951,16 +951,16 @@
         "gate": "aprovacao_escopo",
         "resposta": "Confirmar 2 marcos como proposto",
         "respondido_em": "2026-08-17T17:20:00Z",
-        "resultado": "Usuario confirmou a proposta de 2 marcos sem ajuste: marco-1-mvp (RF-001, RF-002, RF-003, RF-004, RF-006, RF-008, nessa ordem de fluxo de uso) e marco-2-gestao-completa (RF-005, RF-007, nessa ordem). Nenhum RF mudou de marco em relacao a proposta original. planejamento.viabilidade.status, planejamento.escopo.status, planejamento.recursos.status e o rollup planejamento.status marcados 'aprovado'; status de ambos os marcos passou de 'aguardando' para 'aprovado'. decisao_pendente limpo apos leitura e aplicacao da resposta."
+        "resultado": "2 marcos aprovados sem ajuste: marco-1-mvp (RF-001,002,003,004,006,008), marco-2 (RF-005,007)."
       }
     ]
   },
   "arquitetura": {
-    "marco_ref": "marco-1-mvp",
+    "marco_ref": "marco-2-gestao-completa",
     "status": "aprovado",
     "padroes_tecnologias": {
       "status": "aprovado",
-      "observacao": "Gate 'escolha_stack' resolvido (ver historico_revisoes) — usuario escolheu 'Outra combinacao': PHP 8.3 + Laravel 13 full-stack acoplado (Blade + Livewire/Alpine.js), SQLite, Pest. Decisao de projeto inteiro (nao redecidida por marco), herdada por marco-2-gestao-completa e quaisquer marcos futuros.",
+      "observacao": "Gate 'escolha_stack' resolvido (ver historico_revisoes) — usuario escolheu 'Outra combinacao': PHP 8.3 + Laravel 13 full-stack acoplado (Blade + Livewire/Alpine.js), SQLite, Pest. Decisao de projeto inteiro (nao redecidida por marco), herdada por marco-2-gestao-completa e quaisquer marcos futuros. Fase 1 do design-agent (marco-2): stack ja definido/aprovado no marco-1 -- herdado sem re-perguntar nesta invocacao, nenhum gate reaberto; verificada compatibilidade com RF-005/RF-007 (mesmos dominios/RNFs de RF-004/RF-006, ja cobertos) -- sem incompatibilidade nova.",
       "stack": {
         "backend": {
           "linguagem": "PHP",
@@ -1151,813 +1151,187 @@
         "mecanismo_captura": "interceptor_aplicacao",
         "mecanismo_captura_detalhe": "Eloquent Model Observers (app/Observers), registrados no AppServiceProvider para todo model de dado de negocio (User, FonteRenda, Despesa e qualquer novo model de dominio adicionado em marcos futuros), escutando os eventos created/updated/deleted e gravando o registro correspondente em logs_auditoria. Escolhido em vez de trigger_banco porque todo acesso a dados desta stack passa por Eloquent (sem uso planejado de queries SQL cruas/DB::table() fora do ORM); qualquer ponto de escrita que no futuro precise contornar o Eloquent (ex: bulk insert direto) e responsabilidade de quem implementa garantir que tambem grava no log, ja que o Observer nao intercepta esse caminho.",
         "observacao_rf001": "RF-001 (cadastro/registro aberto) cria um usuario sem que exista sessao autenticada no momento da operacao. Convencao adotada: usuario_id do registro de auditoria = id do proprio usuario recem-criado (acao autoatribuida), unico caso do sistema em que o 'usuario autenticado que executou' e o proprio registro afetado.",
-        "relatorio_consulta": "Nenhum RF do escopo aprovado (RF-001 a RF-008, marcos 1 e 2) implementa a tela de relatorio de consulta ao log exigida por RNF-PADRAO-LOG-AUDITORIA. Mecanismo de captura fica pronto desde RF-001 (arquitetural, conforme exigido), mas a tela de consulta em si (filtros: usuario, tabela/entidade, acao, periodo — ver reference/layout-guidelines.md '#Relatorio de Log/Auditoria') carece de um RF proprio, ainda nao escopado. Sinalizado em conclusao_agente para o orquestrador avaliar retorno controlado ao analise-planejamento-agent/requisitos-agent (provavel novo RF em marco futuro)."
+        "relatorio_consulta": "Nenhum RF do escopo aprovado (RF-001 a RF-008, marcos 1 e 2) implementa a tela de relatorio de consulta ao log exigida por RNF-PADRAO-LOG-AUDITORIA. Mecanismo de captura fica pronto desde RF-001 (arquitetural, conforme exigido) e cobre tambem as escritas de RF-005/RF-007 (update/delete de FonteRenda/Despesa via AuditoriaObserver ja registrado, sem trabalho adicional). Decisao tomada pelo orquestrador (fora do fluxo normal de gate, questao de escopo levantada pelo design-agent no marco-1): a tela de consulta ao log fica adiada para um marco futuro, ainda nao escopado -- nao e responsabilidade de marco-2-gestao-completa. Nenhum RF foi criado por este agente para materializa-la (fora do escopo do design-agent); retorno controlado ao analise-planejamento-agent/requisitos-agent permanece o caminho quando esse marco futuro for planejado."
       },
       "historico_revisoes": [
         {
           "gate": "escolha_stack",
-          "resposta": "Stack escolhido (Outra combinacao): PHP 8.3 + Laravel 13 full-stack (acoplado, fe_be_desacoplado = false), Blade + Livewire/Alpine.js, SQLite, Pest. Estrategia de merge = squash. Pipeline de CI/CD e ferramentas de qualidade/seguranca ainda nao existem — registrados como pendente_infraestrutura.",
+          "resposta": "PHP8.3+Laravel13 acoplado, Blade+Livewire/Alpine, SQLite, Pest, merge squash.",
           "respondido_em": "2026-08-17T17:35:00Z",
-          "resultado": "padroes_tecnologias.status = aprovado. Nenhuma incompatibilidade real encontrada contra os RNFs aprovados (ver sinergia_avaliada). controle_versao ja estava parcialmente resolvido por deteccao real do ambiente antes da pergunta (github + gh CLI autenticado); so estrategia_merge dependia do usuario. idioma_padrao = 'pt' e a paleta de cores/verificacao de contraste (rascunhadas antes do gate) mantidas sem alteracao."
-        }
-      ]
-    },
-    "documentacao_tecnica": {
-      "status": "aprovado",
-      "marco_ref": "marco-1-mvp",
-      "observacao_geral": "fe_be_desacoplado = false (monolito Laravel/Livewire): nao ha API REST/GraphQL separada. O equivalente funcional ao 'contrato de API' e o contrato publico de cada componente Livewire (rota de entrada, propriedades publicas com wire:model, actions/metodos publicos acionaveis da view, eventos emitidos) mais o contrato de metodo do Service de calculo (OverviewService). Escopo desta Fase 4 cobre somente os RFs do marco-1-mvp (RF-001, RF-002, RF-003, RF-004, RF-006, RF-008); RF-005 e RF-007 (edicao/exclusao de Renda/Despesa) pertencem ao marco-2-gestao-completa e serao documentados quando o design-agent rodar novamente para aquele marco — os componentes RendaManager/DespesaManager ja preveem essas actions na arquitetura (camadas_servicos), mas os contratos abaixo descrevem apenas o subconjunto de acoes ativas no marco-1 (listar + criar).",
-      "rotas": [
-        {
-          "nome": "login",
-          "metodo": "GET",
-          "path": "/login",
-          "middleware": "guest",
-          "handler": "Livewire\\Volt ou componente Livewire de pagina: App\\Livewire\\Auth\\LoginForm (full-page component, layout AppLayout variante 'guest')",
-          "rf_ref": "RF-002"
-        },
-        {
-          "nome": "registro",
-          "metodo": "GET",
-          "path": "/registro",
-          "middleware": "guest",
-          "handler": "App\\Livewire\\Auth\\RegistroForm (full-page component, layout AppLayout variante 'guest')",
-          "rf_ref": "RF-001"
-        },
-        {
-          "nome": "logout",
-          "metodo": "POST",
-          "path": "/logout",
-          "middleware": "auth",
-          "handler": "Controller de logout padrao do scaffold Laravel (invalida sessao + regenera token), sem componente Livewire proprio.",
-          "rf_ref": "RF-002"
-        },
-        {
-          "nome": "overview",
-          "metodo": "GET",
-          "path": "/ (raiz, redirect de '/' para 'overview' quando autenticado) e /overview",
-          "middleware": "auth",
-          "handler": "App\\Livewire\\Overview\\OverviewFinanceiro (full-page component, layout AppLayout autenticado)",
-          "rf_ref": "RF-003, RF-008"
-        },
-        {
-          "nome": "renda.index",
-          "metodo": "GET",
-          "path": "/renda",
-          "middleware": "auth",
-          "handler": "App\\Livewire\\Renda\\RendaManager (full-page component, layout AppLayout autenticado)",
-          "rf_ref": "RF-003, RF-004"
-        },
-        {
-          "nome": "despesas.index",
-          "metodo": "GET",
-          "path": "/despesas",
-          "middleware": "auth",
-          "handler": "App\\Livewire\\Despesas\\DespesaManager (full-page component, layout AppLayout autenticado)",
-          "rf_ref": "RF-003, RF-006"
-        }
-      ],
-      "componentes_livewire": [
-        {
-          "componente": "App\\Livewire\\Auth\\LoginForm",
-          "tela_ref": "TELA-001",
-          "rf_ref": "RF-002",
-          "propriedades_publicas": [
-            {
-              "nome": "email",
-              "tipo": "string",
-              "wire_model": true,
-              "campo_ref": "CAMPO-USU-003"
-            },
-            {
-              "nome": "senha",
-              "tipo": "string",
-              "wire_model": true,
-              "campo_ref": "CAMPO-USU-004"
-            }
-          ],
-          "actions": [
-            {
-              "metodo": "autenticar()",
-              "trigger": "wire:submit no formulario",
-              "validacao": [
-                "email: required, formato de email valido",
-                "senha: required"
-              ],
-              "regras_aplicadas": [
-                "RN-006"
-              ],
-              "fluxo": "Resolve o usuario por email; se nao existir ou Hash::check(senha, usuario.senha) falhar, dispara ValidationException com mensagem generica unica 'credenciais invalidas' anexada a ambos os campos email/senha (nunca indica qual esta incorreto, RN-006). Sucesso: Auth::login($usuario), regenera sessao, redirect para rota 'overview'.",
-              "resposta_sucesso": "Redirect 'overview' (302), sessao autenticada iniciada.",
-              "resposta_erro": "Erros de validacao renderizados inline no formulario (Livewire property bag $errors), sem reload de pagina; foco movido para a primeira mensagem de erro (padroes_aria)."
-            }
-          ]
-        },
-        {
-          "componente": "App\\Livewire\\Auth\\RegistroForm",
-          "tela_ref": "TELA-002",
-          "rf_ref": "RF-001",
-          "propriedades_publicas": [
-            {
-              "nome": "nome",
-              "tipo": "string",
-              "wire_model": true,
-              "campo_ref": "CAMPO-USU-002"
-            },
-            {
-              "nome": "email",
-              "tipo": "string",
-              "wire_model": true,
-              "campo_ref": "CAMPO-USU-003"
-            },
-            {
-              "nome": "senha",
-              "tipo": "string",
-              "wire_model": true,
-              "campo_ref": "CAMPO-USU-004"
-            },
-            {
-              "nome": "senha_confirmation",
-              "tipo": "string",
-              "wire_model": true,
-              "descricao": "confirmacao de senha, exigida pelo criterio de aceite de RF-001; nao persistida."
-            }
-          ],
-          "actions": [
-            {
-              "metodo": "registrar()",
-              "trigger": "wire:submit no formulario",
-              "validacao": [
-                "nome: required, string, max:120",
-                "email: required, formato de email valido, unique:users,email (RN-004, mensagem 'e-mail ja cadastrado')",
-                "senha: required, min:8, confirmed (compara com senha_confirmation)"
-              ],
-              "regras_aplicadas": [
-                "RN-004"
-              ],
-              "fluxo": "Cria User (id uuid, nome, email, senha=Hash::make(senha)), dispara Observer de auditoria (acao=criacao, usuario_id=id do proprio usuario recem-criado, conforme padroes_tecnologias.log_auditoria.observacao_rf001), autentica automaticamente (Auth::login) e redireciona para 'overview'.",
-              "resposta_sucesso": "Redirect 'overview' (302), usuario autenticado, registro em logs_auditoria criado.",
-              "resposta_erro": "Erro de email duplicado (RN-004) ou validacao de campo renderizado inline, nada persistido."
-            }
-          ]
-        },
-        {
-          "componente": "App\\Livewire\\Overview\\OverviewFinanceiro",
-          "tela_ref": "TELA-003",
-          "rf_ref": "RF-003, RF-008",
-          "propriedades_publicas": [
-            {
-              "nome": "mesSelecionado",
-              "tipo": "string(7) YYYY-MM",
-              "wire_model": false,
-              "campo_ref": "PARAM-OVW-001",
-              "descricao": "Inicializado no mes corrente (mount()); alterado apenas pelas actions de navegacao, nunca por input direto do usuario."
-            }
-          ],
-          "actions": [
-            {
-              "metodo": "mesAnterior()",
-              "trigger": "wire:click no botao de navegacao 'anterior'",
-              "fluxo": "mesSelecionado = mesSelecionado subtraido de 1 mes (sem limite minimo predefinido, conforme campos.dominios.DOM-004.parametros_consulta); recalcula indicadores via OverviewService."
-            },
-            {
-              "metodo": "proximoMes()",
-              "trigger": "wire:click no botao de navegacao 'proximo'",
-              "fluxo": "mesSelecionado = mesSelecionado somado a 1 mes; recalcula indicadores via OverviewService. Sem limite maximo predefinido (nao ha requisito que proiba navegar para meses futuros sem lancamento — resultara no estado vazio ja coberto pela tela)."
-            }
-          ],
-          "dados_exibidos": {
-            "origem": "App\\Services\\OverviewService::calcular(usuario_id: auth()->id(), mesReferencia: mesSelecionado) — ver arquitetura.documentacao_tecnica.servicos.OverviewService",
-            "campos_ref": [
-              "IND-OVW-001",
-              "IND-OVW-002",
-              "IND-OVW-003",
-              "IND-OVW-004"
-            ],
-            "regras_aplicadas": [
-              "RN-001",
-              "RN-005",
-              "RN-007"
-            ]
-          }
-        },
-        {
-          "componente": "App\\Livewire\\Renda\\RendaManager",
-          "tela_ref": "TELA-004",
-          "rf_ref": "RF-003, RF-004",
-          "escopo_marco": "marco-1-mvp implementa somente listagem (leitura) e criacao. Actions de edicao/exclusao (editar()/excluir()) fazem parte do contrato do componente na arquitetura (camadas_servicos) mas pertencem ao escopo de RF-005 (marco-2-gestao-completa) e NAO sao documentadas/implementadas nesta rodada.",
-          "propriedades_publicas": [
-            {
-              "nome": "descricao",
-              "tipo": "string",
-              "wire_model": true,
-              "campo_ref": "CAMPO-REN-003"
-            },
-            {
-              "nome": "valorLiquido",
-              "tipo": "decimal(12,2)",
-              "wire_model": true,
-              "campo_ref": "CAMPO-REN-004"
-            },
-            {
-              "nome": "mesReferencia",
-              "tipo": "string(7) YYYY-MM",
-              "wire_model": true,
-              "campo_ref": "CAMPO-REN-007"
-            }
-          ],
-          "actions": [
-            {
-              "metodo": "criar()",
-              "trigger": "wire:submit no formulario de nova fonte de renda",
-              "validacao": [
-                "descricao: required, string, max:120",
-                "valorLiquido: required, numeric, gt:0 (RN-002, mensagem 'o valor deve ser maior que zero')",
-                "mesReferencia: required, regex formato YYYY-MM, mes valido 01-12 (RN-003)"
-              ],
-              "regras_aplicadas": [
-                "RN-002",
-                "RN-003",
-                "RN-005"
-              ],
-              "fluxo": "$this->authorize('create', FonteRenda::class) (RendaPolicy, RN-005). Cria FonteRenda vinculada a usuario_id=auth()->id(). Observer de auditoria grava acao=criacao. Reseta formulario e atualiza a listagem exibida no proprio componente (sem reload de pagina).",
-              "resposta_sucesso": "Fonte de renda listada imediatamente no componente; refletida no Overview do mes correspondente (RF-008) na proxima visita/refresh daquela tela.",
-              "resposta_erro": "Erros de validacao inline por campo (mensagens dedicadas RN-002/RN-003); nada persistido."
-            }
-          ],
-          "listagem": {
-            "origem": "FonteRenda::where('usuario_id', auth()->id())->orderByDesc('mes_referencia')->orderByDesc('criado_em')->get() — RN-005 aplicado via escopo da query, reforcado por RendaPolicy em qualquer acao futura de edicao/exclusao.",
-            "campos_exibidos": [
-              "CAMPO-REN-003 (descricao)",
-              "CAMPO-REN-004 (valor_liquido)",
-              "CAMPO-REN-007 (mes_referencia)"
-            ],
-            "estado_vazio": "Nenhuma fonte de renda cadastrada pelo usuario: mensagem orientando a cadastrar a primeira fonte de renda (mesmo padrao visual do prototipo aprovado)."
-          }
-        },
-        {
-          "componente": "App\\Livewire\\Despesas\\DespesaManager",
-          "tela_ref": "TELA-005",
-          "rf_ref": "RF-003, RF-006",
-          "escopo_marco": "marco-1-mvp implementa somente listagem (leitura) e criacao. Actions de edicao/exclusao pertencem ao escopo de RF-007 (marco-2-gestao-completa) e NAO sao documentadas/implementadas nesta rodada.",
-          "propriedades_publicas": [
-            {
-              "nome": "descricao",
-              "tipo": "string",
-              "wire_model": true,
-              "campo_ref": "CAMPO-DESP-003"
-            },
-            {
-              "nome": "valor",
-              "tipo": "decimal(12,2)",
-              "wire_model": true,
-              "campo_ref": "CAMPO-DESP-004"
-            },
-            {
-              "nome": "categoria",
-              "tipo": "string(60), nullable",
-              "wire_model": true,
-              "campo_ref": "CAMPO-DESP-005"
-            },
-            {
-              "nome": "mesReferencia",
-              "tipo": "string(7) YYYY-MM",
-              "wire_model": true,
-              "campo_ref": "CAMPO-DESP-008"
-            }
-          ],
-          "actions": [
-            {
-              "metodo": "criar()",
-              "trigger": "wire:submit no formulario de nova despesa",
-              "validacao": [
-                "descricao: required, string, max:120",
-                "valor: required, numeric, gt:0 (RN-002, mensagem 'o valor deve ser maior que zero')",
-                "categoria: nullable, string, max:60",
-                "mesReferencia: required, regex formato YYYY-MM, mes valido 01-12 (RN-003)"
-              ],
-              "regras_aplicadas": [
-                "RN-002",
-                "RN-003",
-                "RN-005"
-              ],
-              "fluxo": "$this->authorize('create', Despesa::class) (DespesaPolicy, RN-005). Cria Despesa vinculada a usuario_id=auth()->id(). Observer de auditoria grava acao=criacao. Reseta formulario e atualiza a listagem exibida no proprio componente.",
-              "resposta_sucesso": "Despesa listada imediatamente no componente; refletida no Overview do mes correspondente (RF-008) na proxima visita/refresh daquela tela.",
-              "resposta_erro": "Erros de validacao inline por campo (mensagens dedicadas RN-002/RN-003); nada persistido."
-            }
-          ],
-          "listagem": {
-            "origem": "Despesa::where('usuario_id', auth()->id())->orderByDesc('mes_referencia')->orderByDesc('criado_em')->get() — RN-005 aplicado via escopo da query, reforcado por DespesaPolicy em qualquer acao futura de edicao/exclusao.",
-            "campos_exibidos": [
-              "CAMPO-DESP-003 (descricao)",
-              "CAMPO-DESP-004 (valor)",
-              "CAMPO-DESP-005 (categoria, opcional)",
-              "CAMPO-DESP-008 (mes_referencia)"
-            ],
-            "estado_vazio": "Nenhuma despesa cadastrada pelo usuario: mensagem orientando a cadastrar a primeira despesa (mesmo padrao visual do prototipo aprovado)."
-          }
-        }
-      ],
-      "servicos": [
-        {
-          "classe": "App\\Services\\OverviewService",
-          "rf_ref": "RF-008",
-          "metodo": "calcular(string $usuarioId, string $mesReferencia): OverviewData",
-          "input": {
-            "usuarioId": "uuid do usuario autenticado (RN-005, nunca aceito de parametro externo confiavel sem revalidar contra auth()->id() no componente chamador)",
-            "mesReferencia": "string YYYY-MM (PARAM-OVW-001, mesSelecionado do componente OverviewFinanceiro)"
-          },
-          "output_contrato": {
-            "rendaTotal": "decimal(12,2) — IND-OVW-001, soma de fontes_renda.valor_liquido do usuario onde mes_referencia == mesReferencia",
-            "despesasTotal": "decimal(12,2) — IND-OVW-002, soma de despesas.valor do usuario onde mes_referencia == mesReferencia",
-            "saldoDisponivel": "decimal(12,2) — IND-OVW-003 = rendaTotal - despesasTotal",
-            "percentualComprometido": "decimal|null — IND-OVW-004 = (despesasTotal / rendaTotal) * 100; null quando rendaTotal == 0 (RN-001, evita divisao por zero — Overview exibe indicador alternativo em vez do numero)",
-            "alertaComprometimento": "bool — true quando despesasTotal > rendaTotal (RN-007); sinaliza a UI a aplicar o destaque visual de alerta (percentual exibido sem teto em 100%)"
-          },
-          "regras_aplicadas": [
-            "RN-001",
-            "RN-005",
-            "RN-007"
-          ],
-          "performance": "Consulta indexada por (usuario_id, mes_referencia) em fontes_renda e despesas (ver arquitetura.modelagem_dados.entidades[].indices), atendendo RNF-003 (p95 < 500ms ate 24 meses de historico) — duas agregacoes SUM() indexadas, sem N+1."
-        }
-      ],
-      "contratos_dados": [
-        {
-          "nome": "UsuarioRegistroInput",
-          "rf_ref": "RF-001",
-          "campos": [
-            "nome (CAMPO-USU-002)",
-            "email (CAMPO-USU-003)",
-            "senha (CAMPO-USU-004)",
-            "senha_confirmation (nao persistido)"
-          ],
-          "observacao": "senha nunca aparece em nenhum output/contrato de resposta (RNF-001)."
-        },
-        {
-          "nome": "UsuarioLoginInput",
-          "rf_ref": "RF-002",
-          "campos": [
-            "email (CAMPO-USU-003)",
-            "senha (CAMPO-USU-004)"
-          ]
-        },
-        {
-          "nome": "FonteRendaInput",
-          "rf_ref": "RF-004",
-          "campos": [
-            "descricao (CAMPO-REN-003)",
-            "valor_liquido (CAMPO-REN-004)",
-            "mes_referencia (CAMPO-REN-007)"
-          ]
-        },
-        {
-          "nome": "FonteRendaOutput",
-          "rf_ref": "RF-004, RF-008",
-          "campos": [
-            "id (CAMPO-REN-001)",
-            "descricao (CAMPO-REN-003)",
-            "valor_liquido (CAMPO-REN-004)",
-            "mes_referencia (CAMPO-REN-007)",
-            "criado_em (CAMPO-REN-005)",
-            "atualizado_em (CAMPO-REN-006)"
-          ]
-        },
-        {
-          "nome": "DespesaInput",
-          "rf_ref": "RF-006",
-          "campos": [
-            "descricao (CAMPO-DESP-003)",
-            "valor (CAMPO-DESP-004)",
-            "categoria (CAMPO-DESP-005, opcional)",
-            "mes_referencia (CAMPO-DESP-008)"
-          ]
-        },
-        {
-          "nome": "DespesaOutput",
-          "rf_ref": "RF-006, RF-008",
-          "campos": [
-            "id (CAMPO-DESP-001)",
-            "descricao (CAMPO-DESP-003)",
-            "valor (CAMPO-DESP-004)",
-            "categoria (CAMPO-DESP-005)",
-            "mes_referencia (CAMPO-DESP-008)",
-            "criado_em (CAMPO-DESP-006)",
-            "atualizado_em (CAMPO-DESP-007)"
-          ]
-        },
-        {
-          "nome": "OverviewOutput",
-          "rf_ref": "RF-008",
-          "campos": [
-            "mes_selecionado (PARAM-OVW-001)",
-            "renda_total (IND-OVW-001)",
-            "despesas_total (IND-OVW-002)",
-            "saldo_disponivel (IND-OVW-003)",
-            "percentual_comprometido (IND-OVW-004, nullable)",
-            "alerta_comprometimento (derivado, RN-007)"
-          ]
-        },
-        {
-          "nome": "AuditLogEntry",
-          "rf_ref": "RF-001, RF-004, RF-006 (todo RF de escrita do marco)",
-          "campos": [
-            "acao",
-            "usuario_id",
-            "tabela_afetada",
-            "registro_id",
-            "valor_anterior",
-            "valor_novo",
-            "criado_em"
-          ],
-          "observacao": "Contrato ja detalhado em arquitetura.modelagem_dados.entidades (tabela logs_auditoria) e padroes_tecnologias.log_auditoria; gravado automaticamente por Eloquent Observer a cada criar() dos componentes acima, sem acao explicita do usuario."
-        }
-      ],
-      "cobertura_telas": [
-        {
-          "tela_ref": "TELA-001",
-          "rf_ref": "RF-002",
-          "contrato": "componentes_livewire.LoginForm",
-          "coberto": true
-        },
-        {
-          "tela_ref": "TELA-002",
-          "rf_ref": "RF-001",
-          "contrato": "componentes_livewire.RegistroForm",
-          "coberto": true
-        },
-        {
-          "tela_ref": "TELA-003",
-          "rf_ref": "RF-003, RF-008",
-          "contrato": "componentes_livewire.OverviewFinanceiro + servicos.OverviewService",
-          "coberto": true
-        },
-        {
-          "tela_ref": "TELA-004",
-          "rf_ref": "RF-003, RF-004 (marco-1); RF-005 fora do escopo desta rodada",
-          "contrato": "componentes_livewire.RendaManager (listar+criar)",
-          "coberto": true
-        },
-        {
-          "tela_ref": "TELA-005",
-          "rf_ref": "RF-003, RF-006 (marco-1); RF-007 fora do escopo desta rodada",
-          "contrato": "componentes_livewire.DespesaManager (listar+criar)",
-          "coberto": true
-        }
-      ],
-      "historico_revisoes": [
-        {
-          "gate": "aprovacao_doc_tecnica",
-          "resposta": "Aprovar como proposto",
-          "respondido_em": "2026-08-18T13:38:44Z",
-          "resultado": "Usuario aprovou a documentacao tecnica do marco-1-mvp exatamente como proposta (6 rotas, 5 componentes Livewire, 1 servico OverviewService, 8 contratos de dados), sem ajuste, incluindo o ponto de atencao de que RendaManager/DespesaManager implementam neste marco apenas listar+criar (editar/excluir ficam para RF-005/RF-007 no marco-2-gestao-completa). documentacao_tecnica.status marcado aprovado. Com padroes_tecnologias, camadas_servicos e modelagem_dados ja aprovados anteriormente, rollup arquitetura.status marcado aprovado para o marco-1-mvp."
-        }
-      ]
-    },
-    "modelagem_dados": {
-      "status": "aprovado",
-      "banco_dados": "SQLite (arquivo database/database.sqlite), conforme padroes_tecnologias.stack.banco_dados. Paradigma relacional — entidades derivadas 1:1 de campos.dominios ja aprovados, mais 1 entidade transversal (logs_auditoria) derivada de RNF-PADRAO-LOG-AUDITORIA.",
-      "codebase_existente_check": "codebase_existente.detectado = false — sem migrations/models reais preexistentes para cruzar contra o modelo proposto (nao aplicavel o passo de reconciliacao com codebase_existente.evidencias.migrations previsto na Fase 3).",
-      "entidades": [
-        {
-          "tabela": "users",
-          "dominio_ref": "DOM-001",
-          "model_eloquent": "App\\Models\\User (model de autenticacao padrao do Laravel, customizado)",
-          "colunas": [
-            {
-              "nome": "id",
-              "tipo": "uuid (string(36), PK)",
-              "campo_ref": "CAMPO-USU-001",
-              "observacao": "HasUuids trait do Laravel — funciona nativamente com SQLite (coluna string)."
-            },
-            {
-              "nome": "nome",
-              "tipo": "varchar(120), not null",
-              "campo_ref": "CAMPO-USU-002"
-            },
-            {
-              "nome": "email",
-              "tipo": "varchar, not null, unique",
-              "campo_ref": "CAMPO-USU-003",
-              "constraint": "unique index — enforca RN-004 tambem no banco (defesa em profundidade alem da validacao de app)"
-            },
-            {
-              "nome": "senha",
-              "tipo": "varchar, not null",
-              "campo_ref": "CAMPO-USU-004",
-              "observacao": "hash bcrypt (Hash facade, RNF-001); coluna nomeada 'senha' (nao 'password', para manter fidelidade ao campo aprovado) — exige override de getAuthPassword() no model User para o guard de autenticacao do Laravel apontar para esta coluna; $hidden = ['senha'] no model garante que RNF-001 (nunca retornar o campo em resposta) tambem se aplique a qualquer serializacao acidental do model."
-            },
-            {
-              "nome": "criado_em",
-              "tipo": "datetime, not null",
-              "campo_ref": "CAMPO-USU-005",
-              "observacao": "mapeado via const CREATED_AT = 'criado_em' no model (customizacao do timestamp padrao do Eloquent, que por default seria 'created_at')."
-            },
-            {
-              "nome": "atualizado_em",
-              "tipo": "datetime, not null",
-              "campo_ref": "CAMPO-USU-006",
-              "observacao": "mapeado via const UPDATED_AT = 'atualizado_em'."
-            }
-          ],
-          "omissoes_deliberadas": "Nenhuma coluna alem das 6 aprovadas em campos.dominios.DOM-001 (ex: sem 'remember_token' do scaffold padrao do Laravel, sem 'email_verified_at') — nenhum RF/criterio_aceite aprovado menciona verificacao de email ou 'lembrar-me' persistente; login via sessao padrao do Laravel funciona sem essas colunas. Se um dia forem necessarias, e adicao real de campo — retorno controlado ao requisitos-agent, nao decisao do design-agent."
-        },
-        {
-          "tabela": "fontes_renda",
-          "dominio_ref": "DOM-002",
-          "model_eloquent": "App\\Models\\FonteRenda",
-          "colunas": [
-            {
-              "nome": "id",
-              "tipo": "uuid (string(36), PK)",
-              "campo_ref": "CAMPO-REN-001"
-            },
-            {
-              "nome": "usuario_id",
-              "tipo": "uuid (FK -> users.id), not null, on delete cascade",
-              "campo_ref": "CAMPO-REN-002",
-              "observacao": "escopado a auth()->id() em toda query (RN-005/RF-003/RNF-002); indice proprio incluso no indice composto abaixo."
-            },
-            {
-              "nome": "descricao",
-              "tipo": "varchar(120), not null",
-              "campo_ref": "CAMPO-REN-003"
-            },
-            {
-              "nome": "valor_liquido",
-              "tipo": "decimal(12,2), not null",
-              "campo_ref": "CAMPO-REN-004",
-              "constraint": "CHECK (valor_liquido > 0) no banco (SQLite suporta CHECK) + validacao RN-002 na camada de app — defesa em profundidade."
-            },
-            {
-              "nome": "mes_referencia",
-              "tipo": "varchar(7), not null",
-              "campo_ref": "CAMPO-REN-007",
-              "constraint": "validacao de formato YYYY-MM (RN-003) e imutabilidade apos criacao (RN-008) sao regras de aplicacao (Livewire Form Object), nao ha CHECK de formato/imutabilidade viavel no SQLite sem trigger — decisao consistente com a Fase 2 (auditoria via Eloquent Observer, nao trigger de banco)."
-            },
-            {
-              "nome": "criado_em",
-              "tipo": "datetime, not null",
-              "campo_ref": "CAMPO-REN-005"
-            },
-            {
-              "nome": "atualizado_em",
-              "tipo": "datetime, not null",
-              "campo_ref": "CAMPO-REN-006"
-            }
-          ],
-          "indices": [
-            "INDEX composto (usuario_id, mes_referencia) — suporta RNF-003 (p95 < 500ms) e o filtro de PARAM-OVW-001."
-          ]
-        },
-        {
-          "tabela": "despesas",
-          "dominio_ref": "DOM-003",
-          "model_eloquent": "App\\Models\\Despesa",
-          "colunas": [
-            {
-              "nome": "id",
-              "tipo": "uuid (string(36), PK)",
-              "campo_ref": "CAMPO-DESP-001"
-            },
-            {
-              "nome": "usuario_id",
-              "tipo": "uuid (FK -> users.id), not null, on delete cascade",
-              "campo_ref": "CAMPO-DESP-002"
-            },
-            {
-              "nome": "descricao",
-              "tipo": "varchar(120), not null",
-              "campo_ref": "CAMPO-DESP-003"
-            },
-            {
-              "nome": "valor",
-              "tipo": "decimal(12,2), not null",
-              "campo_ref": "CAMPO-DESP-004",
-              "constraint": "CHECK (valor > 0) no banco + validacao RN-002 na app."
-            },
-            {
-              "nome": "categoria",
-              "tipo": "varchar(60), nullable",
-              "campo_ref": "CAMPO-DESP-005"
-            },
-            {
-              "nome": "mes_referencia",
-              "tipo": "varchar(7), not null",
-              "campo_ref": "CAMPO-DESP-008",
-              "constraint": "mesma logica de fontes_renda.mes_referencia (RN-003/RN-008 em camada de app)."
-            },
-            {
-              "nome": "criado_em",
-              "tipo": "datetime, not null",
-              "campo_ref": "CAMPO-DESP-006"
-            },
-            {
-              "nome": "atualizado_em",
-              "tipo": "datetime, not null",
-              "campo_ref": "CAMPO-DESP-007"
-            }
-          ],
-          "indices": [
-            "INDEX composto (usuario_id, mes_referencia) — mesma razao de fontes_renda."
-          ]
-        },
-        {
-          "tabela": "logs_auditoria",
-          "dominio_ref": null,
-          "rf_ref": null,
-          "model_eloquent": "App\\Models\\AuditLog",
-          "origem": "RNF-PADRAO-LOG-AUDITORIA (transversal, sem RF proprio no escopo atual — ver observacao_relatorio abaixo)",
-          "colunas": [
-            {
-              "nome": "id",
-              "tipo": "bigint autoincrement, PK",
-              "observacao": "unica entidade do sistema sem PK uuid — decisao do design-agent: tabela append-only sem FK de terceiros apontando para ela, ordenacao/paginacao por id sequencial e mais barata que uuid para um log que so cresce; nao ha necessidade de opacidade de identificador (nao e exposta como URL publica)."
-            },
-            {
-              "nome": "acao",
-              "tipo": "varchar/enum ('criacao'|'alteracao'|'exclusao'), not null"
-            },
-            {
-              "nome": "usuario_id",
-              "tipo": "uuid (FK -> users.id), not null",
-              "observacao": "Para RF-001 (cadastro, sem sessao autenticada previa): usuario_id = id do proprio usuario recem-criado (acao autoatribuida) — convencao registrada em padroes_tecnologias.log_auditoria.observacao_rf001."
-            },
-            {
-              "nome": "tabela_afetada",
-              "tipo": "varchar, not null",
-              "observacao": "nome da tabela de negocio afetada (ex: 'users', 'fontes_renda', 'despesas')."
-            },
-            {
-              "nome": "registro_id",
-              "tipo": "varchar, not null",
-              "observacao": "id (uuid) do registro afetado na tabela_afetada, armazenado como string para nao amarrar o log a um tipo de PK especifico de cada tabela de dominio."
-            },
-            {
-              "nome": "valor_anterior",
-              "tipo": "json, nullable",
-              "observacao": "nulo em criacao (acao=criacao)."
-            },
-            {
-              "nome": "valor_novo",
-              "tipo": "json, nullable",
-              "observacao": "nulo em exclusao (acao=exclusao). Nunca inclui o campo 'senha' de users (mesma logica de RNF-001 — Observer serializa o model ja com $hidden aplicado)."
-            },
-            {
-              "nome": "criado_em",
-              "tipo": "datetime, not null",
-              "observacao": "unico timestamp da tabela — nao ha atualizado_em: tabela imutavel por design, nenhum endpoint da aplicacao permite update/delete sobre logs_auditoria (auditado pelo security-agent depois)."
-            }
-          ],
-          "indices": [
-            "INDEX (usuario_id)",
-            "INDEX (tabela_afetada)",
-            "INDEX (acao)",
-            "INDEX (criado_em)",
-            "— os 4 juntos suportam os filtros minimos do relatorio de consulta (usuario, tabela/entidade, acao, periodo) exigidos por RNF-PADRAO-LOG-AUDITORIA."
-          ],
-          "observacao_relatorio": "Tabela e mecanismo de captura (Eloquent Observers, ver camadas_servicos) ficam prontos desde RF-001, conforme exigido — mas nenhum RF do escopo aprovado ainda implementa a TELA de relatorio de consulta a esta tabela (gap ja sinalizado em conclusao_agente anterior, sob avaliacao do orquestrador para um RF futuro)."
-        }
-      ],
-      "sem_tabela_propria": [
-        {
-          "dominio_ref": "DOM-004",
-          "nome": "Overview Financeiro",
-          "motivo": "Dominio agregador, conforme ja registrado em campos.dominios.DOM-004.observacao — nenhum campo persistido proprio. IND-OVW-001 a 004 sao calculados em tempo de consulta por App\\Services\\OverviewService a partir de fontes_renda + despesas do usuario autenticado, filtrados por mes_referencia == mes_selecionado (PARAM-OVW-001). Documentado como contrato de servico (input/output), nao como tabela, na Fase 4 (documentacao_tecnica)."
-        }
-      ],
-      "relacionamentos": [
-        "users 1:N fontes_renda (fontes_renda.usuario_id -> users.id, cascade on delete)",
-        "users 1:N despesas (despesas.usuario_id -> users.id, cascade on delete)",
-        "users 1:N logs_auditoria (logs_auditoria.usuario_id -> users.id, sem cascade — log de auditoria de um usuario excluido permanece; nenhum RF aprovado cobre exclusao de usuario neste marco, entao esta e uma decisao de baixo risco/reversivel se necessidade real surgir depois)"
-      ],
-      "convencoes_migracao": "Migrations no padrao Laravel (database/migrations), uma tabela por migration, nomeadas com timestamp sequencial: create_users_table (customiza a migration padrao do scaffold para adicionar 'nome' e renomear 'password'->'senha'/'created_at'->'criado_em'/'updated_at'->'atualizado_em', remover 'remember_token'/'email_verified_at'), create_fontes_renda_table, create_despesas_table, create_logs_auditoria_table (por ultimo, ja que referencia users.id).",
-      "historico_revisoes": [
-        {
-          "gate": "aprovacao_modelagem",
-          "resposta": "Aprovar como proposto",
-          "respondido_em": "2026-08-18T13:31:22Z",
-          "resultado": "Usuario aprovou a modelagem de dados exatamente como proposta (3 tabelas de dominio + logs_auditoria transversal), incluindo as 3 decisoes de design destacadas no gate (coluna 'senha'/'criado_em'/'atualizado_em' customizadas em vez dos nomes padrao do Eloquent, PK bigint sequencial em logs_auditoria como unica excecao a uuid, nenhuma coluna extra alem das aprovadas em campos.dominios). modelagem_dados.status marcado aprovado. Seguindo para a Fase 4 (documentacao tecnica: design de APIs/contratos Livewire e contratos de dados)."
+          "resultado": "Padroes aprovados. CI/CD e ferramentas de qualidade/seguranca pendente_infraestrutura."
         }
       ]
     },
     "camadas_servicos": {
       "status": "aprovado",
-      "proposta": {
-        "resumo": "Monolito Laravel classico (fe_be_desacoplado = false): sem API separada, sem camada de Service para toda e qualquer operacao — Service reservado so para logica de calculo nao-trivial (Overview). Nenhuma integracao externa no escopo do marco-1-mvp.",
-        "camadas": [
-          {
-            "nome": "Apresentacao",
-            "descricao": "Blade views + componentes Livewire (app/Livewire), um por tela aprovada em documentacao.prototipo.telas: LoginForm (TELA-001/RF-002), RegistroForm (TELA-002/RF-001), OverviewFinanceiro (TELA-003/RF-003+RF-008), RendaManager (TELA-004/RF-003+RF-004, RF-005 no marco-2), DespesaManager (TELA-005/RF-003+RF-006, RF-007 no marco-2). Alpine.js para interatividade puramente client-side (ex: dropdown de navegacao) sem round-trip ao servidor. Constroem sobre o protótipo aprovado (traducao para Blade/Livewire/Tailwind, nao redesenho), seguindo reference/layout-guidelines.md."
-          },
-          {
-            "nome": "Roteamento e Middleware",
-            "descricao": "routes/web.php com dois grupos: rotas publicas (login, registro) e rotas protegidas pelo middleware 'auth' padrao do Laravel (session guard) para overview/renda/despesas. Middleware custom SetLocale aplicando o idioma persistido do usuario (padroes_tecnologias.internacionalizacao) em toda requisicao."
-          },
-          {
-            "nome": "Autorizacao",
-            "descricao": "Laravel Policies (RendaPolicy, DespesaPolicy) — todo componente Livewire que le/escreve Renda ou Despesa chama $this->authorize() antes da operacao, restringindo a auth()->id() (RN-005/RNF-002). Sem policy para Overview em si (dado agregado, calculado so a partir dos registros ja autorizados do proprio usuario)."
-          },
-          {
-            "nome": "Validacao",
-            "descricao": "Livewire Form Objects (padrao Laravel 13) ou $rules por componente: RN-002 (valor > 0) em RendaForm/DespesaForm, RN-003 (formato/obrigatoriedade YYYY-MM de mes_referencia), RN-004 (email unico) em RegistroForm, RN-006 (credenciais invalidas, mensagem generica sem indicar qual campo) em LoginForm, RN-008 (mes_referencia somente leitura na edicao — campo disabled no formulario E validacao server-side rejeitando alteracao via payload manipulado; RN-008 nao se aplica ao marco-1-mvp, que cobre so criacao, mas o campo/regra ja fica modelado desde ja porque marco-2 reutiliza os mesmos formularios de RendaForm/DespesaForm em modo edicao)."
-          },
-          {
-            "nome": "Dominio/Negocio",
-            "descricao": "CRUDs simples (RF-004 criacao de renda, RF-006 criacao de despesa, e RF-005/RF-007 edicao/exclusao no marco-2) ficam diretos no componente Livewire + Model Eloquent, sem camada de Service propria — nao ha logica alem de validacao + persistencia. Excecao: OverviewService (app/Services/OverviewService.php) concentra o calculo dos 4 indicadores (IND-OVW-001 a 004), incluindo RN-001 (renda_total = 0 -> percentual nao calculado, indicador alternativo) e RN-007 (despesas_total > renda_total -> alerta visual, sem teto em 100%) — isolado em Service porque e logica testavel isoladamente (unit test Pest) e reaproveitada entre o componente Livewire da tela e qualquer teste automatizado, diferente dos CRUDs triviais."
-          },
-          {
-            "nome": "Persistencia",
-            "descricao": "Eloquent ORM sobre SQLite. Models: User (auth padrao do Laravel, tabela 'users'), FonteRenda (tabela 'fontes_renda'), Despesa (tabela 'despesas'), AuditLog (tabela 'logs_auditoria', ver arquitetura.modelagem_dados). Migrations versionadas em database/migrations. Indice composto (usuario_id, mes_referencia) em fontes_renda e despesas para atender RNF-003 (p95 < 500ms na consulta do Overview)."
-          },
-          {
-            "nome": "Transversal — Auditoria",
-            "descricao": "Eloquent Observers (app/Observers: UserObserver, FonteRendaObserver, DespesaObserver), registrados no AppServiceProvider, gravando em AuditLog a cada evento created/updated/deleted dos models de dado de negocio, conforme padroes_tecnologias.log_auditoria (mecanismo_captura = interceptor_aplicacao)."
-          },
-          {
-            "nome": "Transversal — Internacionalizacao e Acessibilidade",
-            "descricao": "i18n via arquivos lang/{pt,en,es}.json + helper __() em toda view (padroes_tecnologias.internacionalizacao). Tokens de tema (claro/escuro/alto-contraste) via variaveis CSS/config Tailwind (padroes_tecnologias.acessibilidade.paleta_cores); preferencia de tema/fonte/alto-contraste/reducao-movimento gerenciada por um Alpine.js store persistido em localStorage, seguindo reference/bioform-layout/temas.md e reference/bioform-layout/configuracoes.md. A tela de configuracoes do sistema (RF que expoe esses controles) e o relatorio de log de auditoria AINDA NAO tem RF proprio no escopo aprovado (ver conclusao_agente) — a infraestrutura arquitetural (tokens, mecanismo i18n, tabela de log) fica pronta desde RF-001, mas os controles/telas visiveis dependem de RF futuro."
-          }
-        ],
-        "integracoes_externas": "Nenhuma no escopo do marco-1-mvp — sistema fechado, sem dependencia de servico de terceiros (nenhum RF/RNF aprovado requer isso)."
-      },
-      "alternativas_consideradas": [
+      "descricao": "Marco-2 nao introduz camada nova. Reaproveita integralmente a arquitetura em camadas ja aprovada e implementada no marco-1 (Livewire component = controller+view-model / Eloquent Model / Laravel Policy de autorizacao / Eloquent Model Observer transversal de auditoria), estendendo os dois componentes existentes App\\Livewire\\Renda\\RendaManager e App\\Livewire\\Despesas\\DespesaManager com as acoes de edicao/exclusao ja previstas desde a criacao deles no marco-1 (ver docblocks 'Escopo marco-1-mvp: ... Acoes de editar()/excluir() pertencem a RF-005/RF-007' nos dois componentes, e os metodos view/update/delete ja presentes e nao usados em FonteRendaPolicy/DespesaPolicy desde entao). Nenhuma rota nova: RF-005 reusa GET /renda (renda.index), RF-007 reusa GET /despesas (despesas.index) -- edicao/exclusao sao acoes do mesmo componente Livewire ja montado na pagina de listagem, nao telas separadas.",
+      "servicos_novos": "Nenhum App\\Services novo. RF-005/RF-007 sao update/delete simples sobre uma unica entidade do usuario autenticado, sem calculo/agregacao que justifique extrair logica para fora do componente Livewire -- diferente de RF-008/OverviewService (agrega FonteRenda+Despesa). Mesmo padrao ja usado em RendaManager::criar()/DespesaManager::criar() (marco-1): validacao + Eloquent direto no metodo do componente.",
+      "componentes_estendidos": [
         {
-          "alternativa": "Camada de Service para TODA operacao de negocio, inclusive os CRUDs triviais de Renda/Despesas.",
-          "motivo_descarte": "Over-engineering para o escopo aprovado: RF-004/RF-006 (e RF-005/RF-007 no marco-2) sao CRUDs de 1-2 regras de validacao sem logica adicional; uma camada de Service so para redirecionar chamadas ao Eloquent nao agrega testabilidade real. Reservado Service apenas para o calculo agregado do Overview, que de fato concentra regras (RN-001, RN-007) reaproveitaveis e testaveis isoladamente."
+          "componente": "App\\Livewire\\Renda\\RendaManager",
+          "rf_ref": "RF-005",
+          "estado_novo": "public ?string $editandoId = null;",
+          "metodos_novos": [
+            "editar(string $id): void -- authorize('update', $fonteRenda) (FonteRendaPolicy::update, ja existente); carrega descricao/valorLiquido/mesReferencia da FonteRenda encontrada (findOrFail escopado por usuario_id == Auth::id(), 404 sem vazar existencia de registro de terceiro, RN-005/RNF-002); seta editandoId; view muda para modo edicao (label/botao 'Salvar alteracoes', botao 'Cancelar' visivel).",
+            "atualizar(): void -- authorize('update', $fonteRenda); valida apenas descricao (required|string|max:120) e valorLiquido (required|numeric|gt:0, RN-002) -- mesReferencia deliberadamente fora do payload de validacao/update (RN-008: campo somente leitura na edicao, nunca escrito pelo metodo de update, reforcando em servidor o que a UI ja desabilita); persiste via $fonteRenda->update([...]) (2 colunas apenas); reseta o formulario para o modo criacao.",
+            "cancelarEdicao(): void -- reseta editandoId e os campos do formulario para o modo criacao, sem persistir nada (equivalente a cancelarEdicaoRenda() do prototipo).",
+            "excluir(string $id): void -- authorize('delete', $fonteRenda) (FonteRendaPolicy::delete, ja existente); $fonteRenda->delete() direto, sem modal de confirmacao -- replica o protototipo aprovado (TELA-004, excluirRenda() nao usa confirm()); se o item excluido era o que estava em edicao, reseta o formulario tambem (equivalente ao 'if (tr.dataset.id === editandoId) resetForm()' do prototipo)."
+          ]
         },
         {
-          "alternativa": "Auditoria via trigger nativo do SQLite em vez de Eloquent Observer.",
-          "motivo_descarte": "Triggers SQLite sao menos portaveis/testaveis dentro do ciclo de testes Pest do proprio Laravel, e toda a stack ja acessa dados exclusivamente via Eloquent (sem uso planejado de queries SQL cruas) — Observer e a opcao idiomatica com o mesmo nivel de garantia, mais simples de auditar em code review."
-        },
-        {
-          "alternativa": "Separar Renda e Despesas em Services dedicados (RendaService, DespesaService) desde o marco-1.",
-          "motivo_descarte": "Mesma razao da primeira alternativa — nenhuma logica compartilhada real entre criacao/edicao/exclusao alem de validacao+persistencia. Se o marco-2 (edicao/exclusao) revelar necessidade real de logica compartilhada nao coberta pelo Model, isso e promovido then, nao antecipado sem justificativa concreta."
+          "componente": "App\\Livewire\\Despesas\\DespesaManager",
+          "rf_ref": "RF-007",
+          "estado_novo": "public ?string $editandoId = null;",
+          "metodos_novos": [
+            "editar(string $id): void -- authorize('update', $despesa) (DespesaPolicy::update, ja existente); carrega descricao/valor/categoria/mesReferencia da Despesa encontrada (findOrFail escopado por usuario_id == Auth::id(), RN-005/RNF-002); seta editandoId; view muda para modo edicao.",
+            "atualizar(): void -- authorize('update', $despesa); valida descricao (required|string|max:120), valor (required|numeric|gt:0, RN-002) e categoria (nullable|string|max:60) -- mesReferencia fora do payload de update (RN-008, mesma logica de RendaManager); persiste via $despesa->update([...]) (3 colunas); reseta o formulario.",
+            "cancelarEdicao(): void -- mesmo padrao de RendaManager, equivalente a cancelarEdicaoDespesa() do prototipo.",
+            "excluir(string $id): void -- authorize('delete', $despesa) (DespesaPolicy::delete, ja existente); $despesa->delete() direto, sem modal de confirmacao -- replica o prototipo aprovado (TELA-005, excluirDespesa())."
+          ]
         }
       ],
-      "historico_revisoes": [
+      "seguranca_por_camada": "RN-005/RNF-002 (isolamento, IDOR) garantido em 2 camadas independentes por acao de escrita, mesmo padrao ja usado em criar(): (1) a query que localiza o registro (findOrFail) e sempre escopada por usuario_id == Auth::id() -- tentativa de editar/excluir id de outro usuario retorna 404 antes mesmo da Policy rodar; (2) authorize('update'|'delete', $model) via FonteRendaPolicy/DespesaPolicy reforca a mesma restricao (defesa em profundidade, convencoes.autorizacao) -- nenhuma Policy nova, os 2 metodos ja existiam desde o marco-1 sem uso ate agora.",
+      "auditoria_transversal": "Nenhum trabalho adicional necessario: AuditoriaObserver (app/Observers/AuditoriaObserver.php) ja esta registrado no AppServiceProvider para todo model de dado de negocio e escuta updated/deleted genericamente -- FonteRenda::update() e FonteRenda::delete() (assim como Despesa) disparam automaticamente o registro em logs_auditoria com De/Para (RNF-PADRAO-LOG-AUDITORIA), sem qualquer chamada explicita nos novos metodos atualizar()/excluir().",
+      "debito_acessibilidade_transversal_a_corrigir": "ACC-RF-008-01 (accessibility-agent, RF-008/marco-1) registrou achado bloqueante de fonte nao configuravel (classes Tailwind text-[**px] em vez de unidades relativas, violando arquitetura.padroes_tecnologias.acessibilidade.fonte_configuravel=true) e documentou observacao_transversal explicita de que resources/views/livewire/renda/renda-manager.blade.php e resources/views/livewire/despesas/despesa-manager.blade.php (RF-004/RF-006, ja mergeados) tem o mesmo padrao (34 ocorrencias de text-[**px] confirmadas nos 2 arquivos nesta invocacao) e nao foram corrigidos por exceder o escopo daquele RF. Como RF-005/RF-007 editam exatamente esses 2 arquivos (para adicionar os controles de editar/excluir), o dev-agent deve converter toda ocorrencia de text-[**px] para a unidade rem equivalente (mesma formula ja aplicada em overview-financeiro.blade.php: valor_px / 16) nesses 2 arquivos como parte da implementacao de RF-005/RF-007 -- nao um RF/tarefa separada, e nao redesenho de tela (mesmo tamanho visual, so a unidade), apenas quitacao do debito ja identificado nos arquivos que este marco esta tocando de qualquer forma."
+    },
+    "modelagem_dados": {
+      "status": "aprovado",
+      "descricao": "Marco-2 nao introduz entidade nem coluna nova. RF-005 (edicao/exclusao de fonte de renda) e RF-007 (edicao/exclusao de despesa) operam sobre as mesmas tabelas ja criadas e aprovadas no marco-1 (fontes_renda, despesas), sem alteracao de schema -- apenas update/delete de linhas ja existentes.",
+      "cruzamento_com_migrations_existentes": "Migrations reais conferidas nesta invocacao (database/migrations/2026_08_19_140000_create_fontes_renda_table.php, database/migrations/2026_08_19_150000_create_despesas_table.php, database/migrations/2026_08_18_135525_create_logs_auditoria_table.php): colunas e constraints batem exatamente com campos.dominios.DOM-002/DOM-003 aprovados (CHECK valor > 0 em banco para valor_liquido/valor, RN-002 reforcada em SQL; indice composto (usuario_id, mes_referencia) para RNF-003; FK usuario_id -> users ON DELETE CASCADE). Nenhuma divergencia encontrada -- nada a levar ao gate.",
+      "entidades": [
         {
-          "gate": "aprovacao_arquitetura",
-          "resposta": "Aprovar como proposto",
-          "respondido_em": "2026-08-17T17:40:30Z",
-          "resultado": "Usuario aprovou a proposta de camadas/servicos exatamente como descrita (Apresentacao/Roteamento-Middleware/Autorizacao/Validacao/Dominio-Negocio/Persistencia/Auditoria-transversal/i18n-Acessibilidade-transversal), incluindo as 3 alternativas descartadas, sem ajuste. camadas_servicos.status marcado aprovado."
+          "tabela": "fontes_renda",
+          "dominio_ref": "DOM-002",
+          "status": "pre-existente, sem alteracao neste marco",
+          "colunas": "id (uuid, PK), usuario_id (uuid, FK -> users, cascade), descricao (varchar 120), valor_liquido (decimal 12,2, CHECK > 0), mes_referencia (varchar 7, YYYY-MM), criado_em, atualizado_em",
+          "operacoes_marco_2": "UPDATE (descricao, valor_liquido, atualizado_em -- mes_referencia nunca escrito na edicao, RN-008) e DELETE, ambos restritos a usuario_id == Auth::id() (RN-005)."
+        },
+        {
+          "tabela": "despesas",
+          "dominio_ref": "DOM-003",
+          "status": "pre-existente, sem alteracao neste marco",
+          "colunas": "id (uuid, PK), usuario_id (uuid, FK -> users, cascade), descricao (varchar 120), valor (decimal 12,2, CHECK > 0), categoria (varchar 60, nullable), mes_referencia (varchar 7, YYYY-MM), criado_em, atualizado_em",
+          "operacoes_marco_2": "UPDATE (descricao, valor, categoria, atualizado_em -- mes_referencia nunca escrito na edicao, RN-008) e DELETE, ambos restritos a usuario_id == Auth::id() (RN-005)."
+        },
+        {
+          "tabela": "logs_auditoria",
+          "dominio_ref": "transversal (RNF-PADRAO-LOG-AUDITORIA, sem dominio_ref proprio -- entidade unica de projeto inteiro, nao por modulo)",
+          "status": "pre-existente (marco-1), passa a receber tambem os registros de UPDATE/DELETE de fontes_renda/despesas gerados por RF-005/RF-007 via AuditoriaObserver ja registrado -- nenhuma alteracao de schema ou de mecanismo necessaria.",
+          "colunas": "acao (enum criacao|alteracao|exclusao), usuario_id (FK -> users), tabela_afetada, registro_id, valor_anterior (json, nullable), valor_novo (json, nullable), criado_em."
         }
       ]
+    },
+    "documentacao_tecnica": {
+      "status": "aprovado",
+      "descricao": "fe_be_desacoplado = false (Blade+Livewire acoplado): nao ha contrato de API REST/GraphQL separado. O 'contrato' de cada acao e a assinatura publica do metodo do componente Livewire (payload = propriedades publicas do componente sincronizadas via wire:model, response = re-render do template Blade), documentado abaixo por metodo, com validacao e efeito, cada um referenciando o RF que implementa (rf_ref) -- mesmo formato ja usado para RF-004/RF-006/RF-008 nesta stack.",
+      "contratos": [
+        {
+          "componente": "App\\Livewire\\Renda\\RendaManager",
+          "acao": "editar(string $id)",
+          "rf_ref": "RF-005",
+          "tela_ref": "TELA-004",
+          "trigger": "wire:click=\"editar($fonte->id)\" no botao 'Editar' de cada linha da listagem",
+          "payload": "id: uuid da FonteRenda (vem do atributo da linha renderizada, nunca de input livre do usuario)",
+          "autorizacao": "authorize('update', $fonteRenda) apos findOrFail escopado por usuario_id == Auth::id() -- 404 sem authorize rodar se o registro nao pertencer ao usuario (RN-005/RNF-002)",
+          "efeito": "Popula $descricao/$valorLiquido/$mesReferencia com os dados atuais do registro; seta $editandoId; view alterna para modo edicao com mes_referencia desabilitado (RN-008, nota explicativa visivel, conforme TELA-004 ja aprovada) e botao 'Cancelar' visivel."
+        },
+        {
+          "componente": "App\\Livewire\\Renda\\RendaManager",
+          "acao": "atualizar()",
+          "rf_ref": "RF-005",
+          "tela_ref": "TELA-004",
+          "trigger": "wire:submit=\"atualizar\" no formulario, quando $editandoId != null",
+          "payload": "descricao: string (required, max 120); valorLiquido: numeric (required, gt:0 -- RN-002); mesReferencia: NAO faz parte do payload de update (somente leitura, RN-008)",
+          "validacao": "Mesmas mensagens de erro ja aprovadas em criar() ('o valor deve ser maior que zero' para valorLiquido<=0, RN-002)",
+          "autorizacao": "authorize('update', $fonteRenda), mesma FonteRendaPolicy",
+          "efeito_sucesso": "FonteRenda::update(['descricao' => ..., 'valor_liquido' => ...]) -- gera automaticamente 1 registro em logs_auditoria (acao=alteracao, De/Para das 2 colunas) via AuditoriaObserver; formulario reseta para modo criacao; listagem re-renderiza com o valor novo; indicadores do Overview (RF-008) do mes correspondente refletem a mudanca na proxima consulta (RF-008 sempre calcula em tempo real a partir de fontes_renda/despesas, sem cache).",
+          "efeito_erro": "Mensagens de validacao exibidas inline (mesmo padrao ja aprovado em criar()); nada persistido."
+        },
+        {
+          "componente": "App\\Livewire\\Renda\\RendaManager",
+          "acao": "cancelarEdicao()",
+          "rf_ref": "RF-005",
+          "tela_ref": "TELA-004",
+          "trigger": "wire:click=\"cancelarEdicao\" no botao 'Cancelar', visivel apenas em modo edicao",
+          "payload": "nenhum",
+          "efeito": "Reseta $editandoId e os campos do formulario para o estado de criacao, sem persistir nada."
+        },
+        {
+          "componente": "App\\Livewire\\Renda\\RendaManager",
+          "acao": "excluir(string $id)",
+          "rf_ref": "RF-005",
+          "tela_ref": "TELA-004",
+          "trigger": "wire:click=\"excluir($fonte->id)\" no botao 'Excluir' de cada linha -- sem modal de confirmacao, conforme prototipo aprovado (TELA-004/excluirRenda() nao usa confirm())",
+          "payload": "id: uuid da FonteRenda",
+          "autorizacao": "authorize('delete', $fonteRenda) apos findOrFail escopado por usuario_id == Auth::id()",
+          "efeito_sucesso": "FonteRenda::delete() -- gera automaticamente 1 registro em logs_auditoria (acao=exclusao, valor_anterior=snapshot) via AuditoriaObserver; se o item excluido era o que estava em edicao, formulario tambem reseta; listagem re-renderiza sem a linha; se a listagem ficar vazia, estado vazio e exibido (mesmo componente/markup do estado vazio ja usado em criar()); indicadores do Overview (RF-008) do mes correspondente deixam de contar esse valor na proxima consulta."
+        },
+        {
+          "componente": "App\\Livewire\\Despesas\\DespesaManager",
+          "acao": "editar(string $id)",
+          "rf_ref": "RF-007",
+          "tela_ref": "TELA-005",
+          "trigger": "wire:click=\"editar($despesa->id)\" no botao 'Editar' de cada linha da listagem",
+          "payload": "id: uuid da Despesa",
+          "autorizacao": "authorize('update', $despesa) apos findOrFail escopado por usuario_id == Auth::id() (RN-005/RNF-002)",
+          "efeito": "Popula $descricao/$valor/$categoria/$mesReferencia com os dados atuais; seta $editandoId; view alterna para modo edicao com mes_referencia desabilitado (RN-008, conforme TELA-005 ja aprovada)."
+        },
+        {
+          "componente": "App\\Livewire\\Despesas\\DespesaManager",
+          "acao": "atualizar()",
+          "rf_ref": "RF-007",
+          "tela_ref": "TELA-005",
+          "trigger": "wire:submit=\"atualizar\" no formulario, quando $editandoId != null",
+          "payload": "descricao: string (required, max 120); valor: numeric (required, gt:0 -- RN-002); categoria: string opcional (nullable, max 60); mesReferencia: NAO faz parte do payload de update (RN-008)",
+          "autorizacao": "authorize('update', $despesa), mesma DespesaPolicy",
+          "efeito_sucesso": "Despesa::update(['descricao' => ..., 'valor' => ..., 'categoria' => ...]) -- gera 1 registro em logs_auditoria (acao=alteracao) via AuditoriaObserver; formulario reseta; Overview reflete na proxima consulta.",
+          "efeito_erro": "Mensagens de validacao inline, mesmo padrao de criar(); nada persistido."
+        },
+        {
+          "componente": "App\\Livewire\\Despesas\\DespesaManager",
+          "acao": "cancelarEdicao()",
+          "rf_ref": "RF-007",
+          "tela_ref": "TELA-005",
+          "trigger": "wire:click=\"cancelarEdicao\" no botao 'Cancelar'",
+          "payload": "nenhum",
+          "efeito": "Reseta $editandoId e os campos do formulario, sem persistir nada."
+        },
+        {
+          "componente": "App\\Livewire\\Despesas\\DespesaManager",
+          "acao": "excluir(string $id)",
+          "rf_ref": "RF-007",
+          "tela_ref": "TELA-005",
+          "trigger": "wire:click=\"excluir($despesa->id)\" no botao 'Excluir' de cada linha -- sem modal de confirmacao, conforme prototipo aprovado (TELA-005/excluirDespesa())",
+          "payload": "id: uuid da Despesa",
+          "autorizacao": "authorize('delete', $despesa) apos findOrFail escopado por usuario_id == Auth::id()",
+          "efeito_sucesso": "Despesa::delete() -- gera 1 registro em logs_auditoria (acao=exclusao) via AuditoriaObserver; formulario reseta se aplicavel; listagem re-renderiza; estado vazio exibido se aplicavel; Overview reflete na proxima consulta."
+        }
+      ],
+      "cobertura_telas": "TELA-004 (Renda, rf_refs RF-003/RF-004/RF-005) e TELA-005 (Despesas, rf_refs RF-003/RF-006/RF-007) -- ambas ja descrevem 'editar/excluir funcionais' e o modo de edicao com mes/periodo somente leitura (RN-008, nota explicativa) em documentacao.prototipo.telas; os 8 contratos acima cobrem integralmente os dados/acoes de RF-005 e RF-007 nessas 2 telas. Nenhuma tela nova necessaria neste marco."
     }
   },
   "desenvolvimento": {
-    "marco_ref": "marco-1-mvp",
+    "marco_ref": "marco-2-gestao-completa",
     "status": "em_andamento",
     "pausado": false,
     "ordem_execucao": [
-      "RF-001",
-      "RF-002",
-      "RF-004",
-      "RF-006",
-      "RF-008",
-      "RF-003"
+      "RF-005",
+      "RF-007"
     ],
-    "checkpoint_lote": {
-      "observacao": "RF-001 e RF-002 aprovados/mergeados. RF-003 (isolamento de dados por usuario) reordenado para o final do lote em 2026-08-19T11:56:47Z: dev-agent sinalizou (decisao_pendente em specs/estado-rf-RF-003.json, gate=ordem_execucao_dependencia) que RF-003 e requisito transversal sem tela propria, aplicado por RF-004/RF-006/RF-008, e nao ha entidade (Renda/Despesa/Overview) ainda existente para isolar nem testar RN-005. Usuario escolheu via AskUserQuestion adiar RF-003 para depois de RF-004/RF-006/RF-008, quando sera implementado como RendaPolicy/DespesaPolicy/restricao do Overview com testabilidade real. RF-004 implementado pelo dev-agent em 2026-08-19T12:09:00Z (branch rf/RF-004, commit 596c93a0599c07755467c8cacd7d674d354affb4, aguardando_qa em specs/estado-rf-RF-004.json) — inclui App\\Policies\\FonteRendaPolicy criada junto com o RF (materializacao antecipada da convencao de autorizacao ja aprovada, ver observacoes em specs/estado-rf-RF-004.json), reduzindo o trabalho de RF-003 quando este rodar por ultimo a consolidar/validar (nao criar do zero). RF-006 implementado, aprovado nas duas ondas de QA e mergeado (PR #5, merge_commit=9718e867a93d354e924133d0c2f57790c8586eee) -- inclui App\\Policies\\DespesaPolicy, mesma convencao de FonteRendaPolicy. RF-008 (Overview financeiro com navegacao por mes, TELA-003/DOM-004) implementado pelo dev-agent em 2026-08-19T18:22:00Z (branch rf/RF-008, commit 550418cf8fa483f00b83ec90296c09012a989d63, aguardando_qa em specs/estado-rf-RF-008.json) -- App\\Services\\OverviewService/OverviewData agregando FonteRenda/Despesa por (usuario_id, mes_referencia), sem model/tabela propria; RN-005 aplicada passando sempre Auth::id() ao servico (Overview nao tem entidade/Policy propria a criar); RN-001 (percentual null quando renda=0) e RN-007 (alerta + percentual sem teto quando despesas>renda) verificados com dados reais em banco isolado antes do handoff. Substitui o stub temporario de overview em uso desde RF-001/RF-002. RF-008 nao e o ultimo RF pendente do marco -- resta RF-003, ainda deliberadamente adiado para o final. Proximo RF a implementar: RF-003, agora com FonteRendaPolicy e DespesaPolicy ja existentes (RF-004/RF-006) e com o Overview real ja implementado (RF-008) para consolidar/validar RN-005 com testabilidade cross-user completa nas 3 telas."
-    },
+    "checkpoint_lote": {},
     "historico_revisoes": []
   },
   "testes": {
-    "marco_ref": null,
+    "marco_ref": "marco-2-gestao-completa",
     "status": "pendente",
     "cobertura_minima": 90,
     "cobertura_meta": 100,
     "fluxos": [],
     "testes_sistema": {
-      "itens": [
-        {
-          "fluxo_ref": "FLUXO-002",
-          "status": "passou",
-          "resumo": "Composicao renda->despesa->overview reflete indicadores; RN-007 (alerta) e RN-005 (2 usuarios reais nos 3 dominios) cobertos. 3 testes, 40 assercoes, sem falha.",
-          "commit_ref_testes": "4ff84a3",
-          "branch_ref": "test/fluxo-002-sistema",
-          "registrado_em": "2026-08-20T12:35:04Z"
-        },
-        {
-          "fluxo_ref": "FLUXO-001",
-          "status": "passou",
-          "resumo": "Composicao registro->logout->login->overview autenticado; regeneracao de sessao (BUG-007-SEC) confirmada em ambos os pontos de entrada; login invalido nao concede acesso a /overview. 3 testes, 29 assercoes, sem falha.",
-          "commit_ref_testes": "440bc51",
-          "branch_ref": "fix/bug-007-sec-session-fixation",
-          "detalhes_ref": "specs/relatorios/tester-FLUXO-001.md",
-          "registrado_em": "2026-08-20T12:38:03Z"
-        }
-      ]
+      "itens": []
     },
     "seguranca": {
-      "itens": [
-        {
-          "rf_ref": "RF-008",
-          "rnf_ref": "RNF-002",
-          "verificacao": "Pentest whitebox de app/Livewire/Overview/OverviewFinanceiro.php e app/Services/OverviewService.php: usuarioId passado a OverviewService::calcular() e sempre Auth::id(), obtido diretamente no metodo render() do componente Livewire -- nao ha nenhuma propriedade publica/wire:model no componente que carregue ou permita sobrescrever usuario_id, e o servico nunca deriva o usuario a partir de input do cliente (mesSelecionado so alimenta o filtro mes_referencia, nunca usuario_id). Nao existe entidade/Policy propria para Overview (RN-005 documentado como dependente inteiramente desse padrao), e a leitura de codigo confirma que o padrao foi seguido sem excecao neste RF. Nenhum vetor de IDOR encontrado sobre Overview.",
-          "criticidade": "",
-          "status": "atendido"
-        }
-      ]
+      "itens": []
     },
     "historico_revisoes": []
   },
@@ -1974,9 +1348,9 @@
   },
   "decisao_pendente": null,
   "conclusao_agente": {
-    "agente": "dev-agent",
-    "criterios_saida_atendidos": false,
-    "observacoes": "Invocacao de correcao (tentativa 2/5) para RF-008, reprovado na Onda 1 de QA com 3 achados classificados impacto_real: CR-RF-008-01 (maior, code-review — mount() sem $this->authorize('viewAny', ...) para FonteRenda/Despesa), ACC-RF-008-01 (bloqueante, accessibility — tamanhos de fonte fixos em px em overview-financeiro.blade.php, violando fonte_configuravel = true), SEC-RF-008-01 (menor, security — $mesSelecionado publico sem protecao contra payload Livewire manipulado, podendo derrubar Carbon::createFromFormat() com 500). Os 3 corrigidos na mesma branch rf/RF-008: authorize('viewAny') adicionado a OverviewFinanceiro::mount() para FonteRenda::class e Despesa::class (mesmo padrao ja usado em RendaManager/DespesaManager); as 11 ocorrencias de text-[**px] em overview-financeiro.blade.php trocadas por unidades relativas equivalentes em rem (text-[1.25rem]/[1.125rem]/[0.8125rem]/[0.75rem], mesmo tamanho visual); $mesSelecionado marcado #[Livewire\\Attributes\\Locked] (unico caminho de escrita passa a ser mesAnterior()/mesProximo()/mount(), codigo de servidor, eliminando o vetor de entrada nao validada). Commit de correcao: 5060df123071943a859f4cea9a92f7eb579c3c47 (branch rf/RF-008). specs/estado-rf-RF-008.json atualizado: os 3 bugs -> status corrigido com commit_ref, tentativas_correcao 1 -> 2, handoff_qa.status reprovado -> aguardando (novo ciclo de QA). ACC-RF-008-01 revelou padrao possivelmente transversal ao projeto: renda-manager.blade.php e despesa-manager.blade.php (RF-004/RF-006, ja aprovados/mergeados) usam o mesmo text-[**px] — NAO corrigidos aqui (fora do escopo de RF-008, RFs ja fechados); sinalizado como observacao_transversal em specs/estado-rf-RF-008.json para decisao do orquestrador/usuario sobre abrir correcao dedicada. Controle devolvido ao orquestrador para reiniciar o ciclo de QA do RF-008 (Onda 1 com re-disparo seletivo por diff). criterios_saida_atendidos = false — marco-1-mvp ainda nao fechou (RF-008 volta para QA; RF-003 ainda pendente na ordem_execucao apos RF-008).",
-    "concluido_em": "2026-08-19T18:45:04Z"
+    "agente": "design-agent",
+    "criterios_saida_atendidos": true,
+    "observacoes": "Marco-2: stack herdado do marco-1, fe_be_desacoplado=false, 8 contratos (editar/atualizar/cancelarEdicao/excluir em RendaManager+DespesaManager). Sem entidade nova. Registrado p/ dev-agent: corrigir text-[**px]->rem em renda/despesa-manager.blade.php (debito ACC-RF-008-01) ao tocar esses arquivos p/ RF-005/RF-007. Tela de log adiada p/ marco futuro.",
+    "concluido_em": "2026-08-21T13:07:26Z"
   }
 }
