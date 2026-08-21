@@ -4,17 +4,24 @@ use App\Livewire\Renda\RendaManager;
 use App\Models\FonteRenda;
 use App\Models\LogAuditoria;
 use App\Models\User;
+use App\Services\OverviewService;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Livewire;
 
 /**
- * RF-004 — Cadastro de fonte de renda, TELA-004 (App\Livewire\Renda\RendaManager).
+ * RF-004/RF-005 — Cadastro, edicao e exclusao de fonte de renda, TELA-004
+ * (App\Livewire\Renda\RendaManager).
  * Testes unitarios/integracao cobrindo o criterio de aceite, RN-002 (valor_liquido > 0),
  * RN-003 (mes_referencia formato AAAA-MM) e RN-005 (isolamento por usuario, Policy +
  * escopo de query), incluindo defesa em profundidade (CHECK de banco e authorize() em
  * cada acao).
+ *
+ * Blocos "RF-005:" abaixo cobrem editar()/atualizar()/cancelarEdicao()/excluir() -- regressao
+ * automatizada do que o security-agent ja confirmou manualmente (pentest) no ciclo de QA deste
+ * RF: isolamento por usuario (IDOR) em editar/atualizar/excluir, imutabilidade do mes/periodo em
+ * edicao (RN-008) e rejeicao de valor invalido em atualizar() (RN-002).
  */
 uses(RefreshDatabase::class);
 
@@ -360,4 +367,362 @@ it('ordena a listagem por mes_referencia desc, depois criado_em desc', function 
         $recenteMaisAntiga->id,
         $antiga->id,
     ]);
+});
+
+// RF-005 -----------------------------------------------------------------------------------
+
+it('RF-005: editar() popula o formulario e entra em modo edicao', function () {
+    $usuario = User::factory()->create();
+    $this->actingAs($usuario);
+
+    $fonte = FonteRenda::create([
+        'usuario_id' => $usuario->id,
+        'descricao' => 'Salario',
+        'valor_liquido' => 3000,
+        'mes_referencia' => '2026-08',
+    ]);
+
+    Livewire::test(RendaManager::class)
+        ->call('editar', $fonte->id)
+        ->assertSet('descricao', 'Salario')
+        ->assertSet('valorLiquido', '3000.00')
+        ->assertSet('mesReferencia', '2026-08')
+        ->assertSet('editandoId', $fonte->id)
+        ->assertSeeHtml('renda-mes-nota');
+});
+
+it('RF-005: atualizar() altera descricao e valor liquido, reflete na listagem e registra log de auditoria', function () {
+    $usuario = User::factory()->create();
+    $this->actingAs($usuario);
+
+    $fonte = FonteRenda::create([
+        'usuario_id' => $usuario->id,
+        'descricao' => 'Salario',
+        'valor_liquido' => 3000,
+        'mes_referencia' => '2026-08',
+    ]);
+
+    Livewire::test(RendaManager::class)
+        ->call('editar', $fonte->id)
+        ->set('descricao', 'Salario CLT')
+        ->set('valorLiquido', '3500.75')
+        ->call('atualizar')
+        ->assertHasNoErrors()
+        ->assertSet('editandoId', null)
+        ->assertSee('Salario CLT');
+
+    $fonte->refresh();
+
+    expect($fonte->descricao)->toBe('Salario CLT')
+        ->and((float) $fonte->valor_liquido)->toBe(3500.75);
+
+    $log = LogAuditoria::where('tabela_afetada', 'fontes_renda')
+        ->where('registro_id', $fonte->id)
+        ->where('acao', 'alteracao')
+        ->first();
+
+    expect($log)->not->toBeNull()
+        ->and($log->usuario_id)->toBe($usuario->id)
+        ->and($log->valor_novo['descricao'])->toBe('Salario CLT');
+});
+
+it('RF-005/RN-008: atualizar() ignora tentativa de alterar mesReferencia via payload manipulado, mantendo o mes original', function () {
+    $usuario = User::factory()->create();
+    $this->actingAs($usuario);
+
+    $fonte = FonteRenda::create([
+        'usuario_id' => $usuario->id,
+        'descricao' => 'Salario',
+        'valor_liquido' => 3000,
+        'mes_referencia' => '2026-08',
+    ]);
+
+    Livewire::test(RendaManager::class)
+        ->call('editar', $fonte->id)
+        ->set('mesReferencia', '2026-12') // manipulacao direta da propriedade publica, campo e somente leitura na view (disabled)
+        ->set('descricao', 'Salario ajustado')
+        ->set('valorLiquido', '3200')
+        ->call('atualizar')
+        ->assertHasNoErrors();
+
+    $fonte->refresh();
+
+    expect($fonte->mes_referencia)->toBe('2026-08')
+        ->and($fonte->descricao)->toBe('Salario ajustado');
+});
+
+it('RF-005/RN-002: atualizar() rejeita valor liquido igual a zero, sem persistir alteracao', function () {
+    $usuario = User::factory()->create();
+    $this->actingAs($usuario);
+
+    $fonte = FonteRenda::create([
+        'usuario_id' => $usuario->id,
+        'descricao' => 'Salario',
+        'valor_liquido' => 3000,
+        'mes_referencia' => '2026-08',
+    ]);
+
+    Livewire::test(RendaManager::class)
+        ->call('editar', $fonte->id)
+        ->set('valorLiquido', '0')
+        ->call('atualizar')
+        ->assertHasErrors(['valorLiquido'])
+        ->assertSee('o valor deve ser maior que zero');
+
+    expect((float) $fonte->refresh()->valor_liquido)->toBe(3000.0);
+});
+
+it('RF-005/RN-002: atualizar() rejeita valor liquido negativo, sem persistir alteracao', function () {
+    $usuario = User::factory()->create();
+    $this->actingAs($usuario);
+
+    $fonte = FonteRenda::create([
+        'usuario_id' => $usuario->id,
+        'descricao' => 'Salario',
+        'valor_liquido' => 3000,
+        'mes_referencia' => '2026-08',
+    ]);
+
+    Livewire::test(RendaManager::class)
+        ->call('editar', $fonte->id)
+        ->set('valorLiquido', '-10')
+        ->call('atualizar')
+        ->assertHasErrors(['valorLiquido']);
+
+    expect((float) $fonte->refresh()->valor_liquido)->toBe(3000.0);
+});
+
+it('RF-005: atualizar() rejeita descricao ausente, sem persistir alteracao', function () {
+    $usuario = User::factory()->create();
+    $this->actingAs($usuario);
+
+    $fonte = FonteRenda::create([
+        'usuario_id' => $usuario->id,
+        'descricao' => 'Salario',
+        'valor_liquido' => 3000,
+        'mes_referencia' => '2026-08',
+    ]);
+
+    Livewire::test(RendaManager::class)
+        ->call('editar', $fonte->id)
+        ->set('descricao', '')
+        ->call('atualizar')
+        ->assertHasErrors(['descricao']);
+
+    expect($fonte->refresh()->descricao)->toBe('Salario');
+});
+
+it('RF-005: atualizar() e um no-op seguro quando chamado sem estar em modo edicao (editandoId nulo)', function () {
+    $usuario = User::factory()->create();
+    $this->actingAs($usuario);
+
+    $fonte = FonteRenda::create([
+        'usuario_id' => $usuario->id,
+        'descricao' => 'Salario',
+        'valor_liquido' => 3000,
+        'mes_referencia' => '2026-08',
+    ]);
+
+    Livewire::test(RendaManager::class)
+        ->assertSet('editandoId', null)
+        ->call('atualizar')
+        ->assertHasNoErrors();
+
+    expect($fonte->refresh()->descricao)->toBe('Salario');
+});
+
+it('RF-005: cancelarEdicao() reseta o formulario para o estado de criacao sem persistir nada', function () {
+    $usuario = User::factory()->create();
+    $this->actingAs($usuario);
+
+    $fonte = FonteRenda::create([
+        'usuario_id' => $usuario->id,
+        'descricao' => 'Salario',
+        'valor_liquido' => 3000,
+        'mes_referencia' => '2026-08',
+    ]);
+
+    Livewire::test(RendaManager::class)
+        ->call('editar', $fonte->id)
+        ->set('descricao', 'Rascunho nao salvo')
+        ->call('cancelarEdicao')
+        ->assertSet('descricao', '')
+        ->assertSet('valorLiquido', '')
+        ->assertSet('mesReferencia', '')
+        ->assertSet('editandoId', null)
+        ->assertHasNoErrors();
+
+    expect($fonte->refresh()->descricao)->toBe('Salario');
+});
+
+it('RF-005: excluir() remove a fonte de renda, tira ela da listagem e registra log de auditoria', function () {
+    $usuario = User::factory()->create();
+    $this->actingAs($usuario);
+
+    $fonte = FonteRenda::create([
+        'usuario_id' => $usuario->id,
+        'descricao' => 'Salario',
+        'valor_liquido' => 3000,
+        'mes_referencia' => '2026-08',
+    ]);
+
+    Livewire::test(RendaManager::class)
+        ->call('excluir', $fonte->id)
+        ->assertDontSeeHtml('data-cy="renda-linha-'.$fonte->id.'"')
+        ->assertSeeHtml('data-cy="renda-vazio"');
+
+    expect(FonteRenda::find($fonte->id))->toBeNull();
+
+    $log = LogAuditoria::where('tabela_afetada', 'fontes_renda')
+        ->where('registro_id', $fonte->id)
+        ->where('acao', 'exclusao')
+        ->first();
+
+    expect($log)->not->toBeNull()
+        ->and($log->usuario_id)->toBe($usuario->id)
+        ->and($log->valor_anterior['descricao'])->toBe('Salario');
+});
+
+it('RF-005: excluir() reseta o formulario quando o item excluido era o que estava em edicao', function () {
+    $usuario = User::factory()->create();
+    $this->actingAs($usuario);
+
+    $fonte = FonteRenda::create([
+        'usuario_id' => $usuario->id,
+        'descricao' => 'Salario',
+        'valor_liquido' => 3000,
+        'mes_referencia' => '2026-08',
+    ]);
+
+    Livewire::test(RendaManager::class)
+        ->call('editar', $fonte->id)
+        ->assertSet('editandoId', $fonte->id)
+        ->call('excluir', $fonte->id)
+        ->assertSet('editandoId', null)
+        ->assertSet('descricao', '')
+        ->assertSet('valorLiquido', '')
+        ->assertSet('mesReferencia', '');
+});
+
+it('RF-005: excluir() nao reseta o formulario quando o item excluido nao era o que estava em edicao', function () {
+    $usuario = User::factory()->create();
+    $this->actingAs($usuario);
+
+    $fonteEmEdicao = FonteRenda::create([
+        'usuario_id' => $usuario->id,
+        'descricao' => 'Salario',
+        'valor_liquido' => 3000,
+        'mes_referencia' => '2026-08',
+    ]);
+    $outraFonte = FonteRenda::create([
+        'usuario_id' => $usuario->id,
+        'descricao' => 'Freelance',
+        'valor_liquido' => 800,
+        'mes_referencia' => '2026-08',
+    ]);
+
+    Livewire::test(RendaManager::class)
+        ->call('editar', $fonteEmEdicao->id)
+        ->call('excluir', $outraFonte->id)
+        ->assertSet('editandoId', $fonteEmEdicao->id)
+        ->assertSet('descricao', 'Salario');
+
+    expect(FonteRenda::find($outraFonte->id))->toBeNull()
+        ->and(FonteRenda::find($fonteEmEdicao->id))->not->toBeNull();
+});
+
+it('RF-005/RN-005: editar() de fonte de renda de outro usuario lanca ModelNotFoundException (nao vaza existencia do registro)', function () {
+    $alice = User::factory()->create();
+    $bob = User::factory()->create();
+
+    $fonteDeBob = FonteRenda::create([
+        'usuario_id' => $bob->id,
+        'descricao' => 'Salario do Bob',
+        'valor_liquido' => 4000,
+        'mes_referencia' => '2026-08',
+    ]);
+
+    $this->actingAs($alice);
+
+    expect(fn () => Livewire::test(RendaManager::class)->call('editar', $fonteDeBob->id))
+        ->toThrow(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
+});
+
+it('RF-005/RN-005: atualizar() nao permite editar fonte de renda de outro usuario mesmo forcando editandoId', function () {
+    $alice = User::factory()->create();
+    $bob = User::factory()->create();
+
+    $fonteDeBob = FonteRenda::create([
+        'usuario_id' => $bob->id,
+        'descricao' => 'Salario do Bob',
+        'valor_liquido' => 4000,
+        'mes_referencia' => '2026-08',
+    ]);
+
+    $this->actingAs($alice);
+
+    expect(fn () => Livewire::test(RendaManager::class)
+        ->set('editandoId', $fonteDeBob->id)
+        ->set('descricao', 'Sequestrado pela Alice')
+        ->set('valorLiquido', '1')
+        ->call('atualizar'))
+        ->toThrow(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
+
+    expect($fonteDeBob->refresh()->descricao)->toBe('Salario do Bob');
+});
+
+it('RF-005/RN-005: excluir() de fonte de renda de outro usuario lanca ModelNotFoundException, sem apagar o registro', function () {
+    $alice = User::factory()->create();
+    $bob = User::factory()->create();
+
+    $fonteDeBob = FonteRenda::create([
+        'usuario_id' => $bob->id,
+        'descricao' => 'Salario do Bob',
+        'valor_liquido' => 4000,
+        'mes_referencia' => '2026-08',
+    ]);
+
+    $this->actingAs($alice);
+
+    expect(fn () => Livewire::test(RendaManager::class)->call('excluir', $fonteDeBob->id))
+        ->toThrow(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
+
+    expect(FonteRenda::find($fonteDeBob->id))->not->toBeNull();
+});
+
+it('RF-005: editar()/atualizar()/excluir() de id inexistente lanca ModelNotFoundException, mesmo comportamento de id de outro usuario', function () {
+    $usuario = User::factory()->create();
+    $this->actingAs($usuario);
+
+    $idInexistente = (string) \Illuminate\Support\Str::uuid();
+
+    expect(fn () => Livewire::test(RendaManager::class)->call('editar', $idInexistente))
+        ->toThrow(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
+
+    expect(fn () => Livewire::test(RendaManager::class)->call('excluir', $idInexistente))
+        ->toThrow(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
+});
+
+it('RF-005/RF-008: excluir() reflete no Overview -- fonte de renda excluida deixa de compor a renda total do mes', function () {
+    $usuario = User::factory()->create();
+    $mes = '2026-08';
+
+    $fonte = FonteRenda::create([
+        'usuario_id' => $usuario->id,
+        'descricao' => 'Salario',
+        'valor_liquido' => 3000,
+        'mes_referencia' => $mes,
+    ]);
+
+    $overviewAntes = (new OverviewService)->calcular($usuario->id, $mes);
+    expect($overviewAntes->rendaTotal)->toBe(3000.0);
+
+    $this->actingAs($usuario);
+
+    Livewire::test(RendaManager::class)
+        ->call('excluir', $fonte->id)
+        ->assertHasNoErrors();
+
+    $overviewDepois = (new OverviewService)->calcular($usuario->id, $mes);
+    expect($overviewDepois->rendaTotal)->toBe(0.0);
 });

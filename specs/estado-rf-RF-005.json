@@ -1,0 +1,145 @@
+{
+  "rf_ref": "RF-005",
+  "versao": 3,
+  "status": "aprovado",
+  "implementacao_existente": false,
+  "gap_implementado": null,
+  "branch_ref": "rf/RF-005",
+  "commit_ref": "2d8e8c198a4f4d5eb1dec380c1e95b2034644c94",
+  "commit_ref_testes": "b379d0ba325c677c71bcecc3382d908b2c9f2bff",
+  "grupo_commit": [],
+  "handoff_qa": {
+    "disparado_em": "2026-08-21T13:17:42Z",
+    "status": "aprovado"
+  },
+  "tentativas_correcao": 0,
+  "bugs": [],
+  "qa": {
+    "code_review": {
+      "status": "passou",
+      "quality_gate": {
+        "resultado": "indisponivel",
+        "detalhes_ref": "specs/relatorios/code-review-RF-005.md"
+      },
+      "revisao_qualitativa": {
+        "status": "passou",
+        "observacoes": [
+          "RendaManager.php L48-60/L106-115: regras/mensagens de validacao (descricao, valorLiquido) duplicadas entre criar() e atualizar() -- extrair metodo comum, nao bloqueante."
+        ]
+      }
+    },
+    "security": {
+      "status": "passou",
+      "ferramenta": {
+        "nome": null,
+        "status": "indisponivel",
+        "detalhes_ref": ""
+      },
+      "criterios_declarados": {
+        "total": 0,
+        "atendidos": 0,
+        "nao_atendidos": 0,
+        "nao_verificaveis": 0
+      },
+      "pentest_manual": {
+        "status": "concluido",
+        "achados_confirmados": 0,
+        "achados_por_analise_estatica": 0
+      },
+      "observacoes": [
+        "criterio_aceite_seguranca ausente no RF (projeto anterior a essa pratica) -- pentest completo rodou sem piso declarado.",
+        "IDOR (editar/atualizar/excluir): 404 identico para id de outro usuario, testado com exploracao real (Livewire::test, 2 usuarios).",
+        "RN-008 explorado via set direto de mesReferencia em modo edicao: servidor ignora, persiste mes original -- confirmado.",
+        "RN-002 explorado com valorLiquido 0/-100 via atualizar(): rejeitado no servidor, nada persistido -- confirmado.",
+        "Log de auditoria (update/delete) gerado com 5 campos; nenhuma rota do RF edita/exclui logs_auditoria."
+      ]
+    },
+    "accessibility": {
+      "status": "passou",
+      "criterios_declarados": {
+        "total": 0,
+        "atendidos": 0,
+        "nao_atendidos": 0,
+        "nao_verificaveis": 0
+      },
+      "contraste": {
+        "status": "passou",
+        "observacoes": [
+          "Tema claro/escuro: paleta_cores validada. Texto principal (#1f2937) 14.67:1 sobre card.",
+          "Texto muted (#54606e) 6.35:1 sobre card; cor danger 4.83:1 sobre branco.",
+          "Botão primário: #fff sobre #2563eb ~5.17:1 (WCAG AA aprovado)."
+        ]
+      },
+      "tags_leitor_tela": {
+        "status": "passou",
+        "observacoes": [
+          "Tabela com <caption class=\"sr-only\">; headers com scope=\"col\" ✓",
+          "Campos com <label for> + aria-describedby + aria-invalid ✓",
+          "Erros/mensagens em aria-live=\"polite\" ✓",
+          "Nota RN-008 (mês somente leitura) associada via aria-describedby ✓",
+          "Botões com aria-label descritivo; wire:loading.attr=\"aria-busy\" ✓"
+        ]
+      },
+      "aderencia_estrutural": {
+        "status": "passou",
+        "observacoes": [
+          "ACC-RF-008-01 resolvido: texto-[px] → texto-[rem] validado, zero ocorrências remanescentes.",
+          "Tokens CSS (--color-*) únicos, paleta aprovada, sem hex fora dela.",
+          "Foco visível: focus-ring com outline 3px #2563eb (claro) / #60a5fa (escuro) ✓",
+          "Redução movimento: @media prefers-reduced-motion respeitada, transições-colors ✓"
+        ]
+      },
+      "recomendacoes": [
+        {
+          "descricao": "Foco após Livewire AJAX: editar/atualizar/excluir não movem foco explicitamente. Não bloqueante (RF-008 tem padrão similar); considerar listener Livewire centralizado.",
+          "criticidade": "baixa"
+        }
+      ]
+    },
+    "tester": {
+      "status": "passou",
+      "unitarios": {
+        "status": "passou",
+        "cobertura": 100,
+        "framework": "Pest"
+      },
+      "integracao": {
+        "status": "passou",
+        "cobertura": 100,
+        "framework": "Pest"
+      }
+    }
+  },
+  "validacao_local": {
+    "status": "aprovado",
+    "como_subir": "composer run dev",
+    "o_que_testar": "Na tela Renda (TELA-004): editar descricao/valor de uma fonte de renda existente e confirmar que persiste; tentar salvar valor <= 0 e ver a rejeicao (RN-002); confirmar que o mes/periodo aparece somente leitura durante a edicao, sem opcao de altera-lo (RN-008); excluir uma fonte de renda e confirmar que ela some da lista e que o indicador do Overview do mes correspondente e atualizado (RF-008).",
+    "rfs_cobertos": ["RF-005"],
+    "validado_em": "2026-08-21T13:40:35Z",
+    "observacoes": "Usuário validou os 4 critérios de aceite (edição, RN-002, RN-008, reflexo no Overview) sem ressalvas."
+  },
+  "decisao_pendente": {
+    "gate": "validacao_local",
+    "pergunta": "As duas ondas de QA do RF-005 passaram sem achado (code-review, security, accessibility, tester). Apos validar localmente o RF, ele esta aprovado para merge/deploy?",
+    "opcoes": [
+      { "id": "aprovado", "descricao": "Validei localmente e o RF-005 esta correto; pode mergear/deployar." },
+      { "id": "reprovado", "descricao": "Encontrei um problema testando localmente; nao mergear ainda." }
+    ],
+    "contexto": "Onda 1 (code-review/security/accessibility) e Onda 2 (tester) fecharam 100% passou, sem bugs abertos. Suite completa: 113 passed / 1 failed -- falha e no scaffold padrao tests/Feature/ExampleTest.php, pre-existente do RF-001, nao relacionada ao RF-005. Suba com 'composer run dev' e exercite os 4 criterios de aceite em validacao_local.o_que_testar na tela Renda (TELA-004).",
+    "resposta": "aprovado",
+    "respondido_em": "2026-08-21T13:40:35Z"
+  },
+  "deploy": {
+    "status": "mergeado",
+    "pr_ref": "https://github.com/Yanfgomes/my-bills/pull/11",
+    "merged_em": "2026-08-21T13:44:32Z",
+    "pipelines": [],
+    "deployado_em": null,
+    "decisao_humana": ""
+  },
+  "resolucao_tela": {
+    "tela_ref": "TELA-004",
+    "fragmentos_lidos": [],
+    "observacao": "fe_be_desacoplado = false: markup implementado pelo proprio dev-agent. Componentes AppLayout/PageHero/CardBase/DataTable-style ja existiam no projeto desde o reskin bioform-layout (commit 730680c) e desde RF-004 -- nenhum fragmento novo de reference/bioform-layout/ precisou ser lido para RF-005 (so extensao de tabela/formulario ja existentes com coluna Acoes e alternancia criacao/edicao); padroes de data-cy, paleta, tokens de tema e ARIA seguidos dos arquivos irmaos ja aprovados (despesa-manager.blade.php, overview-financeiro.blade.php) e do prototipo aprovado (prototipo/index.html, TELA-004)."
+  }
+}
