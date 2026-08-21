@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LogoutController;
 use App\Livewire\Auth\LoginForm;
 use App\Livewire\Auth\RegistroForm;
+use App\Livewire\Configuracoes\ConfiguracaoManager;
 use App\Livewire\Despesas\DespesaManager;
 use App\Livewire\Overview\OverviewFinanceiro;
 use App\Livewire\Renda\RendaManager;
@@ -39,6 +40,12 @@ Route::get('/renda', RendaManager::class)
 Route::get('/despesas', DespesaManager::class)
     ->middleware('auth')
     ->name('despesas.index');
+
+// RF-PADRAO-CONFIGURACOES (marco-3-padroes-pipeline). Mesma convencao de nomenclatura de
+// renda.index/despesas.index (dot notation por dominio).
+Route::get('/configuracoes', ConfiguracaoManager::class)
+    ->middleware('auth')
+    ->name('configuracoes.show');
 
 Route::get('/', function () {
     return redirect()->route(auth()->check() ? 'overview' : 'registro');

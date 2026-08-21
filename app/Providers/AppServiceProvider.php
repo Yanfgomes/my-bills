@@ -2,10 +2,12 @@
 
 namespace App\Providers;
 
+use App\Models\ConfiguracaoUsuario;
 use App\Models\Despesa;
 use App\Models\FonteRenda;
 use App\Models\User;
 use App\Observers\AuditoriaObserver;
+use App\Policies\ConfiguracaoUsuarioPolicy;
 use App\Policies\DespesaPolicy;
 use App\Policies\FonteRendaPolicy;
 use Illuminate\Support\Facades\Gate;
@@ -32,6 +34,10 @@ class AppServiceProvider extends ServiceProvider
         User::observe(AuditoriaObserver::class);
         FonteRenda::observe(AuditoriaObserver::class);
         Despesa::observe(AuditoriaObserver::class);
+        // RF-PADRAO-CONFIGURACOES (criterio_aceite_seguranca: toda alteracao de preferencias
+        // gera registro em logs_auditoria) — Observer generico ja existente cobre
+        // created/updated sem alteracao de codigo.
+        ConfiguracaoUsuario::observe(AuditoriaObserver::class);
 
         // RF-003/RN-005 (isolamento de dados por usuario autenticado), consolidacao: registro
         // explicito das Policies ja criadas por RF-004/RF-006 (App\Policies\FonteRendaPolicy/
@@ -44,5 +50,6 @@ class AppServiceProvider extends ServiceProvider
         // caso um model ou uma Policy mude de nome/namespace no futuro.
         Gate::policy(FonteRenda::class, FonteRendaPolicy::class);
         Gate::policy(Despesa::class, DespesaPolicy::class);
+        Gate::policy(ConfiguracaoUsuario::class, ConfiguracaoUsuarioPolicy::class);
     }
 }

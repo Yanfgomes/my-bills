@@ -1,5 +1,17 @@
+{{--
+    RF-PADRAO-CONFIGURACOES: data-theme/data-font-size/alto-contraste/reducao-movimento
+    renderizados diretamente de $configuracaoUsuario (compartilhado por
+    App\Http\Middleware\AplicarConfiguracaoUsuario, sempre presente nas rotas autenticadas que
+    usam este layout) -- sem script de FOUC baseado em localStorage: o primeiro paint ja sai
+    correto, server-side, por usuario (arquitetura.camadas_servicos.mecanismo_tema_substituido).
+--}}
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html
+    lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+    data-theme="{{ $configuracaoUsuario->tema === 'escuro' ? 'dark' : 'light' }}"
+    data-font-size="{{ $configuracaoUsuario->tamanho_fonte }}"
+    @class(['alto-contraste' => $configuracaoUsuario->alto_contraste, 'reduzir-movimento' => $configuracaoUsuario->reducao_movimento])
+>
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,20 +19,6 @@
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
-
-        {{--
-            Evita FOUC do tema: aplica o data-theme salvo (ou nada, deixando a media query
-            prefers-color-scheme de resources/css/app.css decidir) antes do primeiro paint —
-            precisa rodar antes do Alpine, que so inicializa depois do body.
-        --}}
-        <script>
-            (function () {
-                var saved = localStorage.getItem('app_theme');
-                if (saved === 'dark' || saved === 'light') {
-                    document.documentElement.setAttribute('data-theme', saved);
-                }
-            })();
-        </script>
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @livewireStyles
@@ -62,6 +60,34 @@
                 @include('layouts.partials.app-footer')
             </div>
         </div>
+
+        {{--
+            RF-PADRAO-CONFIGURACOES: TemaToggleTopbar::alternar() e ConfiguracaoManager::
+            salvar() disparam o mesmo evento Livewire 'configuracao-atualizada' (payload
+            parcial ou completo) -- este listener aplica os atributos/classes no <html> sem
+            reload, para toda tela autenticada (o toggle do topbar existe em todas elas).
+        --}}
+        <script>
+            document.addEventListener('livewire:init', () => {
+                Livewire.on('configuracao-atualizada', (evento) => {
+                    var dados = Array.isArray(evento) ? evento[0] : evento;
+                    var raiz = document.documentElement;
+
+                    if (dados.tema) {
+                        raiz.setAttribute('data-theme', dados.tema === 'escuro' ? 'dark' : 'light');
+                    }
+                    if (dados.tamanhoFonte) {
+                        raiz.setAttribute('data-font-size', dados.tamanhoFonte);
+                    }
+                    if (typeof dados.altoContraste === 'boolean') {
+                        raiz.classList.toggle('alto-contraste', dados.altoContraste);
+                    }
+                    if (typeof dados.reducaoMovimento === 'boolean') {
+                        raiz.classList.toggle('reduzir-movimento', dados.reducaoMovimento);
+                    }
+                });
+            });
+        </script>
 
         @livewireScripts
     </body>

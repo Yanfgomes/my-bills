@@ -119,9 +119,12 @@
     }
 }
 
-/* Reducao de movimento (RNF-PADRAO-ACESSIBILIDADE-CONFIG): respeita a preferencia do SO como
-   valor inicial; o controle explicito na tela de configuracoes (RF futuro) sobrepoe isto via
-   classe utilitaria dedicada quando essa tela existir. */
+/* Reducao de movimento (RNF-PADRAO-ACESSIBILIDADE-CONFIG): a media query cobre paginas sem
+   ConfiguracaoUsuario (guest: login/registro, RF-PADRAO-CONFIGURACOES nao altera essas rotas).
+   Para rotas autenticadas, o valor efetivo passa a ser o registro persistido do usuario (que
+   nasce com o valor detectado do SO na primeira visita e pode ser sobreposto explicitamente na
+   tela de configuracoes) -- ver classe .reduzir-movimento abaixo, aplicada em <html> por
+   layouts/app.blade.php a partir de $configuracaoUsuario.reducao_movimento. */
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
         animation-duration: 0.01ms !important;
@@ -129,6 +132,58 @@
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
     }
+}
+
+.reduzir-movimento *,
+.reduzir-movimento *::before,
+.reduzir-movimento *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+}
+
+/* Tamanho de fonte (fonte_configuravel = true, RF-PADRAO-CONFIGURACOES): reescala o font-size
+   raiz -- toda tela do projeto ja usa unidades rem (nunca px fixo para texto,
+   reference/layout-guidelines.md), entao um unico ponto de ajuste aqui basta para propagar a
+   preferencia do usuario para toda a interface. Sem o atributo (paginas guest), o navegador usa
+   o tamanho normal (100%). */
+html[data-font-size='pequeno'] {
+    font-size: 87.5%;
+}
+
+html[data-font-size='grande'] {
+    font-size: 112.5%;
+}
+
+/* Alto contraste (alto_contraste = true, RF-PADRAO-CONFIGURACOES): conjunto adicional de
+   tokens sobre a mesma infraestrutura de .[data-theme] (layout-guidelines.md: "nao uma paleta
+   paralela"), nao decidido pelo design-agent na Fase 1 (arquitetura.padroes_tecnologias.
+   acessibilidade.paleta_cores.nota) -- maximiza contraste (preto/branco puros + acento escuro)
+   sobre cada tema em vez de reusar os tons intermediarios ja aprovados, que nao atingem o
+   ganho de contraste que este modo promete. */
+html.alto-contraste:not([data-theme='dark']) {
+    --color-bg: #ffffff;
+    --color-card: #ffffff;
+    --color-border: #000000;
+    --color-text: #000000;
+    --color-text-muted: #1f2937;
+    --color-primary: #0030a8;
+    --color-primary-dark: #001d6b;
+    --color-on-primary: #ffffff;
+    --color-focus-ring: #0030a8;
+}
+
+html.alto-contraste[data-theme='dark'] {
+    --color-bg: #000000;
+    --color-card: #000000;
+    --color-border: #ffffff;
+    --color-text: #ffffff;
+    --color-text-muted: #e5e7eb;
+    --color-primary: #7fb0ff;
+    --color-primary-dark: #aecbff;
+    --color-on-primary: #000000;
+    --color-focus-ring: #7fb0ff;
 }
 
 /* Foco visivel (foco_visivel = true): nunca remover sem substituto equivalente. */
