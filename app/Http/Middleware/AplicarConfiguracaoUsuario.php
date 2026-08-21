@@ -21,16 +21,7 @@ class AplicarConfiguracaoUsuario
     public function handle(Request $request, Closure $next): Response
     {
         if (Auth::check()) {
-            $configuracao = ConfiguracaoUsuario::firstOrCreate(
-                ['usuario_id' => Auth::id()],
-                [
-                    'idioma' => 'pt',
-                    'tema' => 'claro',
-                    'tamanho_fonte' => 'medio',
-                    'alto_contraste' => false,
-                    'reducao_movimento' => false,
-                ]
-            );
+            $configuracao = ConfiguracaoUsuario::paraUsuario(Auth::id());
 
             app()->setLocale($configuracao->idioma);
 

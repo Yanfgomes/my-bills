@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * (tabela configuracoes_usuario). Relacao 1:1 com User, reforcada por UNIQUE(usuario_id)
  * na migration. Contrato: arquitetura.documentacao_tecnica.contratos (ConfiguracaoManager).
  */
-#[Fillable(['usuario_id', 'idioma', 'tema', 'tamanho_fonte', 'alto_contraste', 'reducao_movimento'])]
+#[Fillable(['idioma', 'tema', 'tamanho_fonte', 'alto_contraste', 'reducao_movimento'])]
 class ConfiguracaoUsuario extends Model
 {
     use HasUuids;
@@ -39,5 +39,34 @@ class ConfiguracaoUsuario extends Model
     public function usuario(): BelongsTo
     {
         return $this->belongsTo(User::class, 'usuario_id');
+    }
+
+    /**
+     * Correcao SEC-CONFIG-001: usuario_id foi removido de $fillable (nunca deve ser
+     * atribuivel em massa a partir de payload externo, RN-009/IDOR). Este e o unico ponto
+     * autorizado a criar um registro para um usuario que ainda nao tem um -- usuario_id e
+     * atribuido por propriedade direta (sempre permitido, independente de $fillable), nunca
+     * via array passado a fill()/create()/firstOrCreate(). Usado por ConfiguracaoManager::mount()
+     * e AplicarConfiguracaoUsuario, unicos chamadores legitimos.
+     */
+    public static function paraUsuario(string $usuarioId): self
+    {
+        $configuracao = static::where('usuario_id', $usuarioId)->first();
+
+        if ($configuracao) {
+            return $configuracao;
+        }
+
+        $configuracao = new self([
+            'idioma' => 'pt',
+            'tema' => 'claro',
+            'tamanho_fonte' => 'medio',
+            'alto_contraste' => false,
+            'reducao_movimento' => false,
+        ]);
+        $configuracao->usuario_id = $usuarioId;
+        $configuracao->save();
+
+        return $configuracao;
     }
 }

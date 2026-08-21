@@ -42,16 +42,7 @@ class ConfiguracaoManager extends Component
      */
     public function mount(): void
     {
-        $configuracao = ConfiguracaoUsuario::firstOrCreate(
-            ['usuario_id' => Auth::id()],
-            [
-                'idioma' => 'pt',
-                'tema' => 'claro',
-                'tamanho_fonte' => 'medio',
-                'alto_contraste' => false,
-                'reducao_movimento' => false,
-            ]
-        );
+        $configuracao = ConfiguracaoUsuario::paraUsuario(Auth::id());
 
         $this->authorize('view', $configuracao);
 
