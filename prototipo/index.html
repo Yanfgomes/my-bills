@@ -58,6 +58,31 @@
   .toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;}
   .note{font-size:12px;color:var(--muted);margin-top:16px;padding-top:12px;border-top:1px dashed var(--border);}
   .hint{font-size:12px;color:var(--muted);margin-top:8px;}
+  .theme-options{display:flex;gap:10px;margin-top:6px;}
+  .theme-btn{border:1px solid var(--border);background:#fff;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;}
+  .theme-btn[aria-pressed="true"]{border-color:var(--primary);background:#eff6ff;color:var(--primary);font-weight:600;}
+  .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);}
+  .toggle-row:last-child{border-bottom:none;}
+  .toggle-row .toggle-label{font-size:13px;font-weight:600;}
+  .toggle-row .toggle-desc{font-size:12px;color:var(--muted);font-weight:400;margin-top:2px;}
+  .switch{position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0;}
+  .switch input{opacity:0;width:0;height:0;position:absolute;}
+  .switch .slider{position:absolute;inset:0;background:#cbd5e1;border-radius:999px;cursor:pointer;transition:background .15s;}
+  .switch .slider::before{content:"";position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .15s;}
+  .switch input:checked + .slider{background:var(--primary);}
+  .switch input:checked + .slider::before{transform:translateX(18px);}
+  .switch input:focus-visible + .slider{outline:3px solid #93c5fd;outline-offset:2px;}
+  .filter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;align-items:end;}
+  .filter-grid label{margin:0 0 4px;}
+  .save-confirm{background:#f0fdf4;color:var(--success);border:1px solid #bbf7d0;padding:8px 12px;border-radius:8px;font-size:13px;margin-top:12px;display:none;}
+  .save-confirm.show{display:block;}
+  .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.45);align-items:center;justify-content:center;z-index:50;}
+  .modal-backdrop.show{display:flex;}
+  .modal-box{background:#fff;border-radius:var(--radius);padding:20px;max-width:520px;width:92%;max-height:80vh;overflow:auto;}
+  .modal-box h3{margin-top:0;font-size:15px;}
+  .diff-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;}
+  .diff-cols pre{background:#f9fafb;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:12px;white-space:pre-wrap;word-break:break-word;margin:0;}
+  .diff-cols h4{font-size:12px;margin:0 0 6px;color:var(--muted);}
 </style>
 </head>
 <body>
@@ -70,6 +95,8 @@
     <button data-cy="nav-overview" onclick="showScreen('overview')">Overview</button>
     <button data-cy="nav-renda" onclick="showScreen('renda')">Renda</button>
     <button data-cy="nav-despesas" onclick="showScreen('despesas')">Despesas</button>
+    <button data-cy="nav-config" onclick="showScreen('config')">Configuracoes</button>
+    <button data-cy="nav-auditoria" onclick="showScreen('auditoria')">Auditoria</button>
   </nav>
 </header>
 
@@ -334,6 +361,128 @@
     <button class="secondary" id="despesa-cancelar-btn" data-cy="despesa-cancelar" onclick="cancelarEdicaoDespesa()" style="display:none;margin-top:14px;">Cancelar edicao</button>
   </div>
 </section>
+
+<!-- TELA-006: Configuracoes do Sistema (RF-PADRAO-CONFIGURACOES) -->
+<section id="screen-config" class="screen">
+  <div class="card" style="max-width:520px;">
+    <h2>Configuracoes do sistema</h2>
+    <p class="muted">Preferencias do usuario autenticado. Materializa RNF-PADRAO-IDIOMA e RNF-PADRAO-ACESSIBILIDADE-CONFIG.</p>
+
+    <label for="config-idioma">Idioma</label>
+    <select id="config-idioma" data-cy="config-idioma">
+      <option value="pt" selected>Portugues</option>
+      <option value="en">English</option>
+      <option value="es">Espanol</option>
+    </select>
+
+    <label id="config-tema-label" style="margin-top:14px;">Tema</label>
+    <div class="theme-options" role="group" aria-labelledby="config-tema-label">
+      <button type="button" class="theme-btn" data-cy="config-tema-claro" aria-pressed="true" onclick="mockSetTema(this, 'claro')">Claro</button>
+      <button type="button" class="theme-btn" data-cy="config-tema-escuro" aria-pressed="false" onclick="mockSetTema(this, 'escuro')">Escuro</button>
+    </div>
+
+    <label for="config-fonte" style="margin-top:14px;">Tamanho de fonte</label>
+    <select id="config-fonte" data-cy="config-fonte">
+      <option value="pequeno">Pequena</option>
+      <option value="medio" selected>Media</option>
+      <option value="grande">Grande</option>
+    </select>
+
+    <div class="toggle-row" style="margin-top:14px;">
+      <div>
+        <div class="toggle-label">Alto contraste</div>
+        <div class="toggle-desc">Aumenta o contraste de cores da interface.</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="config-alto-contraste" data-cy="config-alto-contraste">
+        <span class="slider" aria-hidden="true"></span>
+      </label>
+    </div>
+
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-label">Reducao de movimento</div>
+        <div class="toggle-desc">Desativa/reduz animacoes e transicoes nao essenciais. Valor inicial reflete a preferencia do sistema operacional (demo: assumido "nao" neste protótipo).</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="config-reducao-movimento" data-cy="config-reducao-movimento">
+        <span class="slider" aria-hidden="true"></span>
+      </label>
+    </div>
+
+    <p class="hint">Foco visivel em todo elemento interativo e garantido em toda a interface por padrao (RNF-PADRAO-ACESSIBILIDADE-CONFIG) — nao e um controle separado nesta tela.</p>
+
+    <button class="primary" data-cy="config-salvar" onclick="mockSalvarConfig()">Salvar preferencias</button>
+    <div id="config-salvo" class="save-confirm" data-cy="config-salvo-confirmacao">Preferencias salvas com sucesso.</div>
+  </div>
+</section>
+
+<!-- TELA-007: Relatorio de Log/Auditoria (RF-PADRAO-LOG-AUDITORIA) -->
+<section id="screen-auditoria" class="screen">
+  <div class="card">
+    <h2>Relatorio de log de auditoria</h2>
+    <p class="muted">Consulta somente leitura a tabela de log unica (RNF-PADRAO-LOG-AUDITORIA). Nenhuma acao de edicao/exclusao esta disponivel aqui. Escopo self-audit (RN-010): exibe apenas as acoes do proprio usuario autenticado — nao ha filtro por usuario porque nao ha o que filtrar entre usuarios.</p>
+
+    <div class="filter-grid">
+      <div>
+        <label for="aud-filtro-tabela">Tabela/entidade</label>
+        <select id="aud-filtro-tabela" data-cy="aud-filtro-tabela">
+          <option value="">Todas</option>
+          <option value="fontes_renda">fontes_renda</option>
+          <option value="despesas">despesas</option>
+          <option value="users">users</option>
+        </select>
+      </div>
+      <div>
+        <label for="aud-filtro-acao">Acao</label>
+        <select id="aud-filtro-acao" data-cy="aud-filtro-acao">
+          <option value="">Todas</option>
+          <option value="criacao">Criacao</option>
+          <option value="alteracao">Alteracao</option>
+          <option value="exclusao">Exclusao</option>
+        </select>
+      </div>
+      <div>
+        <label for="aud-filtro-inicio">Periodo (inicio)</label>
+        <input type="date" id="aud-filtro-inicio" data-cy="aud-filtro-inicio">
+      </div>
+      <div>
+        <label for="aud-filtro-fim">Periodo (fim)</label>
+        <input type="date" id="aud-filtro-fim" data-cy="aud-filtro-fim">
+      </div>
+      <div>
+        <button class="primary" style="margin-top:0;" data-cy="aud-filtrar" onclick="mockFiltrarAuditoria()">Filtrar</button>
+      </div>
+    </div>
+
+    <div id="aud-vazio" class="alert empty" style="margin-top:14px;">Nenhum registro de log encontrado para os filtros informados.</div>
+
+    <table id="aud-tabela" style="margin-top:14px;">
+      <thead>
+        <tr><th>Acao</th><th>Tabela/entidade</th><th>Data/hora</th><th>Detalhe</th></tr>
+      </thead>
+      <tbody id="aud-tbody" data-cy="aud-lista"></tbody>
+    </table>
+  </div>
+</section>
+
+<div class="modal-backdrop" id="aud-modal" data-cy="aud-modal">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="aud-modal-titulo">
+    <h3 id="aud-modal-titulo">Detalhe do registro (De/Para)</h3>
+    <p class="muted" id="aud-modal-meta"></p>
+    <div class="diff-cols">
+      <div>
+        <h4>Valor anterior</h4>
+        <pre id="aud-modal-anterior"></pre>
+      </div>
+      <div>
+        <h4>Valor novo</h4>
+        <pre id="aud-modal-novo"></pre>
+      </div>
+    </div>
+    <button class="secondary" style="margin-top:14px;" data-cy="aud-modal-fechar" onclick="fecharModalAuditoria()">Fechar</button>
+  </div>
+</div>
 
 <p class="note">
   Protótipo 100% mockado — dados fixos em JavaScript, sem chamadas de API/backend real. Reflete as regras de negocio aprovadas (RN-001 a RN-008): validacao de valor > 0, validacao de mes/periodo, overview sem renda no periodo, alerta de percentual acima de 100%, e mes/periodo somente leitura na edicao de lancamentos existentes. Nao é a implementação final nem define stack/arquitetura.
@@ -716,9 +865,87 @@
     resetDespesaForm();
   }
 
+  // ---- Configuracoes do sistema (RF-PADRAO-CONFIGURACOES) ----
+  function mockSetTema(btn, tema){
+    document.querySelectorAll('.theme-btn').forEach(function(b){ b.setAttribute('aria-pressed', 'false'); });
+    btn.setAttribute('aria-pressed', 'true');
+  }
+
+  function mockSalvarConfig(){
+    const confirmacao = document.getElementById('config-salvo');
+    confirmacao.classList.add('show');
+    setTimeout(function(){ confirmacao.classList.remove('show'); }, 3000);
+  }
+
+  // ---- Relatorio de log de auditoria (RF-PADRAO-LOG-AUDITORIA) ----
+  // Mock de logs_auditoria (CAMPO-AUD-001..008) — dados fixos representando o que o
+  // AuditoriaObserver ja grava hoje (acao, usuario, tabela_afetada, De/Para, criado_em).
+  // Escopo self-audit (RN-010): mock representa apenas as acoes do proprio usuario
+  // autenticado na demo (joana@exemplo.com) — nao ha registro de outro usuario aqui.
+  const logsAuditoria = [
+    { acao: 'criacao', usuario: 'joana@exemplo.com', tabela: 'fontes_renda', dataHora: '2026-08-18 09:12', anterior: null, novo: { descricao: 'Salario CLT', valor_liquido: 5000.00, mes_referencia: '2026-08' } },
+    { acao: 'alteracao', usuario: 'joana@exemplo.com', tabela: 'despesas', dataHora: '2026-08-18 10:03', anterior: { valor: 900.00 }, novo: { valor: 950.00 } },
+    { acao: 'exclusao', usuario: 'joana@exemplo.com', tabela: 'despesas', dataHora: '2026-08-19 14:47', anterior: { descricao: 'Assinatura de streaming', valor: 39.90, mes_referencia: '2026-08' }, novo: null },
+    { acao: 'criacao', usuario: 'joana@exemplo.com', tabela: 'users', dataHora: '2026-08-15 08:00', anterior: null, novo: { nome: 'Joana', email: 'joana@exemplo.com' } }
+  ];
+
+  function renderAuditoria(lista){
+    const tbody = document.getElementById('aud-tbody');
+    const vazio = document.getElementById('aud-vazio');
+    const tabela = document.getElementById('aud-tabela');
+    tbody.innerHTML = '';
+    if (lista.length === 0) {
+      vazio.classList.add('show');
+      tabela.style.display = 'none';
+      return;
+    }
+    vazio.classList.remove('show');
+    tabela.style.display = 'table';
+    lista.forEach(function(log, idx){
+      const tr = document.createElement('tr');
+      tr.innerHTML = '<td>' + log.acao + '</td><td>' + log.tabela + '</td><td>' + log.dataHora + '</td>' +
+        '<td><button class="secondary" data-cy="aud-ver-detalhe-' + idx + '" onclick="abrirModalAuditoria(' + idx + ')">Ver De/Para</button></td>';
+      tbody.appendChild(tr);
+    });
+  }
+
+  function mockFiltrarAuditoria(){
+    const tabela = document.getElementById('aud-filtro-tabela').value;
+    const acao = document.getElementById('aud-filtro-acao').value;
+    const inicio = document.getElementById('aud-filtro-inicio').value;
+    const fim = document.getElementById('aud-filtro-fim').value;
+
+    const filtrado = logsAuditoria.filter(function(log){
+      if (tabela && log.tabela !== tabela) return false;
+      if (acao && log.acao !== acao) return false;
+      const dataLog = log.dataHora.slice(0, 10);
+      if (inicio && dataLog < inicio) return false;
+      if (fim && dataLog > fim) return false;
+      return true;
+    });
+    renderAuditoria(filtrado);
+  }
+
+  function abrirModalAuditoria(idx){
+    const log = logsAuditoria[idx];
+    document.getElementById('aud-modal-meta').textContent = log.acao + ' — ' + log.tabela + ' — ' + log.dataHora;
+    document.getElementById('aud-modal-anterior').textContent = log.anterior ? JSON.stringify(log.anterior, null, 2) : '(nao se aplica)';
+    document.getElementById('aud-modal-novo').textContent = log.novo ? JSON.stringify(log.novo, null, 2) : '(nao se aplica)';
+    document.getElementById('aud-modal').classList.add('show');
+  }
+
+  function fecharModalAuditoria(){
+    document.getElementById('aud-modal').classList.remove('show');
+  }
+
+  document.addEventListener('keydown', function(ev){
+    if (ev.key === 'Escape') fecharModalAuditoria();
+  });
+
   // estado inicial
   document.getElementById('overview-loading').style.display = 'none';
   renderOverviewMes();
+  renderAuditoria(logsAuditoria);
   showScreen('overview');
 </script>
 

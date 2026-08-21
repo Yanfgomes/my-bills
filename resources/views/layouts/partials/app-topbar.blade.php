@@ -1,15 +1,18 @@
 {{--
     Adaptado de reference/bioform-layout/app-shell.md (4.5 AppTopbar.vue). useBreadcrumb()
-    (composable Vue) -> mapa PHP simples por rota atual, ja que este projeto tem so 3 telas
+    (composable Vue) -> mapa PHP simples por rota atual, ja que este projeto tem so 4 telas
     autenticadas (sem hierarquia de breadcrumb real). Seletor de tema: adaptacao do card
     "Aparencia" (reference/bioform-layout/temas.md §9.6) para 2 estados (claro/escuro), em vez
-    dos 3 temas do BioForm — este projeto so declara suporte_tema = claro_escuro.
+    dos 3 temas do BioForm — este projeto so declara suporte_tema = claro_escuro. RF-PADRAO-
+    CONFIGURACOES: o botao de tema agora e o componente Livewire TemaToggleTopbar (persistencia
+    por usuario via ConfiguracaoUsuario), nao mais Alpine-only + localStorage.
 --}}
 @php
     $breadcrumbLabels = [
         'overview' => __('Overview'),
         'renda.index' => __('Renda'),
         'despesas.index' => __('Despesas'),
+        'configuracoes.show' => __('Configuracoes'),
     ];
     $currentLabel = collect($breadcrumbLabels)->first(fn ($label, $route) => request()->routeIs($route)) ?? __('Overview');
 @endphp
@@ -36,26 +39,7 @@
         </nav>
     </div>
 
-    <div class="flex items-center gap-2.5" x-data="{ dark: document.documentElement.getAttribute('data-theme') === 'dark' }">
-        <button
-            type="button"
-            data-cy="btn-topbar-theme"
-            :aria-pressed="dark"
-            aria-label="{{ __('Alternar tema claro ou escuro') }}"
-            class="focus-ring w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
-            style="color:var(--color-text-muted)"
-            @click="
-                dark = !dark;
-                document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
-                localStorage.setItem('app_theme', dark ? 'dark' : 'light');
-            "
-        >
-            <svg x-show="!dark" xmlns="http://www.w3.org/2000/svg" class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-            <svg x-show="dark" xmlns="http://www.w3.org/2000/svg" class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-            </svg>
-        </button>
+    <div class="flex items-center gap-2.5">
+        <livewire:layout.tema-toggle-topbar />
     </div>
 </header>

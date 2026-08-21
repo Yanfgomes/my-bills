@@ -39,6 +39,36 @@ Diretorio do projeto contem apenas README.md, .gitignore e specs/spec.json (comm
 - respondido_em: 2026-08-17T17:04:00Z
 - resultado: Usuario confirmou as 7 regras propostas sem ajuste e decidiu RN-008 (mes_referencia imutavel apos a criacao). regras_negocio.status marcado aprovado; RN-001 a RN-007 passaram de 'proposto' para 'aprovado'; RN-008 registrado ja como 'aprovado'. Prototipo (prototipo/index.html) atualizado para refletir as 8 regras na interacao: validacao de valor>0 (RN-002) e de formato/obrigatoriedade de mes_referencia (RN-003) nos formularios de Renda/Despesas, com mensagens de erro dedicadas por campo; estado alternativo do Overview quando renda_total do mes selecionado = 0 (RN-001 — indicador 'Sem renda cadastrada no periodo' no lugar do percentual, mes de demonstracao 2025-12 adicionado ao mock); alerta visual dedicado quando despesas_total > renda_total (RN-007 — banner de atencao e barra em vermelho, mes de demonstracao 2026-09 adicionado); campo mes/periodo tornado somente leitura ao editar um lancamento existente de Renda/Despesa, com nota explicativa e botoes Editar/Excluir funcionais (RN-008); unicidade de email (RN-004) e credenciais invalidas (RN-006) wireados nas telas de Registro/Login via valores reservados de demonstracao documentados na propria tela. Isolamento por usuario (RN-005) e uma regra de backend, sem representacao visual direta possivel num mock estatico — sera verificada pelo security-agent (RNF-002) e pelo dev-agent na implementacao real. Nenhum conflito identificado entre as 8 regras nem dependencia de campo inexistente. Seguindo para a Fase 4 (documentacao/RFs/RNFs).
 
+## dominios.historico_revisoes[1] (rodada 2)
+
+- gate: aprovacao_dominios
+- rodada: 2
+- resposta: Confirmar os 2 dominios propostos
+- respondido_em: 2026-08-21T15:20:00Z
+- resultado: DOM-005 (Configuracoes do Sistema) e DOM-006 (Auditoria) confirmados sem ajustes, para dar tela aos RNFs padrao orfaos (RNF-PADRAO-IDIOMA, RNF-PADRAO-ACESSIBILIDADE-CONFIG, RNF-PADRAO-LOG-AUDITORIA). Segue para levantamento de campos (Fase 2).
+
+## campos.historico_revisoes[2] (rodada 3 — fechamento do gate DOM-005/DOM-006)
+
+- gate: aprovacao_campos
+- rodada: 3
+- pergunta original: Confirma os campos propostos para DOM-005 (Configuracoes do Sistema) e DOM-006 (Auditoria), e as 2 novas telas do prototipo (TELA-006 Configuracoes, TELA-007 Relatorio de Auditoria) ja geradas em prototipo/index.html?
+- opcao escolhida: "Confirmar campos e telas propostos" — marca CAMPO-CFG-001..008 e CAMPO-AUD-001..008 como aprovados, campos.status volta a aprovado, documentacao.prototipo.status volta a aprovado, e segue para Fase 3 (regras de negocio: proposta de isolamento por usuario tambem para DOM-005/DOM-006).
+- contexto: DOM-005/DOM-006 confirmados no gate anterior (aprovacao_dominios, rodada 2). Campos de DOM-006 (CAMPO-AUD-001..008) sao reverso_codebase: ja existem em app/Models/LogAuditoria.php, app/Observers/AuditoriaObserver.php e na migration database/migrations/2026_08_18_135525_create_logs_auditoria_table.php — nenhum dado novo, so o RF de consulta (Fase 4). Campos de DOM-005 sao novos (nenhuma tabela/tela de preferencia existe hoje); tema/idioma ja tem mecanismo parcial no codebase (toggle no topbar via localStorage, idioma via sessao) que o draft propoe estender para persistencia por usuario. Prototipo (prototipo/index.html) ja tinha as 2 telas novas geradas e abertas no navegador para teste (TELA-006 Configuracoes, TELA-007 Auditoria com filtros/listagem/modal De-Para).
+- resposta: Confirmar campos e telas propostos
+- respondido_em: 2026-08-21T15:40:00Z
+- resultado: Usuario confirmou o draft sem ajustes. Todos os itens CAMPO-CFG-001..008 e CAMPO-AUD-001..008 passaram de 'aguardando' para 'aprovado'; campos.status voltou a 'aprovado'; documentacao.prototipo.status voltou a 'aprovado' (TELA-006 e TELA-007 mantidas como geradas). A questao especifica levantada na 3a opcao do gate (persistir idioma/tema por usuario, em vez de sessao/localStorage atual) foi resolvida implicitamente pela escolha da 1a opcao: CAMPO-CFG-003 (idioma) e CAMPO-CFG-004 (tema) permanecem no draft como persistidos por usuario, conforme proposto — mecanismo de storage exato permanece decisao do design-agent. Segue para Fase 3 (regras de negocio de DOM-005/DOM-006).
+
+## decisao_pendente (gate aprovacao_regras, aberta em 2026-08-21T15:45:00Z) — contexto completo
+
+Nao ha dominio/papel de admin no sistema (DOM-001 so define usuario com cadastro/login/isolamento de dados proprios). O padrao de isolamento por usuario ja aprovado (RN-005) cobre Renda/Despesas/Overview (DOM-002/003/004). RN-009 propoe estender exatamente o mesmo padrao a DOM-005 (Configuracoes do Sistema): cada usuario le/edita so seu proprio registro de preferencias, criado com defaults na primeira leitura se ainda nao existir. Baixa ambiguidade — mesma logica ja aprovada, incluida no gate apenas porque toda regra exige aprovacao humana explicita (Fase 3).
+
+RN-010 (log de auditoria, DOM-006) e genuinamente ambigua: o RNF-PADRAO-LOG-AUDITORIA (aprovado no marco anterior) ja descreve um relatorio com filtro por "usuario" (PARAM-AUD-001) — o que so faz sentido pratico se o relatorio permite consultar acoes de outros usuarios (escopo global), ja que filtrar pelo proprio usuario autenticado seria redundante (o resultado seria sempre o mesmo usuario). Por outro lado, o sistema nao tem conceito de administrador/papel privilegiado em nenhum dominio aprovado — abrir consulta global de auditoria a qualquer usuario autenticado expõe o historico de acoes de terceiros (quem criou/editou o que e quando), o que pode ser incompativel com a expectativa de privacidade do produto (app de financas pessoais). As duas opcoes:
+
+1. Escopo restrito (self-audit): cada usuario consulta somente seu proprio log de acoes (WHERE usuario_id == autenticado, sempre, sem excecao). O filtro "usuario" da tela deixa de fazer sentido como filtro do proprio usuario (ele so pode ver a si mesmo) — remover da UI ou mante-lo desabilitado/oculto.
+2. Escopo global: qualquer usuario autenticado pode consultar o log de auditoria de todos os usuarios do sistema, sem controle de papel/permissao adicional (unico papel existente e "usuario autenticado"). O filtro "usuario" (PARAM-AUD-001) mantem sentido pratico como esta descrito no RNF-PADRAO-LOG-AUDITORIA.
+
+Esta decisao nao e do requisitos-agent decidir sozinho (RN-010 fica com acao "DECISAO PENDENTE" ate aqui) — depende de expectativa de privacidade/produto que so o usuario dono do projeto pode definir.
+
 ## documentacao.historico_revisoes[0]
 
 - gate: aprovacao_documentacao

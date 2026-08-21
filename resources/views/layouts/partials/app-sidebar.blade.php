@@ -27,6 +27,7 @@
                 ['route' => 'overview', 'label' => __('Overview'), 'cy' => 'nav-overview'],
                 ['route' => 'renda.index', 'label' => __('Renda'), 'cy' => 'nav-renda'],
                 ['route' => 'despesas.index', 'label' => __('Despesas'), 'cy' => 'nav-despesas'],
+                ['route' => 'configuracoes.show', 'label' => __('Configuracoes'), 'cy' => 'nav-config'],
             ];
         @endphp
 
