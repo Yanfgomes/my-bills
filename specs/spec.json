@@ -1323,20 +1323,20 @@
   },
   "testes": {
     "marco_ref": "marco-2-gestao-completa",
-    "status": "pendente",
+    "status": "concluido",
     "cobertura_minima": 90,
     "cobertura_meta": 100,
     "fluxos": [
       {
         "fluxo_ref": "FLUXO-003",
         "rf_refs": ["RF-005"],
-        "status": "derivado",
+        "status": "testado",
         "observacoes": "Corte: dominio_ref muda de DOM-002 p/ DOM-003 entre RF-005 e RF-007 em ordem_execucao. Fluxo unico-RF: edicao/exclusao de fonte de renda."
       },
       {
         "fluxo_ref": "FLUXO-004",
         "rf_refs": ["RF-007"],
-        "status": "derivado",
+        "status": "testado",
         "observacoes": "Corte: dominio_ref muda de DOM-002 p/ DOM-003 entre RF-005 e RF-007 em ordem_execucao. Fluxo unico-RF: edicao/exclusao de despesa."
       }
     ],
@@ -1403,9 +1403,9 @@
   },
   "decisao_pendente": null,
   "conclusao_agente": {
-    "agente": "design-agent",
+    "agente": "qa-coordenador-agent",
     "criterios_saida_atendidos": true,
-    "observacoes": "Marco-2: stack herdado do marco-1, fe_be_desacoplado=false, 8 contratos (editar/atualizar/cancelarEdicao/excluir em RendaManager+DespesaManager). Sem entidade nova. Registrado p/ dev-agent: corrigir text-[**px]->rem em renda/despesa-manager.blade.php (debito ACC-RF-008-01) ao tocar esses arquivos p/ RF-005/RF-007. Tela de log adiada p/ marco futuro.",
-    "concluido_em": "2026-08-21T13:07:26Z"
+    "observacoes": "Marco-2: RF-005 e RF-007 aprovados, mergeados (PR #11/#12), deploy RETIDO (pendente_infraestrutura, nada em producao). 2 fluxos derivados (FLUXO-003/FLUXO-004, corte por dominio_ref) testados: sistema passou, pentest de composicao 0 achados (RNF-002 verificado). Testes mergeados em main via PR #13/#14. Nenhum achado pendente.",
+    "concluido_em": "2026-08-21T14:54:42Z"
   }
 }

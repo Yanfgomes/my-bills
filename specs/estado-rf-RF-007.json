@@ -1,0 +1,130 @@
+{
+  "rf_ref": "RF-007",
+  "versao": 7,
+  "status": "aprovado",
+  "implementacao_existente": false,
+  "gap_implementado": null,
+  "branch_ref": "rf/RF-007",
+  "commit_ref": "63724ffd9fdad70abf28e6f5a3c0328f1fa1cd15",
+  "commit_ref_testes": "e845872510958cbd444f2816a236fcd6f54d739b",
+  "grupo_commit": [],
+  "handoff_qa": {
+    "disparado_em": "2026-08-21T13:56:19Z",
+    "status": "aprovado"
+  },
+  "tentativas_correcao": 0,
+  "bugs": [],
+  "resolucao_tela": {
+    "tela_ref": "TELA-005",
+    "fragmentos_lidos": [],
+    "observacao": "fe_be_desacoplado = false: markup implementado pelo proprio dev-agent. Componentes AppLayout/PageHero/CardBase/tabela app-table ja existiam no projeto (reskin bioform-layout, commit 730680c) e desde RF-006 -- nenhum fragmento novo de reference/bioform-layout/ precisou ser lido para RF-007 (extensao de tabela/formulario ja existentes com coluna Acoes e alternancia criacao/edicao, mesmo padrao ja usado em RF-005/renda-manager.blade.php). Padroes de data-cy, paleta, tokens de tema e ARIA seguidos do arquivo irmao ja aprovado (renda-manager.blade.php, RF-005) e do prototipo aprovado (prototipo/index.html, TELA-005)."
+  },
+  "observacoes_dev": "ACC-RF-008-01 (debito registrado pelo design-agent no handoff) resolvido em despesa-manager.blade.php: todas as classes text-[**px] convertidas para text-[*rem] neste arquivo, mesma correcao ja aplicada em renda-manager.blade.php no RF-005; zero ocorrencias remanescentes nos 2 arquivos alvo. DespesaPolicy::update/delete ja existiam (criadas no RF-006 reaproveitando o padrao de FonteRendaPolicy) -- nao precisou de alteracao. Laravel Pint rodado sem alteracoes necessarias (PSR-12 ja conforme).",
+  "qa": {
+    "security": {
+      "status": "passou",
+      "ferramenta": {
+        "nome": null,
+        "status": "indisponivel",
+        "detalhes_ref": "specs/relatorios/security-RF-007.md"
+      },
+      "criterios_declarados": {
+        "total": 3,
+        "atendidos": 3,
+        "nao_atendidos": 0,
+        "nao_verificaveis": 0
+      },
+      "pentest_manual": {
+        "status": "concluido",
+        "achados_confirmados": 0,
+        "achados_por_analise_estatica": 0
+      }
+    },
+    "code_review": {
+      "status": "passou",
+      "quality_gate": {
+        "resultado": "indisponivel",
+        "detalhes_ref": "specs/relatorios/code-review-RF-007.md"
+      },
+      "revisao_qualitativa": {
+        "status": "passou",
+        "observacoes": [
+          "Baixa prioridade: valor.gt em atualizar()/criar() usa inicial minuscula (\"o valor deve ser maior que zero\"), inconsistente com demais mensagens; herdado de RF-005, nao introduzido aqui."
+        ]
+      }
+    },
+    "accessibility": {
+      "status": "passou",
+      "criterios_declarados": {
+        "total": 0,
+        "atendidos": 0,
+        "nao_atendidos": 0,
+        "nao_verificaveis": 0
+      },
+      "contraste": {
+        "status": "passou",
+        "observacoes": [
+          "Paleta aprovada: cores usam tokens de tema (var(--color-*)), nenhuma hardcoded. ACC-RF-008-01 resolvido: todas as classes text-[*px] convertidas para rem, zero ocorrencias remanescentes."
+        ]
+      },
+      "tags_leitor_tela": {
+        "status": "passou",
+        "observacoes": [
+          "Labels com for/id, aria-describedby/aria-invalid, aria-live=\"polite\". Tabela com <caption>/<th scope=\"col\">. Botoes editar/excluir com aria-label descritivo.",
+          "RNF-PADRAO-IDIOMA atendido: todas as strings de UI via {{ __(...) }}, nenhuma hardcoded.",
+          "RN-008 confirmado: mes/periodo desabilitado (@disabled) em edicao, nota explicativa associada via aria-describedby."
+        ]
+      },
+      "aderencia_estrutural": {
+        "status": "passou",
+        "observacoes": [
+          "Foco visivel: focus-ring em inputs/buttons (outline 3px, cores #2563eb claro/#60a5fa escuro). Navegacao por teclado funcional, sem armadilhas.",
+          "Fonte configuravel: unidades em rem. Reducao de movimento: prefers-reduced-motion:reduce em app.css. Temas claro/escuro via tokens CSS."
+        ]
+      },
+      "recomendacoes": []
+    },
+    "tester": {
+      "status": "passou",
+      "unitarios": {
+        "status": "passou",
+        "cobertura": 100,
+        "framework": "Pest"
+      },
+      "integracao": {
+        "status": "passou",
+        "cobertura": 100,
+        "framework": "Pest"
+      }
+    }
+  },
+  "validacao_local": {
+    "status": "aprovado",
+    "como_subir": "composer run dev (na pratica: php artisan serve isolado, pail exige pcntl indisponivel no Windows -- ver observacao)",
+    "o_que_testar": "Na tela Despesas: editar descricao/valor/categoria de uma despesa existente; confirmar rejeicao de valor <= 0 (RN-002); confirmar que mes/periodo fica somente leitura na edicao, com nota explicativa (RN-008); excluir uma despesa e confirmar que ela some da lista e dos indicadores do Overview do mes.",
+    "rfs_cobertos": ["RF-007"],
+    "validado_em": "2026-08-21T14:20:00Z",
+    "observacoes": "Usuario aprovou os 4 criterios de aceite (edicao, RN-002, RN-008, reflexo no Overview) sem ressalvas. Nota operacional: 'composer run dev' falha no Windows porque php artisan pail requer a extensao pcntl (ausente); orquestrador subiu so 'php artisan serve' (build de producao ja existente em public/build cobriu os assets)."
+  },
+  "decisao_pendente": {
+    "agente": "qa-coordenador-agent",
+    "gate": "validacao_local",
+    "rf_ref": "RF-007",
+    "pergunta": "RF-007 passou toda a QA automatizada sem achado. Validar manualmente edicao/exclusao de despesa e aprovar para merge/deploy?",
+    "opcoes": [
+      { "label": "Aprovar", "descricao": "Validacao local confirmada; RF-007 segue para merge (e deploy, se aplicavel) e o marco-2-gestao-completa e consolidado." },
+      { "label": "Reprovar", "descricao": "Feedback registrado como bug; RF-007 volta ao dev-agent para correcao antes de nova rodada de QA." }
+    ],
+    "contexto": "Onda 1 (code-review, security, accessibility) e Onda 2 (tester) fecharam 100% passou, 0 achados. Suba com 'composer run dev' e exercite: editar descricao/valor/categoria; valor <= 0 deve ser rejeitado (RN-002); mes/periodo somente leitura na edicao (RN-008); excluir despesa e confirmar reflexo no Overview. RF-007 e o ultimo RF do marco-2-gestao-completa: aprovar aqui tambem dispara a consolidacao do marco apos merge/deploy.",
+    "aberto_em": "2026-08-21T14:06:52Z",
+    "resposta": "Aprovar",
+    "respondido_em": "2026-08-21T14:20:00Z"
+  },
+  "deploy": {
+    "status": "mergeado",
+    "pr_ref": "https://github.com/Yanfgomes/my-bills/pull/12",
+    "merged_em": "2026-08-21T14:14:15Z",
+    "pipelines": [],
+    "observacao": "Deploy nao acionado: stack.deploy.mecanismo/acionamento seguem null (status pendente_infraestrutura no spec.json) -- pipeline de CI/CD ainda nao configurado no servidor. bpx.aplicavel=false nao muda isso; e lacuna de infraestrutura, nao de aprovacao."
+  }
+}
