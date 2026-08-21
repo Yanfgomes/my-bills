@@ -1,0 +1,17 @@
+# dev-agent — RF-006 — implementação e fechamento de QA
+
+Implementado sozinho (fe_be_desacoplado = false), seguindo o mesmo padrão já estabelecido em RF-004 (Renda): migration `despesas` (uuid PK, `usuario_id` FK cascade, `valor` com CHECK > 0 em banco além de RN-002 na app, categoria opcional, `mes_referencia` varchar(7), `criado_em`/`atualizado_em` conforme contrato aprovado; mesmo desvio técnico de `convencoes_migracao` já registrado em `fontes_renda` — CREATE TABLE bruto porque SQLite não suporta `ALTER TABLE ADD CONSTRAINT`), `App\Models\Despesa`, `App\Policies\DespesaPolicy` (RN-005, mesma convenção de `FonteRendaPolicy`: viewAny/create usados por este RF, view/update/delete já presentes para RF-007 reutilizar), `App\Livewire\Despesas\DespesaManager` (rota `despesas.index`), nav "Despesas" adicionada ao layout autenticado compartilhado, Observer de auditoria registrado para Despesa no `AppServiceProvider`, strings novas em `lang/{pt,en,es}.json`.
+
+Escopo marco-1-mvp: apenas listar+criar (editar/excluir são RF-007, marco-2-gestao-completa). Lint (Pint) passou sem ajustes. Migration aplicada localmente para validação futura.
+
+Verificação manual descartável (script standalone, não commitado, mesma prática já documentada em RF-004): app real bootado contra sqlite isolado em scratchpad, 2 usuários reais (Alice/Bob) com 1 despesa cada — `Gate::allows` negou acesso cross-user nos 3 casos (view/update/delete), permitiu viewAny/create/view para o próprio recurso, query escopada retornou só o registro do próprio usuário, CHECK de banco rejeitou valor negativo direto, `Gate::allows` sem sessão retornou false sem exceção. Nenhum teste automatizado escrito aqui (responsabilidade do tester-agent).
+
+Mesma decisão já registrada em RF-004 sobre RN-005/RF-003: `DespesaPolicy` criada agora, junto com este RF, materializando a convenção já aprovada em `padroes_tecnologias.convencoes.autorizacao`. Isso deixa RF-003, quando rodar por último no lote, com Policies de Renda e Despesa já existentes para consolidar/validar com testabilidade cross-user real via tester-agent.
+
+RF-006 não era o último RF pendente do marco (restavam RF-008 e RF-003 na ordem_execucao) — `ultimo_rf_do_marco = false`.
+
+## Fechamento das duas ondas de QA (qa-coordenador-agent, 2026-08-19)
+
+Onda 1 (code-review + security + accessibility, em paralelo, TELA-005 presente) fechou limpa: code_review=passou (0 achado bloqueante; 1 observação estilística não bloqueante herdada de RF-004 — mensagem `valor.gt` sem maiúscula/ponto final); security=passou (RNF-002/IDOR atendido, 0 vulnerabilidade confirmada; 2 pontos de atenção não bloqueantes registrados como débito técnico potencial — RN-003 sem CHECK de formato em banco, `usuario_id` no Fillable sem guarda própria no Model — nenhum explorável pela superfície de ataque real do RF hoje); accessibility=passou (contraste/tags ARIA/aderência estrutural sem achado, RF-006 herda 100% da paleta/tokens já aprovados em RF-004; 1 recomendação de escopo menor, mesma mensagem RN-002 acima, não bloqueia).
+
+Onda 2 (tester-agent, sozinho) rodou em seguida e também fechou limpa: 21 testes/82 asserções, 100% cobertura no código próprio do RF (acima do gate de 90%), cobrindo RN-002/RN-003/RN-005 (cross-user real)/critério de aceite completo; `commit_ref_testes=845a0bd140353f86b1d6abe128b6447d39e77522`. `bugs=[]` (0 achado bloqueante nas duas ondas). `status=aprovado`.

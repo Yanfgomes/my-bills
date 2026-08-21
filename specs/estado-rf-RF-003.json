@@ -1,6 +1,6 @@
 {
   "rf_ref": "RF-003",
-  "versao": 10,
+  "versao": 11,
   "status": "aprovado",
   "implementacao_existente": false,
   "gap_implementado": true,
@@ -10,24 +10,11 @@
   "grupo_commit": [],
   "handoff_qa": {
     "disparado_em": "2026-08-20T11:49:20Z",
-    "status": "em_qa"
+    "status": "aprovado"
   },
   "tentativas_correcao": 0,
   "bugs": [],
-  "decisao_pendente": {
-    "agente": "qa-coordenador-agent",
-    "gate": "validacao_local",
-    "rf_ref": "RF-003",
-    "pergunta": "RF-003 (isolamento de dados por usuario, RN-005) passou nas 3 ondas de QA (code-review, security, accessibility, tester - todos 'passou'). Validar localmente: aprovar merge/deploy?",
-    "opcoes": [
-      { "id": "aprovado", "descricao": "Isolamento confirmado por uso real (usuario A nao ve dados de usuario B em Renda/Despesas/Overview) - liberar merge/deploy." },
-      { "id": "reprovado", "descricao": "Algum problema encontrado na validacao local - registrar feedback e reabrir para dev-agent." }
-    ],
-    "contexto": "RF-003 e o ultimo RF pendente do marco-1-mvp (ultimo_rf_do_marco=true). E requisito transversal (RN-005), sem tela propria - aplicado nas telas de RF-004/006/008 (Renda, Despesas, Overview). Aprovacao aqui fecha o marco e segue para deploy do RF, depois consolidacao do marco-1-mvp.",
-    "resposta": "aprovado",
-    "respondido_em": "2026-08-20T12:20:00Z",
-    "detalhes_ref": "specs/relatorios/tester-RF-003.md"
-  },
+  "decisao_pendente": null,
   "observacoes": "Consolidacao RN-005 concluida (commit e596c4b) apos RF-004/006/008. Ultimo RF pendente do marco-1-mvp. Triagem: ExampleTest.php (302 vs 200) pre-existente desde RF-001 (dbdae02), fora do escopo do diff RF-003/RN-005, nao e regressao - sem acao, nao bloqueia aprovacao.",
   "qa": {
     "code_review": {
@@ -129,6 +116,7 @@
     "pipelines": [],
     "deployado_em": "",
     "decisao_humana": "",
-    "observacoes": "PR #8 (rf/RF-003 -> main) aberto via 'gh pr create' e mergeado via 'gh pr merge --squash' (controle_versao.plataforma=github, mecanismo_pr=cli, estrategia_merge=squash), sem gate de aprovacao humana do harness e sem conflito reportado pelo GitHub (merge concluido na primeira tentativa). merge_commit=0e7b3680e06c2edfb0f9623f45a5431b85e0688f. Antes de abrir o PR, foi commitado em rf/RF-003 (commit f5dccb1) o estado de fechamento de QA (security, accessibility, validacao_local=aprovado) ja decidido pelo qa-coordenador-agent/usuario, presente no arquivo mas ainda nao commitado na branch -- nenhuma decisao de prontidao foi tomada por este agente, apenas persistido o que ja estava registrado. bpx.aplicavel=false, entao o deploy deveria ser acionado na sequencia do merge -- porem arquitetura.padroes_tecnologias.stack.deploy.mecanismo=null e stack.deploy.status='pendente_infraestrutura' (mesmo gap ja documentado para RF-001/RF-002/RF-004/RF-006/RF-008: usuario confirmou que nao existe pipeline de CI/CD configurado no servidor). Deploy NAO acionado -- nenhum mecanismo configurado para acionar, e nao e papel deste agente inventar um placeholder. RF-003 esta mergeado em main (e RF-003 e o ultimo RF pendente do marco-1-mvp / ultimo_rf_do_marco=true) e pronto para deploy assim que o pipeline de CI/CD for configurado e registrado em arquitetura.padroes_tecnologias.stack.deploy."
+    "observacoes": "PR #8 mergeado (squash, merge_commit=0e7b368). Deploy nao acionado: stack.deploy.status=pendente_infraestrutura (mesmo gap ja conhecido). Detalhe completo em detalhes_ref.",
+    "detalhes_ref": "specs/relatorios/deploy-RF-003.md"
   }
 }
