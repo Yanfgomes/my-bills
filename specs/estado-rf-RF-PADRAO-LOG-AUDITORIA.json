@@ -1,0 +1,105 @@
+{
+  "rf_ref": "RF-PADRAO-LOG-AUDITORIA",
+  "versao": 5,
+  "status": "aguardando_qa",
+  "implementacao_existente": false,
+  "branch_ref": "rf/RF-PADRAO-LOG-AUDITORIA",
+  "commit_ref": "cd5ac34",
+  "grupo_commit": [],
+  "handoff_qa": {
+    "disparado_em": "2026-08-21T20:00:17Z",
+    "status": "aguardando"
+  },
+  "tentativas_correcao": 1,
+  "bugs": [
+    {
+      "id": "SEC-RF-PADRAO-LOG-AUDITORIA-01",
+      "origem": "security-agent",
+      "criticidade": "menor",
+      "status": "corrigido",
+      "classificacao": "impacto_real",
+      "escalado_para": "dev-agent",
+      "descricao": "LogAuditoriaRelatorio: enum de tabelaAfetada/acao so e validado em filtrar(); render() usa a prop direto em when() a cada sync Livewire, antes do submit.",
+      "commit_ref": "cd5ac34"
+    }
+  ],
+  "qa": {
+    "code_review": {
+      "status": "passou",
+      "quality_gate": {
+        "resultado": "indisponivel",
+        "detalhes_ref": "specs/relatorios/code-review-RF-PADRAO-LOG-AUDITORIA.md"
+      },
+      "revisao_qualitativa": {
+        "status": "concluida",
+        "observacoes": [
+          "LogAuditoriaRelatorio.php:18 duplica TABELAS_AUDITADAS ja definido via Observers em AppServiceProvider:36-42, e select do blade duplica de novo (3 fontes).",
+          "Risco: nova tabela observada em marco futuro fica oculta no filtro do relatorio se so o Observer for atualizado, sem erro visivel (falha silenciosa)."
+        ]
+      }
+    },
+    "security": {
+      "status": "falhou",
+      "ferramenta": {
+        "nome": "SAST manual (sem ferramenta automatizada configurada)",
+        "status": "indisponivel",
+        "detalhes_ref": ""
+      },
+      "criterios_declarados": {
+        "total": 5,
+        "atendidos": 4,
+        "nao_atendidos": 1,
+        "nao_verificaveis": 0
+      },
+      "pentest_manual": {
+        "status": "concluido_analise_estatica",
+        "achados_confirmados": 0,
+        "achados_por_analise_estatica": 1
+      }
+    },
+    "accessibility": {
+      "status": "passou",
+      "criterios_declarados": {
+        "total": 3,
+        "atendidos": 3,
+        "nao_atendidos": 0,
+        "nao_verificaveis": 0
+      },
+      "contraste": {
+        "status": "passou",
+        "observacoes": [
+          "Todas as cores usadas estao na paleta aprovada (arquitetura.padroes_tecnologias.acessibilidade.paleta_cores).",
+          "Contrastes verificados: text #1f2937 (13.55:1), text_muted #54606e (5.87:1), primary #2563eb (5.17:1), danger #dc2626 (4.83:1).",
+          "Tokens CSS usados (var(--color-*)), nao valores hex fixos; tema escuro sobrepoe cada token de forma consistente."
+        ]
+      },
+      "tags_leitor_tela": {
+        "status": "passou",
+        "observacoes": [
+          "Tabela de log: <caption>, <th scope='col'> em cabeçalho, estrutura semantica padrao OK.",
+          "Campos: labels associados via for/id (filtro-tabela, filtro-acao, filtro-inicio, filtro-fim).",
+          "Validacao: aria-describedby em cada input/select apontando para div com aria-live='polite' para erros.",
+          "Botoes: aria-label descritivo em 'Ver De/Para', wire:loading.attr='aria-busy' durante filtro.",
+          "Resultado: <p aria-live='polite' class='sr-only'> anuncia novo total de registros ou estado vazio."
+        ]
+      },
+      "aderencia_estrutural": {
+        "status": "passou",
+        "observacoes": [
+          "Focus ring: .focus-ring:focus-visible define outline 3px com var(--color-focus-ring); presente em inputs, selects, botoes.",
+          "Fonte configuravel: todas as medidas em rem (text-[0.78125rem], etc), respeita data-font-size do html (pequeno 87.5%, grande 112.5%).",
+          "Temas: tokens CSS vars, nao hex fixos; suporte_tema='claro_escuro' via data-theme; listener Livewire atualiza sem reload.",
+          "Reducao movimento: @media prefers-reduced-motion via Tailwind, mais classe .reduzir-movimento em <html> para usuarios autenticados.",
+          "Focus trap modal: Esc fecha, Tab prensado ao modal mesmo com um elemento focavel (botao 'Fechar'), foco retorna ao botao de origem.",
+          "Skip-link: presente como primeiro elemento focavel, com .focus-ring, navega a <main id='conteudo-principal'>."
+        ]
+      },
+      "recomendacoes": [
+        {
+          "descricao": "Modal De/Para com conteudo JSON grande poderia oferecer botao 'Copiar' para melhorar UX com leitores de tela.",
+          "criticidade": "baixa"
+        }
+      ]
+    }
+  }
+}
