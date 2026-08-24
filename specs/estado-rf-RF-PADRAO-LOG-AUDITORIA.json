@@ -1,6 +1,6 @@
 {
   "rf_ref": "RF-PADRAO-LOG-AUDITORIA",
-  "versao": 12,
+  "versao": 13,
   "status": "aprovado",
   "implementacao_existente": false,
   "branch_ref": "rf/RF-PADRAO-LOG-AUDITORIA",
@@ -144,5 +144,13 @@
     "contexto": "Ultimo RF pendente do marco-3-padroes-pipeline (ultimo_rf_do_marco = true). Apos aprovacao aqui, o deploy-agent mergeia rf/RF-PADRAO-LOG-AUDITORIA (bpx.aplicavel=false, deploy acionado junto) e o qa-coordenador-agent segue para a consolidacao do marco na mesma execucao.",
     "resposta": "aprovado",
     "respondido_em": "2026-08-24T12:15:00Z"
+  },
+  "deploy": {
+    "status": "mergeado",
+    "pr_ref": "https://github.com/Yanfgomes/my-bills/pull/16",
+    "merged_em": "2026-08-24T12:15:47Z",
+    "pipelines": [],
+    "observacoes": "Deploy nao acionado: stack.deploy.status = pendente_infraestrutura (mecanismo/acionamento/verificacao=null, sem pipeline no servidor). Lacuna sinalizada, nao inventada.",
+    "decisao_humana": ""
   }
 }
