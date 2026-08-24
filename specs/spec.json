@@ -1734,7 +1734,9 @@
           "fluxo_ref": "FLUXO-005",
           "status": "passou",
           "branch_ref": "testes/FLUXO-005",
-          "commit_ref": "0a44085"
+          "commit_ref": "0a44085",
+          "pr_ref": "https://github.com/Yanfgomes/my-bills/pull/18",
+          "merged_em": "2026-08-24T12:33:05Z"
         },
         {
           "fluxo_ref": "FLUXO-006",
