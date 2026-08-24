@@ -8,8 +8,8 @@
   "grupo_commit": [],
   "handoff_qa": {
     "disparado_em": "2026-08-21T20:00:17Z",
-    "status": "em_qa",
-    "atualizado_em": "2026-08-24T12:11:00Z"
+    "status": "aprovado",
+    "atualizado_em": "2026-08-24T12:19:29Z"
   },
   "tentativas_correcao": 2,
   "bugs": [
