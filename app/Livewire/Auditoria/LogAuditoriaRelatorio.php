@@ -79,26 +79,35 @@ class LogAuditoriaRelatorio extends Component
     }
 
     /**
-     * SEC-RF-PADRAO-LOG-AUDITORIA-01 (achado do security-agent): wire:model sincroniza a prop
-     * a cada request do Livewire, nao so no clique em "Filtrar" -- sem este hook, render() usa
-     * o valor bruto em where() antes de qualquer validacao (nao ha SQLi, o Eloquent parametriza,
-     * mas viola o criterio_aceite_seguranca "filtros aceitam somente valores previstos antes de
-     * aplicar a consulta"). validateOnly() lanca ValidationException quando o valor sincronizado
-     * nao esta no enum previsto, o que aborta a requisicao antes do Livewire chamar render() --
-     * a prop invalida nunca chega a ser usada na query.
+     * SEC-RF-PADRAO-LOG-AUDITORIA-01 (achado do security-agent, correcao tentativa 2): wire:model
+     * sincroniza a prop a cada request do Livewire, nao so no clique em "Filtrar" -- sem
+     * curto-circuito aqui, render() usaria o valor bruto em where() antes de qualquer validacao
+     * (nao ha SQLi, o Eloquent parametriza, mas viola o criterio_aceite_seguranca "filtros aceitam
+     * somente valores previstos antes de aplicar a consulta").
+     *
+     * A tentativa anterior usava validateOnly(), que lanca ValidationException -- mas no Livewire
+     * 4.4 essa excecao, quando lancada dentro de um hook updated{Prop}(), e capturada por
+     * Wrapped::__call() e engolida por SupportValidation::exception() (stopPropagation()), sem
+     * abortar o ciclo: render() roda em seguida com o valor invalido ainda na prop. Confirmado via
+     * exploracao real (query log) pelo qa-coordenador-agent.
+     *
+     * Correcao: checar o enum explicitamente e resetar a propria prop para null (equivalente a
+     * "nenhum filtro aplicado") quando o valor sincronizado nao esta previsto, em vez de depender
+     * de uma excecao interromper o fluxo. Isso garante que render()/query nunca veem um valor fora
+     * do enum, independente do comportamento de propagacao do Livewire.
      */
     public function updatedTabelaAfetada(): void
     {
-        $this->validateOnly('tabelaAfetada', [
-            'tabelaAfetada' => ['nullable', 'string', 'in:'.implode(',', self::TABELAS_AUDITADAS)],
-        ]);
+        if ($this->tabelaAfetada !== null && ! in_array($this->tabelaAfetada, self::TABELAS_AUDITADAS, true)) {
+            $this->tabelaAfetada = null;
+        }
     }
 
     public function updatedAcao(): void
     {
-        $this->validateOnly('acao', [
-            'acao' => ['nullable', 'string', 'in:'.implode(',', self::ACOES_AUDITADAS)],
-        ]);
+        if ($this->acao !== null && ! in_array($this->acao, self::ACOES_AUDITADAS, true)) {
+            $this->acao = null;
+        }
     }
 
     /**
