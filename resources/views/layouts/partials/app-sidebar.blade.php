@@ -28,6 +28,7 @@
                 ['route' => 'renda.index', 'label' => __('Renda'), 'cy' => 'nav-renda'],
                 ['route' => 'despesas.index', 'label' => __('Despesas'), 'cy' => 'nav-despesas'],
                 ['route' => 'configuracoes.show', 'label' => __('Configuracoes'), 'cy' => 'nav-config'],
+                ['route' => 'auditoria.index', 'label' => __('Log de auditoria'), 'cy' => 'nav-auditoria'],
             ];
         @endphp
 

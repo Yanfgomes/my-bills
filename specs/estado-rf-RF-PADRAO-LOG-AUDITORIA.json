@@ -1,0 +1,148 @@
+{
+  "rf_ref": "RF-PADRAO-LOG-AUDITORIA",
+  "versao": 12,
+  "status": "aprovado",
+  "implementacao_existente": false,
+  "branch_ref": "rf/RF-PADRAO-LOG-AUDITORIA",
+  "commit_ref": "c9b6a71",
+  "grupo_commit": [],
+  "handoff_qa": {
+    "disparado_em": "2026-08-21T20:00:17Z",
+    "status": "em_qa",
+    "atualizado_em": "2026-08-24T12:11:00Z"
+  },
+  "tentativas_correcao": 2,
+  "bugs": [
+    {
+      "id": "SEC-RF-PADRAO-LOG-AUDITORIA-01",
+      "origem": "security-agent",
+      "criticidade": "menor",
+      "status": "corrigido",
+      "classificacao": "impacto_real",
+      "escalado_para": "dev-agent",
+      "descricao": "c9b6a71: hook nao depende mais de validateOnly() (engolida pelo Livewire 4.4). Checa enum e reseta a prop p/ null antes de render() usar o valor.",
+      "commit_ref": "c9b6a71"
+    }
+  ],
+  "qa": {
+    "code_review": {
+      "status": "passou",
+      "quality_gate": {
+        "resultado": "indisponivel",
+        "detalhes_ref": "specs/relatorios/code-review-RF-PADRAO-LOG-AUDITORIA.md"
+      },
+      "revisao_qualitativa": {
+        "status": "concluida",
+        "observacoes": [
+          "c9b6a71: updatedTabelaAfetada/updatedAcao trocam validateOnly() por in_array()+reset da prop p/ null, sem depender de excecao -- SEC-01 (tentativa 2) fechado.",
+          "LogAuditoriaRelatorio.php:30 duplica TABELAS_AUDITADAS ja definido via Observers em AppServiceProvider:36-42, e select do blade duplica de novo (3 fontes).",
+          "Risco: nova tabela observada em marco futuro fica oculta no filtro do relatorio se so o Observer for atualizado, sem erro visivel (falha silenciosa)."
+        ]
+      }
+    },
+    "security": {
+      "status": "passou",
+      "ferramenta": {
+        "nome": "SAST manual (sem ferramenta automatizada configurada)",
+        "status": "indisponivel",
+        "detalhes_ref": "specs/relatorios/security-RF-PADRAO-LOG-AUDITORIA.md"
+      },
+      "criterios_declarados": {
+        "total": 5,
+        "atendidos": 5,
+        "nao_atendidos": 0,
+        "nao_verificaveis": 0
+      },
+      "pentest_manual": {
+        "status": "concluido_exploracao_confirmada",
+        "achados_confirmados": 0,
+        "achados_por_analise_estatica": 0
+      },
+      "redisparo": {
+        "achado_reverificado": "SEC-RF-PADRAO-LOG-AUDITORIA-01",
+        "commit_anterior": "cd5ac34",
+        "commit_atual": "c9b6a71",
+        "resultado": "corrigido_confirmado"
+      }
+    },
+    "accessibility": {
+      "status": "passou",
+      "reaproveitado_de": "7be70e5",
+      "motivo_reaproveitamento": "Correcao (cd5ac34) so tocou LogAuditoriaRelatorio.php (hooks updatedTabelaAfetada/updatedAcao); nenhum template, estilo ou markup foi alterado.",
+      "criterios_declarados": {
+        "total": 3,
+        "atendidos": 3,
+        "nao_atendidos": 0,
+        "nao_verificaveis": 0
+      },
+      "contraste": {
+        "status": "passou",
+        "observacoes": [
+          "Todas as cores usadas estao na paleta aprovada (arquitetura.padroes_tecnologias.acessibilidade.paleta_cores).",
+          "Contrastes verificados: text #1f2937 (13.55:1), text_muted #54606e (5.87:1), primary #2563eb (5.17:1), danger #dc2626 (4.83:1).",
+          "Tokens CSS usados (var(--color-*)), nao valores hex fixos; tema escuro sobrepoe cada token de forma consistente."
+        ]
+      },
+      "tags_leitor_tela": {
+        "status": "passou",
+        "observacoes": [
+          "Tabela de log: <caption>, <th scope='col'> em cabeçalho, estrutura semantica padrao OK.",
+          "Campos: labels associados via for/id (filtro-tabela, filtro-acao, filtro-inicio, filtro-fim).",
+          "Validacao: aria-describedby em cada input/select apontando para div com aria-live='polite' para erros.",
+          "Botoes: aria-label descritivo em 'Ver De/Para', wire:loading.attr='aria-busy' durante filtro.",
+          "Resultado: <p aria-live='polite' class='sr-only'> anuncia novo total de registros ou estado vazio."
+        ]
+      },
+      "aderencia_estrutural": {
+        "status": "passou",
+        "observacoes": [
+          "Focus ring: .focus-ring:focus-visible define outline 3px com var(--color-focus-ring); presente em inputs, selects, botoes.",
+          "Fonte configuravel: todas as medidas em rem (text-[0.78125rem], etc), respeita data-font-size do html (pequeno 87.5%, grande 112.5%).",
+          "Temas: tokens CSS vars, nao hex fixos; suporte_tema='claro_escuro' via data-theme; listener Livewire atualiza sem reload.",
+          "Reducao movimento: @media prefers-reduced-motion via Tailwind, mais classe .reduzir-movimento em <html> para usuarios autenticados.",
+          "Focus trap modal: Esc fecha, Tab prensado ao modal mesmo com um elemento focavel (botao 'Fechar'), foco retorna ao botao de origem.",
+          "Skip-link: presente como primeiro elemento focavel, com .focus-ring, navega a <main id='conteudo-principal'>."
+        ]
+      },
+      "recomendacoes": [
+        {
+          "descricao": "Modal De/Para com conteudo JSON grande poderia oferecer botao 'Copiar' para melhorar UX com leitores de tela.",
+          "criticidade": "baixa"
+        }
+      ]
+    },
+    "tester": {
+      "status": "passou",
+      "unitarios": {
+        "status": "passou",
+        "cobertura": 100,
+        "framework": "Pest"
+      },
+      "integracao": {
+        "status": "passou",
+        "cobertura": 100,
+        "framework": "Pest"
+      }
+    }
+  },
+  "commit_ref_testes": "bbcf72f",
+  "validacao_local": {
+    "status": "aprovado",
+    "como_subir": "php artisan serve --port=8000 (composer run dev falha no Windows por falta da extensao pcntl no pail e derruba o grupo via --kill-others; assets ja compilados em public/build)",
+    "o_que_testar": "Tela Log/Auditoria: filtrar por tabela/acao/periodo; valor invalido via devtools deve ser ignorado; 'Ver De/Para' com foco preso/Esc/retorno; estado vazio; sem edicao/exclusao.",
+    "rfs_cobertos": ["RF-PADRAO-LOG-AUDITORIA"],
+    "validado_em": "2026-08-24T12:15:00Z",
+    "observacoes": "Aprovado pelo usuario apos exercitar o roteiro completo (filtros, valor invalido via devtools, periodo, modal De/Para com foco preso/Esc/retorno de foco, estado vazio, ausencia de edicao/exclusao)."
+  },
+  "decisao_pendente": {
+    "gate": "validacao_local",
+    "pergunta": "RF-PADRAO-LOG-AUDITORIA (relatorio de log de auditoria) passou pelas duas ondas de QA (code-review, security, accessibility e tester, todos 'passou', sem bug em aberto). Validacao local aprovada?",
+    "opcoes": [
+      { "id": "aprovado", "descricao": "Usuario exercitou o criterio_aceite na aplicacao rodando e aprova o merge/deploy do RF." },
+      { "id": "reprovado", "descricao": "Usuario encontrou problema ao exercitar a tela; RF volta ao dev-agent com o feedback." }
+    ],
+    "contexto": "Ultimo RF pendente do marco-3-padroes-pipeline (ultimo_rf_do_marco = true). Apos aprovacao aqui, o deploy-agent mergeia rf/RF-PADRAO-LOG-AUDITORIA (bpx.aplicavel=false, deploy acionado junto) e o qa-coordenador-agent segue para a consolidacao do marco na mesma execucao.",
+    "resposta": "aprovado",
+    "respondido_em": "2026-08-24T12:15:00Z"
+  }
+}
