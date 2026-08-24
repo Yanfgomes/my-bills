@@ -74,10 +74,84 @@ antes do `where()`, independente do resultado de `validateOnly()`.
 - **Configuracao**: nada especifico deste RF (CORS/headers sao transversais, fora do escopo
   pontual desta reverificacao).
 
-## Criterios de aceite de seguranca declarados (5)
+## Criterios de aceite de seguranca declarados (5) — commit cd5ac34 (tentativa 1)
 
 1. Requer autenticacao — atendido (confirmado por exploracao).
 2. Escopo self-audit / RN-010, IDOR negado sem vazar existencia — atendido (confirmado por exploracao).
 3. Filtros aceitam somente valores previstos, nada chega cru a query — **nao atendido** (achado SEC-01 reaberto, confirmado por exploracao).
 4. Resposta so com registros do proprio usuario — atendido (confirmado por exploracao).
 5. Somente leitura, sem edicao/exclusao — atendido (analise estatica).
+
+---
+
+# Reverificacao tentativa 2 — commit c9b6a71
+
+data: 2026-08-24T11:58:10Z | ferramenta automatizada: indisponivel (mesma condicao acima) —
+analise manual + exploracao real via Pest/Livewire::test (teste descartavel, removido apos
+verificacao, nao commitado).
+
+## Reverificacao de SEC-RF-PADRAO-LOG-AUDITORIA-01 — CONFIRMADA, achado fechado
+
+Diff de c9b6a71 abandona `validateOnly()` (cuja `ValidationException` e engolida pelo Livewire
+4.4 dentro de `updated{Prop}()`, ver rastreamento acima) e passa a checar o enum explicitamente,
+resetando a propria prop para `null` quando o valor sincronizado nao esta previsto:
+
+```php
+public function updatedTabelaAfetada(): void
+{
+    if ($this->tabelaAfetada !== null && ! in_array($this->tabelaAfetada, self::TABELAS_AUDITADAS, true)) {
+        $this->tabelaAfetada = null;
+    }
+}
+// updatedAcao() analogo, contra self::ACOES_AUDITADAS
+```
+
+Essa correcao nao depende de nenhuma excecao interromper o ciclo — o reset roda incondicional-
+mente dentro do proprio hook, antes de `render()` ser chamado pelo mesmo request.
+
+### Exploracao confirmada
+
+Teste descartavel (Pest + `Livewire::test`, removido apos a verificacao):
+
+```php
+Livewire::test(LogAuditoriaRelatorio::class)
+    ->set('tabelaAfetada', "users' OR '1'='1")
+    ->assertSet('tabelaAfetada', null)
+    ->set('acao', 'DROP TABLE logs_auditoria')
+    ->assertSet('acao', null);
+```
+
+Resultado: 1 passed (3 assertions). `assertSet(..., null)` confirma que a prop e revertida no
+mesmo ciclo de sync (nao so um error bag populado, como no falso-negativo da tentativa 1).
+`DB::enableQueryLog()` + inspecao das bindings de `select ... from logs_auditoria where
+tabela_afetada = ?` / `where acao = ?` apos o `set()` invalido: nenhuma query com o binding
+malicioso foi gerada (a prop ja estava `null` quando `render()` rodou, entao a clausula
+`->when($this->tabelaAfetada, ...)` do `render()` nem adiciona o `where`). Valor fora do enum
+nunca chega a `render()`/query. **Achado fechado por exploracao real, nao so leitura de codigo.**
+
+## Varredura completa do RF (commit c9b6a71) — sem achado novo
+
+Diff de c9b6a71 tocou somente os dois hooks `updatedTabelaAfetada()`/`updatedAcao()`; todo o
+resto do componente (`mount()`, `verDetalhe()`, `fecharDetalhe()`, `filtrar()`, `render()`) e
+identico ao ja auditado na tentativa 1 — reconfirmado por leitura integral do arquivo, sem
+regressao:
+
+- **Autenticacao**: inalterado, `mount()` + middleware `auth`. Atendido.
+- **Autorizacao/IDOR**: inalterado, `render()`/`verDetalhe()` escopados por `usuario_id ==
+  Auth::id()` + `LogAuditoriaPolicy::view()`. Atendido.
+- **Exposicao de dado sensivel**: inalterado, `AuditoriaObserver::ocultarCampos()`. Atendido.
+- **XSS**: inalterado, Blade auto-escapa. Sem vetor.
+- **Integridade da trilha de auditoria**: confirmado (grep em `app/`, `routes/web.php`) que
+  nenhum ponto do codigo, alem de `AuditoriaObserver::registrar()`, escreve em `LogAuditoria`;
+  `LogAuditoriaPolicy` nao define `update`/`delete`. Nenhum caminho de edicao/exclusao de log.
+- **Configuracao**: nada especifico deste RF, fora de escopo pontual.
+
+## Criterios de aceite de seguranca declarados (5) — commit c9b6a71 (tentativa 2, final)
+
+1. Requer autenticacao — atendido (confirmado por exploracao, reconfirmado sem mudanca).
+2. Escopo self-audit / RN-010, IDOR negado sem vazar existencia — atendido (confirmado por exploracao, reconfirmado sem mudanca).
+3. Filtros aceitam somente valores previstos, nada chega cru a query — **atendido** (achado SEC-01 fechado, confirmado por exploracao).
+4. Resposta so com registros do proprio usuario — atendido (confirmado por exploracao, reconfirmado sem mudanca).
+5. Somente leitura, sem edicao/exclusao — atendido (analise estatica, reconfirmado).
+
+**5/5 atendidos. Nenhum achado aberto neste RF.**

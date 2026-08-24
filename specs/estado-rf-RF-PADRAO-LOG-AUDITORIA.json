@@ -1,15 +1,15 @@
 {
   "rf_ref": "RF-PADRAO-LOG-AUDITORIA",
-  "versao": 8,
+  "versao": 10,
   "status": "aguardando_qa",
   "implementacao_existente": false,
   "branch_ref": "rf/RF-PADRAO-LOG-AUDITORIA",
-  "commit_ref": "cd5ac34",
+  "commit_ref": "c9b6a71",
   "grupo_commit": [],
   "handoff_qa": {
     "disparado_em": "2026-08-21T20:00:17Z",
-    "status": "reprovado",
-    "atualizado_em": "2026-08-24T11:51:03Z"
+    "status": "em_qa",
+    "atualizado_em": "2026-08-24T11:59:48Z"
   },
   "tentativas_correcao": 2,
   "bugs": [
@@ -17,11 +17,11 @@
       "id": "SEC-RF-PADRAO-LOG-AUDITORIA-01",
       "origem": "security-agent",
       "criticidade": "menor",
-      "status": "escalado",
+      "status": "corrigido",
       "classificacao": "impacto_real",
       "escalado_para": "dev-agent",
-      "descricao": "cd5ac34 nao fechou: validateOnly() em updated{Prop} e engolido por SupportValidation::exception() (stopPropagation), nao aborta render(). Query usa o valor invalido, confirmado via query log.",
-      "commit_ref": "cd5ac34"
+      "descricao": "c9b6a71: hook nao depende mais de validateOnly() (engolida pelo Livewire 4.4). Checa enum e reseta a prop p/ null antes de render() usar o valor.",
+      "commit_ref": "c9b6a71"
     }
   ],
   "qa": {
@@ -34,14 +34,14 @@
       "revisao_qualitativa": {
         "status": "concluida",
         "observacoes": [
-          "cd5ac34: updatedTabelaAfetada/updatedAcao validam via in: a cada sync Livewire (validateOnly), antes de render() -- SEC-01 fechado.",
+          "c9b6a71: updatedTabelaAfetada/updatedAcao trocam validateOnly() por in_array()+reset da prop p/ null, sem depender de excecao -- SEC-01 (tentativa 2) fechado.",
           "LogAuditoriaRelatorio.php:30 duplica TABELAS_AUDITADAS ja definido via Observers em AppServiceProvider:36-42, e select do blade duplica de novo (3 fontes).",
           "Risco: nova tabela observada em marco futuro fica oculta no filtro do relatorio se so o Observer for atualizado, sem erro visivel (falha silenciosa)."
         ]
       }
     },
     "security": {
-      "status": "falhou",
+      "status": "passou",
       "ferramenta": {
         "nome": "SAST manual (sem ferramenta automatizada configurada)",
         "status": "indisponivel",
@@ -49,20 +49,20 @@
       },
       "criterios_declarados": {
         "total": 5,
-        "atendidos": 4,
-        "nao_atendidos": 1,
+        "atendidos": 5,
+        "nao_atendidos": 0,
         "nao_verificaveis": 0
       },
       "pentest_manual": {
         "status": "concluido_exploracao_confirmada",
-        "achados_confirmados": 1,
+        "achados_confirmados": 0,
         "achados_por_analise_estatica": 0
       },
       "redisparo": {
         "achado_reverificado": "SEC-RF-PADRAO-LOG-AUDITORIA-01",
-        "commit_anterior": "7be70e5",
-        "commit_atual": "cd5ac34",
-        "resultado": "correcao_nao_confirmada"
+        "commit_anterior": "cd5ac34",
+        "commit_atual": "c9b6a71",
+        "resultado": "corrigido_confirmado"
       }
     },
     "accessibility": {

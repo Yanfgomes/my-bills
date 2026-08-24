@@ -1,9 +1,28 @@
 # Code Review — RF-PADRAO-LOG-AUDITORIA
 
-commit_ref: cd5ac34 (branch rf/RF-PADRAO-LOG-AUDITORIA) — reauditoria pós-correção de
-SEC-RF-PADRAO-LOG-AUDITORIA-01. Ciclo anterior: 7be70e5.
+commit_ref: c9b6a71 (branch rf/RF-PADRAO-LOG-AUDITORIA) — reauditoria pós-correção (tentativa 2)
+de SEC-RF-PADRAO-LOG-AUDITORIA-01. Ciclos anteriores: 7be70e5, cd5ac34.
 
-## Reauditoria pós-correção (cd5ac34)
+## Reauditoria pós-correção (c9b6a71, tentativa 2)
+
+Diff c9b6a71 (cd5ac34 → c9b6a71) toca só `app/Livewire/Auditoria/LogAuditoriaRelatorio.php`,
+reescrevendo `updatedTabelaAfetada()`/`updatedAcao()`. A tentativa anterior (cd5ac34) usava
+`validateOnly()`, cuja `ValidationException` — quando lançada dentro de um hook `updated{Prop}()`
+— é engolida pelo Livewire 4.4 (`Wrapped::__call()` → `SupportValidation::exception()` →
+`stopPropagation()`) sem abortar o ciclo, deixando `render()` rodar com o valor inválido ainda na
+prop (achado confirmado por exploração real do `security-agent`/`qa-coordenador-agent`, motivo do
+redisparo desta rodada). A correção atual não depende de exceção: cada hook checa o valor
+sincronizado via `in_array(..., true)` contra `self::TABELAS_AUDITADAS`/`self::ACOES_AUDITADAS` e,
+se fora do enum, reseta a própria prop para `null` (equivalente a "sem filtro"). Isso garante que
+`render()`/`where()` nunca leem um valor fora do enum, independente de como o Livewire propaga (ou
+não) exceções dentro desses hooks. Correção verificada como suficiente; nenhum achado bloqueante
+novo introduzido (diff restrito às duas funções, sem alterar query, autorização, i18n ou
+acessibilidade).
+
+A observação de duplicação da lista de tabelas auditadas em 3 pontos (achado 1 abaixo, do ciclo
+7be70e5) **não foi tocada por nenhuma das duas correções** e continua válida no estado atual.
+
+## Reauditoria pós-correção (cd5ac34) — histórico, correção posteriormente substituída
 
 Diff cd5ac34 (7be70e5 → cd5ac34) toca só `app/Livewire/Auditoria/LogAuditoriaRelatorio.php`,
 adicionando `updatedTabelaAfetada()`/`updatedAcao()` (linhas 90-102). Confirmado que a correção
@@ -28,7 +47,7 @@ anterior) **não foi tocada por esta correção** e continua válida no estado a
 (ferramenta/acionamento = null, confirmado pelo usuário durante o design). Nenhuma ferramenta
 configurada até o momento — resultado registrado como `indisponivel`, não como falha do RF.
 Nenhuma execução foi simulada/inventada. Reconfirmado no recorte lido para esta reauditoria
-(cd5ac34): campo inalterado desde o ciclo anterior.
+(c9b6a71): campo inalterado desde os ciclos anteriores.
 
 ## Revisão qualitativa
 
