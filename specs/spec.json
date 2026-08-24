@@ -1711,15 +1711,52 @@
   },
   "testes": {
     "marco_ref": "marco-3-padroes-pipeline",
-    "status": "pendente",
+    "status": "em_andamento",
     "cobertura_minima": 90,
     "cobertura_meta": 100,
-    "fluxos": [],
+    "fluxos": [
+      {
+        "fluxo_ref": "FLUXO-005",
+        "rf_refs": ["RF-PADRAO-CONFIGURACOES"],
+        "status": "derivado",
+        "observacoes": "RF isolado: dominio_ref DOM-005 (Configuracoes do Sistema), sem RF adjacente do mesmo dominio na ordem_execucao do marco. RF seguinte (RF-PADRAO-LOG-AUDITORIA) muda de dominio (DOM-006) e de regra (RN-010 vs RN-009), corte de fluxo."
+      },
+      {
+        "fluxo_ref": "FLUXO-006",
+        "rf_refs": ["RF-PADRAO-LOG-AUDITORIA"],
+        "status": "derivado",
+        "observacoes": "RF isolado: dominio_ref DOM-006 (Auditoria), regra RN-010 propria. Nao compoe com RF-PADRAO-CONFIGURACOES (dominio/regra diferentes) nem com nenhum outro RF do marco."
+      }
+    ],
     "testes_sistema": {
-      "itens": []
+      "itens": [
+        {
+          "fluxo_ref": "FLUXO-005",
+          "status": "passou",
+          "branch_ref": "testes/FLUXO-005",
+          "commit_ref": "0a44085"
+        },
+        {
+          "fluxo_ref": "FLUXO-006",
+          "status": "passou",
+          "branch_ref": "testes/FLUXO-006",
+          "commit_ref": "d69714b"
+        }
+      ]
     },
     "seguranca": {
-      "itens": []
+      "itens": [
+        {
+          "fluxo_ref": "FLUXO-005",
+          "status": "nao_aplicavel",
+          "justificativa": "3 sinais checados e ausentes: dominio unico (DOM-005, sem composicao); rnf_refs sem categoria=seguranca; achado da Fase 1 (SEC-CONFIG-001) criticidade=menor, nao critico/maior."
+        },
+        {
+          "fluxo_ref": "FLUXO-006",
+          "status": "nao_aplicavel",
+          "justificativa": "3 sinais checados e ausentes: dominio unico (DOM-006, sem composicao); rnf_refs sem categoria=seguranca (RNF-PADRAO-LOG-AUDITORIA=auditoria); achado da Fase 1 (SEC-01) criticidade=menor, nao critico/maior."
+        }
+      ]
     },
     "historico_revisoes": []
   },
