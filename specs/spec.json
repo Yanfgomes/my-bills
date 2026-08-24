@@ -2,7 +2,7 @@
   "projeto": {
     "nome": "my-bills",
     "descricao": "Sistema de gerenciamento de contas pessoais com registro aberto, login e senha. Cada usuário só visualiza suas próprias contas. Usuário cadastra o valor líquido recebido e suas despesas, e o sistema apresenta um overview da saúde financeira.",
-    "status_geral": "em_andamento",
+    "status_geral": "concluido",
     "marco_atual": "marco-3-padroes-pipeline"
   },
   "codebase_existente": {
