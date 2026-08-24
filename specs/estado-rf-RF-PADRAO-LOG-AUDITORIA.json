@@ -127,12 +127,12 @@
   },
   "commit_ref_testes": "bbcf72f",
   "validacao_local": {
-    "status": "aguardando",
-    "como_subir": "composer run dev (sobe php artisan serve + vite + queue:listen + pail juntos; app em APP_URL, padrao http://localhost:8000)",
-    "o_que_testar": "Tela Relatorio de Log/Auditoria (self-audit): logar, abrir a tela, filtrar por tabela/entidade e por acao com um valor invalido/manipulado (via devtools) e confirmar que o filtro nao aplica e a lista nao muda; filtrar por periodo; abrir 'Ver De/Para' de um registro e confirmar foco preso, Esc fecha, foco retorna ao botao; filtro sem resultado mostra estado vazio; nenhum controle de edicao/exclusao visivel.",
+    "status": "aprovado",
+    "como_subir": "php artisan serve --port=8000 (composer run dev falha no Windows por falta da extensao pcntl no pail e derruba o grupo via --kill-others; assets ja compilados em public/build)",
+    "o_que_testar": "Tela Log/Auditoria: filtrar por tabela/acao/periodo; valor invalido via devtools deve ser ignorado; 'Ver De/Para' com foco preso/Esc/retorno; estado vazio; sem edicao/exclusao.",
     "rfs_cobertos": ["RF-PADRAO-LOG-AUDITORIA"],
-    "validado_em": "",
-    "observacoes": ""
+    "validado_em": "2026-08-24T12:15:00Z",
+    "observacoes": "Aprovado pelo usuario apos exercitar o roteiro completo (filtros, valor invalido via devtools, periodo, modal De/Para com foco preso/Esc/retorno de foco, estado vazio, ausencia de edicao/exclusao)."
   },
   "decisao_pendente": {
     "gate": "validacao_local",
@@ -141,6 +141,8 @@
       { "id": "aprovado", "descricao": "Usuario exercitou o criterio_aceite na aplicacao rodando e aprova o merge/deploy do RF." },
       { "id": "reprovado", "descricao": "Usuario encontrou problema ao exercitar a tela; RF volta ao dev-agent com o feedback." }
     ],
-    "contexto": "Ultimo RF pendente do marco-3-padroes-pipeline (ultimo_rf_do_marco = true). Apos aprovacao aqui, o deploy-agent mergeia rf/RF-PADRAO-LOG-AUDITORIA (bpx.aplicavel=false, deploy acionado junto) e o qa-coordenador-agent segue para a consolidacao do marco na mesma execucao."
+    "contexto": "Ultimo RF pendente do marco-3-padroes-pipeline (ultimo_rf_do_marco = true). Apos aprovacao aqui, o deploy-agent mergeia rf/RF-PADRAO-LOG-AUDITORIA (bpx.aplicavel=false, deploy acionado junto) e o qa-coordenador-agent segue para a consolidacao do marco na mesma execucao.",
+    "resposta": "aprovado",
+    "respondido_em": "2026-08-24T12:15:00Z"
   }
 }
