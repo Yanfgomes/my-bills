@@ -1341,7 +1341,7 @@
             "RNF-PADRAO-LOG-AUDITORIA"
           ],
           "ordem": 3,
-          "status": "aprovado"
+          "status": "concluido"
         }
       ],
       "racional": "Marco 1 (MVP) entrega o fluxo de uso completo e minimo que realiza a proposta de valor do sistema: cadastro (RF-001) -> login (RF-002) -> isolamento de dados, transversal a partir daqui (RF-003) -> lancar renda (RF-004) -> lancar despesa (RF-006) -> ver overview de saude financeira (RF-008). Marco 2 adiciona a capacidade de corrigir/remover lancamentos ja feitos (RF-005 edicao/exclusao de renda, RF-007 edicao/exclusao de despesa), na mesma ordem de dominio (renda antes de despesa) usada no Marco 1. Marco 3 (ordem 3) aloca os 2 RFs padrao do pipeline (RF-PADRAO-CONFIGURACOES antes de RF-PADRAO-LOG-AUDITORIA, seguindo o fluxo de uso: usuario ajusta preferencias antes de consultar o log) e os RNFs padrao/transversais que so foram fechados apos marco-1/marco-2 estarem concluidos, portanto nao puderam entrar neles (RNF-PADRAO-IDIOMA, RNF-PADRAO-ACESSIBILIDADE-CONFIG, RNF-004, RNF-PADRAO-LOG-AUDITORIA). Backfill de marco-1.rnf_refs (RNF-001, RNF-002, RNF-003) e documentacao retroativa dos RNFs ja implementados nesse marco, sem reabrir trabalho concluido. Nenhum RF foi classificado inviavel; todo RF e RNF aprovado pertence a um dos tres marcos."
@@ -1711,7 +1711,7 @@
   },
   "testes": {
     "marco_ref": "marco-3-padroes-pipeline",
-    "status": "em_andamento",
+    "status": "concluido",
     "cobertura_minima": 90,
     "cobertura_meta": 100,
     "fluxos": [
@@ -1777,9 +1777,9 @@
     "limite_por_elemento": 2
   },
   "conclusao_agente": {
-    "agente": "design-agent",
+    "agente": "qa-coordenador-agent",
     "criterios_saida_atendidos": true,
-    "observacoes": "Marco marco-3-padroes-pipeline: stack herdado sem re-perguntar (PHP8.3+Laravel13, fe_be_desacoplado=false), 5 contratos de API (ConfiguracaoManager x2, TemaToggleTopbar, LogAuditoriaRelatorio x2). 1 tabela nova (configuracoes_usuario). SetLocale/tema-toggle antigos evoluem p/ persistencia por usuario, sem quebrar rotas guest.",
-    "concluido_em": "2026-08-21T18:26:56Z"
+    "observacoes": "Marco marco-3-padroes-pipeline: 2 RFs aprovados/mergeados (PR #15, #16; testes PR #18/#19). Deploy RETIDO (nada em producao) -- pendente_infraestrutura, sem pipeline no servidor. 2 fluxos testados, pentest de fluxo nao_aplicavel. 4 RNFs verificados. Nenhum achado pendente.",
+    "concluido_em": "2026-08-24T12:37:11Z"
   }
 }
